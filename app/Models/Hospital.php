@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Hospital extends Model
 {
     protected $fillable = [
         'name', 'type', 'address', 'phone', 'email', 'emergency_contact',
-        'website', 'services', 'facilities', 'status'
+        'website', 'youtube_video_url', 'services', 'facilities', 
+        'description', 'images', 'status'
     ];
 
     protected $casts = [
         'services' => 'array',
+        'images' => 'array',
     ];
 
     // Scopes
@@ -54,4 +57,37 @@ class Hospital extends Model
         }
     }
 
+    public function getImageUrlsAttribute()
+    {
+        if (!$this->images) {
+            return [];
+        }
+
+        return array_map(function ($image) {
+            return asset('storage/' . $image);
+        }, $this->images);
+    }
+
+    public function getFirstImageUrlAttribute()
+    {
+        if (!$this->images || empty($this->images)) {
+            return asset('images/hospital-placeholder.jpg');
+        }
+
+        return asset('storage/' . $this->images[0]);
+    }
+
+    public function getYoutubeEmbedUrlAttribute()
+    {
+        if (!$this->youtube_video_url) {
+            return null;
+        }
+
+        // Convert YouTube URL to embed URL
+        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $this->youtube_video_url, $matches)) {
+            return 'https://www.youtube.com/embed/' . $matches[1];
+        }
+
+        return $this->youtube_video_url;
+    }
 }

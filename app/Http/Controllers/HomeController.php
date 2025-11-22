@@ -62,7 +62,6 @@ class HomeController extends Controller
                 ->get()
             : collect();
             
-        $todaystip = HealthTip::where('status', 'published')->latest()->first();
         $hospitals = Hospital::where('status', 'active')
             ->orderBy('type')
             ->orderBy('name')
@@ -154,7 +153,6 @@ class HomeController extends Controller
             'todaysSchedule',
             'todaysClassesCount',
             'hospitals',
-            'todaystip',
             'currentPeriod',
             'upcomingAppointments',
             'recentHealthRecords',

@@ -51,6 +51,7 @@ use App\Http\Controllers\TreatmentRequestController;
 use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\WorkReportController;
+use App\Http\Controllers\WebsiteSettingsController;
 
 use App\Http\Controllers\Doctor\DoctorConsultationController;
 use App\Http\Controllers\Doctor\DoctorCallController;
@@ -90,10 +91,28 @@ Route::post('/register-domain', [LicenseController::class, 'processRegistration'
 Route::get('/license-registered/{license_key}', [LicenseController::class, 'showRegistrationSuccess'])
     ->name('license.registered');
     
+    // ------------------------------------------------- GLOBAL ROUTES  ---------------------------------------------------------------------
+    
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/hospitals/{hospital}', [HospitalController::class, 'view'])->name('hospitals.view');
+
+// Hello Doctor
+Route::get('/hello-doctor', [HelloDoctorController::class, 'index'])->name('hello-doctor');
+// Route::post('/hello-doctor/appointment', [HelloDoctorController::class, 'storeAppointment'])->name('hello-doctor.appointment.store');
+// Route::post('/hello-doctor/treatment-request', [HelloDoctorController::class, 'storeTreatmentRequest'])->name('hello-doctor.treatment-request.store');
+
+Route::post('/hello-doctor/appointments', [HelloDoctorController::class, 'storeAppointment'])->name('hello-doctor.store-appointment');
+Route::post('/hello-doctor/treatment-requests', [HelloDoctorController::class, 'storeTreatmentRequest'])->name('hello-doctor.store-treatment-request');
+Route::post('/hello-doctor/instant-video-call', [HelloDoctorController::class, 'createInstantVideoCall'])->name('hello-doctor.instant-video-call');
+
+// Doctors 
+
+Route::get('/doctors/{doctor}', [DoctorController::class, 'view'])->name('doctors.view');
+
+//------------------------------------------------------ END GLOBAL ROUTES --------------------------------------------------------------------------------------
     
     // Student Authentication Routes
-Route::get('/student-login', [StudentLoginController::class, 'create'])
+Route::get('/auth-login', [StudentLoginController::class, 'create'])
     ->name('student.login');
 
 Route::post('/student-login/logging', [StudentLoginController::class, 'store'])
@@ -321,6 +340,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::put('/hospitals/{hospital}', [HospitalController::class, 'update'])->name('hospitals.update');
     Route::patch('/hospitals/{hospital}', [HospitalController::class, 'update']);
     Route::delete('/hospitals/{hospital}', [HospitalController::class, 'destroy'])->name('hospitals.destroy');
+    Route::delete('hospitals/{hospital}/remove-image/{imageIndex}', [HospitalController::class, 'removeImage'])->name('hospitals.removeImage');
     
     // Doctors
     Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
@@ -331,6 +351,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
     Route::patch('/doctors/{doctor}', [DoctorController::class, 'update']);
     Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
+    
+    
+    // Leave dates management
+    Route::get('/doctors/{doctor}/leave-dates', [DoctorController::class, 'leaveDates'])->name('doctors.leave-dates');
+    Route::post('/doctors/{doctor}/leave-dates', [DoctorController::class, 'storeLeaveDate'])->name('doctors.leave-dates.store');
+    Route::delete('/doctors/{doctor}/leave-dates/{leaveDate}', [DoctorController::class, 'destroyLeaveDate'])->name('doctors.leave-dates.destroy');
+    
+    // Availability toggle
+    Route::post('/doctors/{doctor}/toggle-availability', [DoctorController::class, 'toggleAvailability'])->name('doctors.toggle-availability');
     
     // ============================
     // ID Card Routes
@@ -398,6 +427,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
     
+        Route::get('/website-settings', [WebsiteSettingsController::class, 'index'])->name('website-settings.index');
+        Route::put('/website-settings', [WebsiteSettingsController::class, 'update'])->name('website-settings.update');
+        Route::delete('/website-settings/remove-minister', [WebsiteSettingsController::class, 'removeMinister'])->name('website-settings.remove-minister');
+    
     // USers 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
@@ -424,7 +457,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
-    Route::get('/', [HomeController::class, 'index'])->name('home');
+    // Route::get('/', [HomeController::class, 'index'])->name('home');
     
     // Health Report
     Route::get('/health-report', [StudentHealthReportController::class, 'index'])->name('health-report');

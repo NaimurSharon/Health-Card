@@ -56,7 +56,109 @@ class User extends Authenticatable
     {
         return $this->hasOne(Student::class, 'user_id');
     }
+    
+    // DOCTOR 
+    public function doctorDetail()
+    {
+        return $this->hasOne(DoctorDetail::class, 'user_id');
+    }
 
+    public function doctorAvailabilities()
+    {
+        return $this->hasMany(DoctorAvailability::class, 'doctor_id');
+    }
+
+    public function doctorLeaveDates()
+    {
+        return $this->hasMany(DoctorLeaveDate::class, 'doctor_id');
+    }
+
+    public function appointmentsAsDoctor()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
+    }
+
+    public function scopeActiveDoctors($query)
+    {
+        return $query->where('role', 'doctor')->where('status', 'active');
+    }
+
+    public function scopeByRegion($query, $region)
+    {
+        return $query->whereHas('hospital', function($q) use ($region) {
+            $q->where('address', 'like', '%' . $region . '%');
+        });
+    }
+
+    // Helper methods for doctors
+    public function isAvailableOn($date)
+    {
+        if (!$this->doctorDetail || !$this->doctorDetail->is_available) {
+            return false;
+        }
+
+        $dayOfWeek = strtolower(\Carbon\Carbon::parse($date)->englishDayOfWeek);
+        $isOnLeave = $this->doctorLeaveDates()
+            ->where('leave_date', $date)
+            ->exists();
+
+        if ($isOnLeave) {
+            return false;
+        }
+
+        return $this->doctorAvailabilities()
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_available', true)
+            ->exists();
+    }
+
+    public function getAvailableTimeSlots($date)
+    {
+        if (!$this->isAvailableOn($date)) {
+            return [];
+        }
+
+        $dayOfWeek = strtolower(\Carbon\Carbon::parse($date)->englishDayOfWeek);
+        $availability = $this->doctorAvailabilities()
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_available', true)
+            ->first();
+
+        if (!$availability) {
+            return [];
+        }
+
+        return $availability->getTimeSlots();
+    }
+
+    // Bangladeshi doctor specific methods
+    public function getBangladeshiRegionAttribute()
+    {
+        if (!$this->hospital) return 'Unknown';
+        
+        $address = $this->hospital->address;
+        if (str_contains($address, 'ঢাকা') || str_contains(strtolower($address), 'dhaka')) {
+            return 'Dhaka';
+        } elseif (str_contains($address, 'চট্টগ্রাম') || str_contains(strtolower($address), 'chittagong')) {
+            return 'Chittagong';
+        } elseif (str_contains($address, 'সিলেট') || str_contains(strtolower($address), 'sylhet')) {
+            return 'Sylhet';
+        } else {
+            return 'Other Division';
+        }
+    }
+
+    public function getFormattedFeesAttribute()
+    {
+        if (!$this->doctorDetail) return null;
+
+        return [
+            'consultation' => $this->doctorDetail->formatted_consultation_fee,
+            'follow_up' => $this->doctorDetail->formatted_follow_up_fee,
+            'emergency' => $this->doctorDetail->formatted_emergency_fee
+        ];
+    }
+    
     public function teacherSections()
     {
         return $this->hasMany(Section::class, 'teacher_id');

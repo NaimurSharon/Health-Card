@@ -42,7 +42,7 @@
                 </div>
                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ Str::limit($consultation->symptoms, 80) }}</p>
                 <div class="flex space-x-2">
-                    <a href="{{ route('doctor.video-consultation.join', $consultation->id) }}" 
+                    <a href="{{ route('doctor.consultations.video-call', $consultation->id) }}" 
                        class="flex-1 bg-green-600 text-white text-center py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
                         <i class="fas fa-video me-1"></i>Join Call
                     </a>

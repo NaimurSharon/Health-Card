@@ -39,7 +39,16 @@ const App = ({ initialConfig = null }) => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to load call configuration');
+                    const errorData = await response.json().catch(() => ({}));
+                    
+                    // Handle call already ended (403 error)
+                    if (response.status === 403 && errorData.status === 'completed') {
+                        setError('This call has already ended. You cannot rejoin.');
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    throw new Error(`Failed to load call configuration: ${response.status}`);
                 }
 
                 const data = await response.json();

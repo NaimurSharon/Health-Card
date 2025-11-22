@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\VideoConsultation;
 use App\Services\StreamVideoService;
+use Carbon\Carbon;
 
 class DoctorConsultationController extends Controller
 {
@@ -22,12 +23,36 @@ class DoctorConsultationController extends Controller
     {
         $doctor = Auth::user();
         
+        // Get all consultations for pagination
         $consultations = VideoConsultation::where('doctor_id', $doctor->id)
             ->with(['student.user', 'appointment'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('doctor.video-consultation.index', compact('consultations'));
+        // Get today's consultations
+        $todayConsultations = VideoConsultation::where('doctor_id', $doctor->id)
+            ->whereDate('scheduled_for', Carbon::today())
+            ->orWhereDate('created_at', Carbon::today())
+            ->get();
+
+        // Get ongoing consultations
+        $ongoingConsultations = VideoConsultation::where('doctor_id', $doctor->id)
+            ->where('status', 'ongoing')
+            ->get();
+
+        // Get upcoming consultations (scheduled for future)
+        $upcomingConsultations = VideoConsultation::where('doctor_id', $doctor->id)
+            ->where('status', 'scheduled')
+            ->where('scheduled_for', '>', now())
+            ->orderBy('scheduled_for', 'asc')
+            ->get();
+
+        return view('doctor.video-consultation.index', compact(
+            'consultations',
+            'todayConsultations',
+            'ongoingConsultations',
+            'upcomingConsultations'
+        ));
     }
 
     public function show($id)
@@ -51,6 +76,12 @@ class DoctorConsultationController extends Controller
             ->where('doctor_id', $doctor->id)
             ->with(['student.user'])
             ->firstOrFail();
+
+        // Prevent rejoin to completed calls (like Zoom/Google Meet)
+        if ($consultation->status === 'completed') {
+            return redirect()->route('doctor.video-consultation.show', $id)
+                ->with('message', 'This call has already ended.');
+        }
 
         // Update status to ongoing
         if ($consultation->status === 'scheduled') {
@@ -80,6 +111,14 @@ class DoctorConsultationController extends Controller
             ->where('doctor_id', $doctor->id)
             ->with(['student.user'])
             ->firstOrFail();
+
+        // Prevent API access to completed calls
+        if ($consultation->status === 'completed') {
+            return response()->json([
+                'error' => 'This call has already ended and cannot be rejoined.',
+                'status' => 'completed'
+            ], 403);
+        }
 
         $streamConfig = $this->streamService->getFrontendConfig(
             $doctor->id, 
@@ -145,13 +184,37 @@ class DoctorConsultationController extends Controller
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
 
+        // Get participant count before updating
+        $meta = $consultation->call_metadata ?? [];
+        $participants = isset($meta['participants']) && is_array($meta['participants']) ? $meta['participants'] : [];
+        $participantCount = count($participants);
+
+        // Log the end call event
+        \Log::info("Doctor ending call for consultation {$id}. Current participants: {$participantCount}");
+
+        // Always mark as completed when end call is initiated
+        // This ensures no rejoin is possible, like Zoom/Google Meet
         $consultation->update([
             'status' => 'completed',
             'ended_at' => now(),
-            'duration' => $request->duration ?? 0
+            'duration' => $request->duration ?? (($consultation->started_at) ? now()->diffInSeconds($consultation->started_at) : 0),
+            'call_metadata' => array_merge($meta, ['ended_by' => 'doctor', 'ended_at_ts' => now()->timestamp])
         ]);
 
-        return response()->json(['success' => true]);
+        // Broadcast the call ended event for real-time update
+        try {
+            event(new \App\Events\VideoCallEnded($consultation->call_id, 'doctor'));
+        } catch (\Exception $e) {
+            \Log::warning("Failed to broadcast VideoCallEnded event: " . $e->getMessage());
+        }
+
+        // Return full consultation data for display on show page
+        return response()->json([
+            'success' => true,
+            'message' => 'Call ended successfully',
+            'consultation' => $consultation->load(['student.user', 'doctor', 'appointment']),
+            'redirect_url' => route('doctor.video-consultation.show', $id)
+        ]);
     }
 
     /**

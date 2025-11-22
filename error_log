@@ -56,3 +56,5 @@
 [15-Nov-2025 06:25:14 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\ExamController::autoSubmit() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/ExamController.php on line 285
 [15-Nov-2025 06:25:34 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\ExamController::autoSubmit() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/ExamController.php on line 308
 [15-Nov-2025 06:33:56 UTC] PHP Fatal error:  Cannot redeclare App\Models\ExamAttempt::getCurrentQuestionIndex() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Models/ExamAttempt.php on line 80
+[19-Nov-2025 10:30:07 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Admin\WebsiteSettingsController, because the name is already in use in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/WebsiteSettingsController.php on line 11
+[20-Nov-2025 11:17:43 UTC] PHP Fatal error:  Cannot redeclare App\Models\User::scopeDoctors() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Models/User.php on line 356

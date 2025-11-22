@@ -6,72 +6,7 @@
 @section('content')
 <div class="space-y-16 tiro">
 
-    {{-- ===========================
-         HERO SECTION
-    ============================ --}}
-    <section class="relative bg-gradient-to-r from-green-700 via-blue-600 to-purple-700 text-white rounded-3xl overflow-hidden shadow-2xl">
-        
-        @if($todaystip)
-            <div class="bg-yellow-400 text-black px-6 py-3 text-center font-semibold text-lg flex items-center justify-center gap-2">
-                <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">আজকের স্বাস্থ্য পরামর্শ</span>
-                <marquee behavior="scroll" direction="left" scrollamount="8" class="font-medium">
-                    🩺 {{ $todaystip->title }} — {{ Str::limit(strip_tags($todaystip->content), 120) }}
-                </marquee>
-            </div>
-        @endif
-        <div class="absolute inset-0 bg-black opacity-20"></div>
-        <div class="relative px-8 py-16 md:px-16 md:py-24 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div class="flex-1 text-center md:text-left">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                    {{ $school->name ?? 'আমাদের স্কুল' }}
-                </h1>
-                <p class="text-xl md:text-2xl mb-8 opacity-95 leading-relaxed">
-                    {{ $school->motto ?? 'শিক্ষা, শৃঙ্খলা, সাফল্য' }}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    @auth
-                        <a href="{{ route('student.dashboard') }}" class="bg-white text-green-700 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                            আমার ড্যাশবোর্ড
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="bg-white text-green-700 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                            লগইন করুন
-                        </a>
-                        <a href="#about" class="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-green-700 transition-all duration-300">
-                            আমাদের সম্পর্কে
-                        </a>
-                    @endauth
-                </div>
-            </div>
-            <div class="w-full md:w-1/2">
-                <img src="{{ $school->cover_image ? asset('public/storage/' . $school->cover_image) : asset('images/school-hero.png') }}" 
-                     alt="{{ $school->name }}" 
-                     class="w-full rounded-2xl shadow-2xl transform transition-transform duration-500">
-            </div>
-        </div>
-    </section>
-
-    {{-- ===========================
-         QUICK STATS
-    ============================ --}}
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div class="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="text-3xl font-bold text-green-600 mb-2">{{ $school->total_students ?? '০' }}+</div>
-            <div class="text-gray-600">শিক্ষার্থী</div>
-        </div>
-        <div class="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="text-3xl font-bold text-blue-600 mb-2">{{ $school->total_teachers ?? '০' }}+</div>
-            <div class="text-gray-600">শিক্ষক</div>
-        </div>
-        <div class="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="text-3xl font-bold text-purple-600 mb-2">{{ $school->established_year ?? '১৯' }}</div>
-            <div class="text-gray-600">স্থাপিত বছর</div>
-        </div>
-        <div class="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="text-3xl font-bold text-orange-600 mb-2">{{ $school->campus_area ? round($school->campus_area) : '০' }}</div>
-            <div class="text-gray-600">বর্গফুট ক্যাম্পাস</div>
-        </div>
-    </section>
+   @include('student.partial.hero')
 
     {{-- ===========================
          ABOUT SECTION
@@ -226,70 +161,70 @@
          STUDENT SPOTLIGHT (Only for logged in students)
     ============================ --}}
     @auth
-    <section class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-white shadow-2xl">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold mb-4">আপনার আজকের সারসংক্ষেপ</h2>
-            <p class="text-purple-100 text-lg">আজকের ক্লাস, পরীক্ষা এবং গুরুত্বপূর্ণ আপডেট</p>
-        </div>
+    <!--<section class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-white shadow-2xl">-->
+    <!--    <div class="text-center mb-12">-->
+    <!--        <h2 class="text-3xl font-bold mb-4">আপনার আজকের সারসংক্ষেপ</h2>-->
+    <!--        <p class="text-purple-100 text-lg">আজকের ক্লাস, পরীক্ষা এবং গুরুত্বপূর্ণ আপডেট</p>-->
+    <!--    </div>-->
 
-        <div class="grid md:grid-cols-3 gap-8">
-            {{-- Today's Classes --}}
-            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">
-                <h3 class="font-semibold text-xl mb-4 flex items-center">
-                    <span class="mr-3">📚</span> আজকের ক্লাস
-                </h3>
-                @if($todaysSchedule && count($todaysSchedule) > 0)
-                <div class="space-y-3">
-                    @foreach($todaysSchedule->take(3) as $schedule)
-                    <div class="flex justify-between items-center py-2 border-b border-white border-opacity-20">
-                        <span class="font-medium">{{ $schedule->subject->name ?? 'ক্লাস' }}</span>
-                        <span class="text-sm opacity-90">{{ $schedule->start_time }}</span>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <p class="text-purple-100 opacity-90">আজ কোনো ক্লাস নেই</p>
-                @endif
-            </div>
+    <!--    <div class="grid md:grid-cols-3 gap-8">-->
+    <!--        {{-- Today's Classes --}}-->
+    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
+    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
+    <!--                <span class="mr-3">📚</span> আজকের ক্লাস-->
+    <!--            </h3>-->
+    <!--            @if($todaysSchedule && count($todaysSchedule) > 0)-->
+    <!--            <div class="space-y-3">-->
+    <!--                @foreach($todaysSchedule->take(3) as $schedule)-->
+    <!--                <div class="flex justify-between items-center py-2 border-b border-white border-opacity-20">-->
+    <!--                    <span class="font-medium">{{ $schedule->subject->name ?? 'ক্লাস' }}</span>-->
+    <!--                    <span class="text-sm opacity-90">{{ $schedule->start_time }}</span>-->
+    <!--                </div>-->
+    <!--                @endforeach-->
+    <!--            </div>-->
+    <!--            @else-->
+    <!--            <p class="text-purple-100 opacity-90">আজ কোনো ক্লাস নেই</p>-->
+    <!--            @endif-->
+    <!--        </div>-->
 
-            {{-- Upcoming Exams --}}
-            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">
-                <h3 class="font-semibold text-xl mb-4 flex items-center">
-                    <span class="mr-3">🧾</span> আসন্ন পরীক্ষা
-                </h3>
-                @if($upcomingExams && count($upcomingExams) > 0)
-                <div class="space-y-3">
-                    @foreach($upcomingExams as $exam)
-                    <div class="py-2 border-b border-white border-opacity-20">
-                        <div class="font-medium">{{ $exam->title ?? 'পরীক্ষা' }}</div>
-                        <div class="text-sm opacity-90">{{ $exam->exam_date ?? 'N/A' }}</div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <p class="text-purple-100 opacity-90">কোনো পরীক্ষা নেই</p>
-                @endif
-            </div>
+    <!--        {{-- Upcoming Exams --}}-->
+    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
+    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
+    <!--                <span class="mr-3">🧾</span> আসন্ন পরীক্ষা-->
+    <!--            </h3>-->
+    <!--            @if($upcomingExams && count($upcomingExams) > 0)-->
+    <!--            <div class="space-y-3">-->
+    <!--                @foreach($upcomingExams as $exam)-->
+    <!--                <div class="py-2 border-b border-white border-opacity-20">-->
+    <!--                    <div class="font-medium">{{ $exam->title ?? 'পরীক্ষা' }}</div>-->
+    <!--                    <div class="text-sm opacity-90">{{ $exam->exam_date ?? 'N/A' }}</div>-->
+    <!--                </div>-->
+    <!--                @endforeach-->
+    <!--            </div>-->
+    <!--            @else-->
+    <!--            <p class="text-purple-100 opacity-90">কোনো পরীক্ষা নেই</p>-->
+    <!--            @endif-->
+    <!--        </div>-->
 
-            {{-- Quick Actions --}}
-            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">
-                <h3 class="font-semibold text-xl mb-4 flex items-center">
-                    <span class="mr-3">⚡</span> দ্রুত একশন
-                </h3>
-                <div class="space-y-3">
-                    <a href="{{ route('student.school-diary') }}" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">
-                        হোমওয়ার্ক দেখুন
-                    </a>
-                    <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">
-                        ক্লাস রুটিন
-                    </a>
-                    <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">
-                        স্বাস্থ্য রেকর্ড
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!--        {{-- Quick Actions --}}-->
+    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
+    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
+    <!--                <span class="mr-3">⚡</span> দ্রুত একশন-->
+    <!--            </h3>-->
+    <!--            <div class="space-y-3">-->
+    <!--                <a href="{{ route('student.school-diary') }}" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
+    <!--                    হোমওয়ার্ক দেখুন-->
+    <!--                </a>-->
+    <!--                <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
+    <!--                    ক্লাস রুটিন-->
+    <!--                </a>-->
+    <!--                <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
+    <!--                    স্বাস্থ্য রেকর্ড-->
+    <!--                </a>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--</section>-->
     @endauth
     
     {{-- ===========================
@@ -297,7 +232,7 @@
         ============================ --}}
     <section class="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl p-12 shadow-xl">
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">🏥 জরুরি স্বাস্থ্য সেবা</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">জরুরি স্বাস্থ্য সেবা</h2>
             <p class="text-gray-600 text-lg">নিকটস্থ হাসপাতাল ও স্বাস্থ্য কেন্দ্রসমূহ</p>
         </div>
     
@@ -311,7 +246,11 @@
                 
                 {{-- Hospital Type Badge --}}
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="font-bold text-xl text-gray-800">{{ $hospital->name }}</h3>
+                    <h3 class="font-bold text-xl text-gray-800">
+                        <a href="{{ route('hospitals.view', $hospital->id) }}" class="hover:underline hover:text-blue-600">
+                            {{ $hospital->name }}
+                        </a>
+                    </h3>
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
                         @if($hospital->type == 'government') bg-green-100 text-green-800
                         @elseif($hospital->type == 'private') bg-blue-100 text-blue-800
@@ -337,7 +276,7 @@
                     @if($hospital->phone)
                     <div class="flex items-center space-x-3">
                         <span class="text-gray-500">📞</span>
-                        <a href="tel:{{ $hospital->phone }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <a href="tel:{{ $hospital->phone }}" class="text-blue-600 hover:text-blue-800 inter text-sm">
                             {{ $hospital->phone }}
                         </a>
                     </div>
@@ -347,7 +286,7 @@
                     <div class="flex items-center space-x-3">
                         <span class="text-red-500">🚨</span>
                         <a href="tel:{{ $hospital->emergency_contact }}" class="text-red-600 hover:text-red-800 text-sm font-semibold">
-                            জরুরি: {{ $hospital->emergency_contact }}
+                            জরুরি: <span class='inter'>{{ $hospital->emergency_contact }}</span>
                         </a>
                     </div>
                     @endif
@@ -355,7 +294,7 @@
                     @if($hospital->email)
                     <div class="flex items-center space-x-3">
                         <span class="text-gray-500">📧</span>
-                        <a href="mailto:{{ $hospital->email }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        <a href="mailto:{{ $hospital->email }}" class="text-blue-600 hover:text-blue-800 inter text-sm">
                             {{ $hospital->email }}
                         </a>
                     </div>
@@ -444,7 +383,7 @@
                         <span class="text-2xl">📞</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ফোন</h3>
-                            <p class="text-gray-600">{{ $school->phone ?? 'ফোন নম্বর আপডেট করা হবে' }}</p>
+                            <p class="text-gray-600 inter">{{ $school->phone ?? 'ফোন নম্বর আপডেট করা হবে' }}</p>
                         </div>
                     </div>
                     
@@ -452,7 +391,7 @@
                         <span class="text-2xl">📧</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ইমেইল</h3>
-                            <p class="text-gray-600">{{ $school->email ?? 'ইমেইল আপডেট করা হবে' }}</p>
+                            <p class="text-gray-600 inter">{{ $school->email ?? 'ইমেইল আপডেট করা হবে' }}</p>
                         </div>
                     </div>
 
@@ -461,7 +400,7 @@
                         <span class="text-2xl">🌐</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ওয়েবসাইট</h3>
-                            <a href="{{ $school->website }}" class="text-blue-600 hover:text-blue-800" target="_blank">
+                            <a href="{{ $school->website }}" class="text-blue-600 hover:text-blue-800 inter" target="_blank">
                                 {{ $school->website }}
                             </a>
                         </div>
@@ -484,8 +423,6 @@
 
 @push('styles')
 <style>
-
-    
     .backdrop-blur-sm {
         backdrop-filter: blur(8px);
     }

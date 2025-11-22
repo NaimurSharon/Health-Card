@@ -1,22 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
     StreamVideo, 
     StreamCall, 
-    SpeakerLayout, 
-    CallControls,
-    useCallStateHooks,
-    CallingState,
+    SpeakerLayout,
     StreamVideoClient
 } from '@stream-io/video-react-sdk';
 import CallHeader from './CallHeader';
 import PatientSidebar from './PatientSidebar';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorDisplay from './ErrorDisplay';
+import CustomCallControls from './CustomCallControls';
+import WaitingScreen from './WaitingScreen';
 import { endCall } from '../services/api';
 
+const DISCONNECT_TIMEOUT = 60000; // 60 seconds = 1 minute
+
 const CallTimer = () => {
-    const { useCallDuration } = useCallStateHooks();
-    const duration = useCallDuration();
+    const [duration, setDuration] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDuration(prev => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
     
     const formatTime = (seconds) => {
         const hours = Math.floor(seconds / 3600);
@@ -39,199 +47,132 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     const [error, setError] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [participantsCount, setParticipantsCount] = useState(0);
+    const [remoteParticipantCount, setRemoteParticipantCount] = useState(0);
+    const [callStarted, setCallStarted] = useState(false);
+    const [waitingForParticipant, setWaitingForParticipant] = useState(true);
+    const [participantReturnCountdown, setParticipantReturnCountdown] = useState(null);
     
-    // Track if we've already handled the leave event
-    const [callEnded, setCallEnded] = useState(false);
+    const disconnectTimerRef = useRef(null);
+    const isMountedRef = useRef(true);
+    const hasJoinedRef = useRef(false);
 
-    // create Stream client when streamConfig is available
+    // Initialize Stream client
     useEffect(() => {
+        isMountedRef.current = true;
+        
         if (!streamConfig) return;
 
         const initializeClient = async () => {
             try {
-                console.log('Initializing StreamVideoClient with config:', streamConfig);
+                console.log('Initializing StreamVideoClient...');
                 
-                // Create client first
                 const c = new StreamVideoClient({ 
                     apiKey: streamConfig.apiKey 
                 });
                 
-                // Then connect the user with token
-                console.log('Connecting user to Stream Video...');
                 await c.connectUser(
                     streamConfig.user,
                     streamConfig.token
                 );
                 
                 console.log('User connected successfully');
-                setClient(c);
+                if (isMountedRef.current) {
+                    setClient(c);
+                }
             } catch (err) {
                 console.error('Failed to initialize StreamVideoClient:', err);
-                setError(`Failed to initialize video client: ${err.message}`);
-                setLoading(false);
+                if (isMountedRef.current) {
+                    setError(`Failed to initialize video client: ${err.message}`);
+                    setLoading(false);
+                }
             }
         };
 
         initializeClient();
 
         return () => {
-            // Cleanup on unmount
-            if (client) {
-                client.disconnectUser().catch(err => console.warn('Failed to disconnect:', err));
-            }
+            isMountedRef.current = false;
         };
     }, [streamConfig]);
 
+    // Initialize call but DON'T join yet (lazy join)
     useEffect(() => {
-        let mounted = true;
+        if (!client) return;
 
         const initializeCall = async () => {
             try {
-                if (!client) return;
-
                 const callInstance = client.call('default', streamConfig.callId);
                 setCall(callInstance);
-
-                console.log('Joining call with ID:', streamConfig.callId);
-                await callInstance.join({ create: true });
-
-                // After join, notify backend of participant join
-                const sessionId = (callInstance.localParticipant && callInstance.localParticipant.sessionId) || callInstance.sessionId || null;
-                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                if (sessionId) {
-                    try {
-                        await fetch(`/video-consultations/${consultation.id}/joined`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrf,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            credentials: 'same-origin',
-                            body: JSON.stringify({
-                                participant: {
-                                    sessionId: sessionId,
-                                    user: {
-                                        id: streamConfig.user.id,
-                                        name: streamConfig.user.name,
-                                        role: userType
-                                    }
-                                }
-                            })
-                        });
-                    } catch (err) {
-                        console.warn('Failed to POST participantJoined:', err);
-                    }
-
-                    // start polling participants count
-                    try {
-                        const fetchParticipants = async () => {
-                            const resp = await fetch(`/video-consultations/${consultation.id}/participants`, {
-                                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                                credentials: 'same-origin'
-                            });
-                            if (resp.ok) {
-                                const j = await resp.json();
-                                setParticipantsCount(j.count || 0);
-                            }
-                        };
-                        await fetchParticipants();
-                        const interval = setInterval(fetchParticipants, 5000);
-                        // store on call instance so cleanup can clear it
-                        callInstance.__participantsInterval = interval;
-                        // start heartbeat every 10 seconds to keep server last_seen updated
-                        // Heartbeat with exponential backoff on failures
-                        const startHeartbeat = () => {
-                            if (callInstance.__heartbeatTimer) return;
-                            // initial delay 10s
-                            callInstance.__heartbeatDelay = callInstance.__heartbeatDelay || 10000;
-                            callInstance.__heartbeatFailures = callInstance.__heartbeatFailures || 0;
-
-                            const sendHeartbeat = async () => {
-                                try {
-                                    const resp = await fetch(`/video-consultations/${consultation.id}/heartbeat`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': csrf,
-                                            'X-Requested-With': 'XMLHttpRequest'
-                                        },
-                                        credentials: 'same-origin',
-                                        body: JSON.stringify({ participant: { sessionId: sessionId, user: { id: streamConfig.user.id } } })
-                                    });
-
-                                    if (!resp.ok) throw new Error('Heartbeat failed');
-
-                                    // success -> reset failures and delay
-                                    callInstance.__heartbeatFailures = 0;
-                                    callInstance.__heartbeatDelay = 10000;
-                                } catch (err) {
-                                    // failure -> increase failure count and backoff
-                                    callInstance.__heartbeatFailures = (callInstance.__heartbeatFailures || 0) + 1;
-                                    callInstance.__heartbeatDelay = Math.min((callInstance.__heartbeatDelay || 10000) * 2, 60000);
-                                } finally {
-                                    // schedule next heartbeat unless stopped
-                                    try {
-                                        callInstance.__heartbeatTimer = setTimeout(sendHeartbeat, callInstance.__heartbeatDelay || 10000);
-                                    } catch (e) {}
-                                }
-                            };
-
-                            // start first send immediately
-                            callInstance.__heartbeatTimer = setTimeout(sendHeartbeat, 0);
-                        };
-
-                        const stopHeartbeat = () => {
-                            try {
-                                if (callInstance.__heartbeatTimer) {
-                                    clearTimeout(callInstance.__heartbeatTimer);
-                                    callInstance.__heartbeatTimer = null;
-                                }
-                            } catch (e) {}
-                        };
-
-                        // Start heartbeat now
-                        startHeartbeat();
-
-                        // Pause heartbeats when tab is hidden to save requests, resume when visible
-                        const visibilityHandler = () => {
-                            if (document.hidden) {
-                                stopHeartbeat();
-                            } else {
-                                startHeartbeat();
-                            }
-                        };
-
-                        document.addEventListener('visibilitychange', visibilityHandler);
-                        callInstance.__visibilityHandler = visibilityHandler;
-                    } catch (err) {
-                        console.warn('Failed to start participants polling:', err);
-                    }
-                }
-
-                if (mounted) setLoading(false);
-
+                console.log('Call instance created:', streamConfig.callId);
+                setLoading(false);
             } catch (err) {
                 console.error('Failed to initialize call:', err);
-                if (mounted) {
+                if (isMountedRef.current) {
                     setError(err.message);
                     setLoading(false);
                 }
             }
         };
 
-        if (client) {
-            initializeCall();
-        }
+        initializeCall();
+    }, [client, streamConfig.callId]);
 
+    // Monitor remote participants and manage disconnect timeout
+    useEffect(() => {
+        if (!call) return;
+
+        const handleParticipantsChange = async () => {
+            const remoteParticipants = call.state.participants.filter(p => !p.isLocalParticipant());
+            const remoteCount = remoteParticipants.length;
+            
+            console.log(`Remote participants: ${remoteCount}`);
+            setRemoteParticipantCount(remoteCount);
+
+            // If we have remote participants and haven't joined yet, join the call
+            if (remoteCount > 0 && !hasJoinedRef.current) {
+                console.log('Remote participant detected, joining call...');
+                try {
+                    await joinCall();
+                } catch (err) {
+                    console.error('Failed to join call:', err);
+                }
+            }
+
+            // If all remote participants left, start disconnect timer
+            if (remoteCount === 0 && hasJoinedRef.current && callStarted) {
+                console.log('All participants disconnected, starting timeout...');
+                startDisconnectTimeout();
+            } else if (remoteCount > 0 && disconnectTimerRef.current) {
+                // Remote participant returned, clear timeout
+                console.log('Participant returned, clearing timeout...');
+                clearDisconnectTimeout();
+                setParticipantReturnCountdown(null);
+            }
+        };
+
+        call.state.subscribe(handleParticipantsChange);
         return () => {
-            mounted = false;
-            if (call) {
-                // notify server of leaving
-                const sessionId = (call.localParticipant && call.localParticipant.sessionId) || call.sessionId || null;
-                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                if (sessionId) {
-                    fetch(`/video-consultations/${consultation.id}/left`, {
+            call.state.unsubscribe(handleParticipantsChange);
+        };
+    }, [call, callStarted]);
+
+    const joinCall = async () => {
+        if (!call || hasJoinedRef.current) return;
+
+        try {
+            console.log('Joining call...');
+            await call.join({ create: true });
+            hasJoinedRef.current = true;
+            setCallStarted(true);
+            setWaitingForParticipant(false);
+
+            // Notify backend of participant join
+            const sessionId = call.localParticipant?.sessionId || call.sessionId || null;
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            
+            if (sessionId) {
+                try {
+                    await fetch(`/video-consultations/${consultation.id}/joined`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -239,94 +180,214 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
                             'X-Requested-With': 'XMLHttpRequest'
                         },
                         credentials: 'same-origin',
-                        body: JSON.stringify({ participant: { sessionId: sessionId } })
-                    }).catch(console.warn);
+                        body: JSON.stringify({
+                            participant: {
+                                sessionId: sessionId,
+                                user: {
+                                    id: streamConfig.user.id,
+                                    name: streamConfig.user.name,
+                                    role: userType
+                                }
+                            }
+                        })
+                    });
+                    console.log('Participant join notification sent');
+                } catch (err) {
+                    console.warn('Failed to notify participant join:', err);
                 }
 
-                // clear participants polling interval and heartbeat if set
-                try {
-                    const interval = call.__participantsInterval;
-                    if (interval) clearInterval(interval);
-                } catch (e) {}
-                try {
-                    if (call.__heartbeatTimer) {
-                        clearTimeout(call.__heartbeatTimer);
-                        call.__heartbeatTimer = null;
-                    }
-                } catch (e) {}
+                // Start polling participants count
+                startParticipantPolling();
+                startHeartbeat();
+            }
 
-                // remove visibility handler if attached
-                try {
-                    if (call.__visibilityHandler) {
-                        document.removeEventListener('visibilitychange', call.__visibilityHandler);
-                        call.__visibilityHandler = null;
-                    }
-                } catch (e) {}
+            console.log('Call join complete');
+        } catch (err) {
+            console.error('Failed to join call:', err);
+            if (isMountedRef.current) {
+                setError(`Failed to join call: ${err.message}`);
+            }
+        }
+    };
 
-                call.leave().catch(console.error);
+    const startParticipantPolling = () => {
+        const fetchParticipants = async () => {
+            try {
+                const resp = await fetch(`/video-consultations/${consultation.id}/participants`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                });
+                if (resp.ok && isMountedRef.current) {
+                    const data = await resp.json();
+                    setParticipantsCount(data.count || 0);
+                }
+            } catch (err) {
+                console.warn('Failed to fetch participants:', err);
             }
         };
-    }, [client, streamConfig.callId]);
 
-    const handleEndCall = async () => {
-        try {
-            if (call) {
-                await call.leave();
+        fetchParticipants();
+        const interval = setInterval(fetchParticipants, 5000);
+        return interval;
+    };
+
+    const startHeartbeat = () => {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const sessionId = call?.localParticipant?.sessionId || call?.sessionId || null;
+
+        const sendHeartbeat = async () => {
+            try {
+                if (!isMountedRef.current) return;
+
+                const resp = await fetch(`/video-consultations/${consultation.id}/heartbeat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        participant: {
+                            sessionId: sessionId,
+                            user: { id: streamConfig.user.id }
+                        }
+                    })
+                });
+
+                if (!resp.ok) throw new Error('Heartbeat failed');
+            } catch (err) {
+                console.warn('Heartbeat error:', err);
+            } finally {
+                if (isMountedRef.current) {
+                    setTimeout(sendHeartbeat, 10000);
+                }
             }
-            
-            // Notify backend
-            await endCall(consultation.id);
-            
-            // Redirect based on user type
-            const redirectUrl = userType === 'doctor' 
-                ? `/doctor/consultations/${consultation.id}`
-                : '/student/consultations';
-                
-            window.location.href = redirectUrl;
+        };
+
+        setTimeout(sendHeartbeat, 0);
+    };
+
+    const startDisconnectTimeout = () => {
+        if (disconnectTimerRef.current) return;
+
+        let remainingTime = DISCONNECT_TIMEOUT / 1000;
+        
+        const countdownInterval = setInterval(() => {
+            remainingTime--;
+            if (isMountedRef.current) {
+                setParticipantReturnCountdown(remainingTime);
+            }
+
+            if (remainingTime <= 0) {
+                clearInterval(countdownInterval);
+                endCallDueToTimeout();
+            }
+        }, 1000);
+
+        disconnectTimerRef.current = countdownInterval;
+    };
+
+    const clearDisconnectTimeout = () => {
+        if (disconnectTimerRef.current) {
+            clearInterval(disconnectTimerRef.current);
+            disconnectTimerRef.current = null;
+        }
+    };
+
+    const endCallDueToTimeout = async () => {
+        console.log('Ending call due to participant timeout');
+        try {
+            await handleEndCall();
         } catch (err) {
             console.error('Error ending call:', err);
         }
     };
 
-    // Monitor call state for when user clicks leave button
-    useEffect(() => {
-        if (!call || callEnded) return;
-
-        // Listen for call.left event from Stream SDK
-        const handleCallLeft = () => {
-            console.log('Call left via CallControls');
-            if (!callEnded) {
-                setCallEnded(true);
-                handleEndCall();
-            }
-        };
-
-        // Also handle when call ends
-        const handleCallEnded = () => {
-            console.log('Call ended');
-            if (!callEnded) {
-                setCallEnded(true);
-                handleEndCall();
-            }
-        };
-
+    const handleEndCall = async () => {
         try {
-            call.on('call.left', handleCallLeft);
-            call.on('call.ended', handleCallEnded);
-        } catch (e) {
-            console.warn('Could not attach call event listeners:', e);
-        }
+            console.log('End call initiated');
+            setLoading(true);
+            
+            // Leave Stream Video call
+            if (call) {
+                try {
+                    await call.leave();
+                    console.log('Successfully left Stream Video call');
+                } catch (err) {
+                    console.error('Error leaving Stream call:', err);
+                }
+            }
 
-        return () => {
+            // Disconnect Stream Video client
+            if (client) {
+                try {
+                    await client.disconnectUser();
+                    console.log('Successfully disconnected from Stream');
+                } catch (err) {
+                    console.error('Error disconnecting from Stream:', err);
+                }
+            }
+            
+            // Notify backend
+            let redirectUrl = null;
             try {
-                call.off('call.left', handleCallLeft);
-                call.off('call.ended', handleCallEnded);
-            } catch (e) {}
-        };
-    }, [call, callEnded]);
+                const response = await endCall(consultation.id);
+                if (response.redirect_url) {
+                    redirectUrl = response.redirect_url;
+                }
+            } catch (err) {
+                console.error('Backend notification error:', err);
+                redirectUrl = userType === 'doctor' 
+                    ? `/doctor/consultations/${consultation.id}`
+                    : `/student/video-consultations/${consultation.id}`;
+            }
+            
+            // Redirect
+            setTimeout(() => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            }, 500);
+        } catch (err) {
+            console.error('Fatal error ending call:', err);
+            setError('Failed to end call properly');
+        }
+    };
 
+    // Handle page unload
+    useEffect(() => {
+        const handleBeforeUnload = async (e) => {
+            if (!call) return;
+
+            try {
+                if (navigator.sendBeacon) {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    navigator.sendBeacon(
+                        `/api/video-call/${consultation.id}/end`,
+                        JSON.stringify({ csrf_token: csrf })
+                    );
+                }
+
+                await call.leave().catch(() => {});
+                if (client) {
+                    await client.disconnectUser().catch(() => {});
+                }
+            } catch (err) {
+                console.warn('Unload cleanup error:', err);
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            clearDisconnectTimeout();
+        };
+    }, [call, client, consultation, userType]);
+
+    // Loading state
     if (loading) {
-        return <LoadingSpinner message="Joining video call..." />;
+        return <LoadingSpinner message="Initializing video call..." />;
     }
 
     if (error) {
@@ -334,62 +395,119 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     }
 
     if (!client || !call) {
-        return null;
+        return <LoadingSpinner message="Preparing connection..." />;
+    }
+
+    // Waiting for remote participant
+    if (waitingForParticipant) {
+        return (
+            <WaitingScreen 
+                consultation={consultation}
+                userType={userType}
+                onCancel={handleEndCall}
+                participantReturnCountdown={participantReturnCountdown}
+            />
+        );
     }
 
     return (
-        <div className="h-screen flex flex-col bg-gray-900">
-            <CallHeader 
-                consultation={consultation}
-                userType={userType}
-                onEndCall={handleEndCall}
-                onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                sidebarOpen={sidebarOpen}
-            />
-            
-            <div className="flex-1 flex">
-                <div className={`flex-1 relative ${sidebarOpen ? 'lg:mr-80' : ''}`}>
-                    <StreamVideo client={client}>
-                        <StreamCall call={call}>
+        <StreamVideo client={client}>
+            <StreamCall call={call}>
+                {/* Desktop/Laptop View */}
+                <div className="hidden md:flex h-screen w-full flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-black">
+                    <CallHeader 
+                        consultation={consultation}
+                        userType={userType}
+                        onEndCall={handleEndCall}
+                        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                        sidebarOpen={sidebarOpen}
+                    />
+                    
+                    <div className="flex-1 flex overflow-hidden">
+                        <div className={`flex-1 relative transition-all duration-300 ${sidebarOpen ? 'lg:mr-80' : ''}`}>
                             <div className="h-full w-full relative">
                                 <SpeakerLayout />
                                 
                                 {/* Call Controls */}
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
-                                    <div onClick={(e) => e.stopPropagation()}>
-                                        <CallControls />
-                                    </div>
+                                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-fadeIn">
+                                    <CustomCallControls onEndCall={handleEndCall} />
                                 </div>
                                 
-                                {/* Call Info */}
-                                <div className="absolute top-4 left-4 bg-black bg-opacity-60 text-white px-4 py-2 rounded-lg z-20">
-                                    <div className="text-sm">
-                                        <div className="font-semibold">
+                                {/* Call Info - Top Left */}
+                                <div className="absolute top-6 left-6 bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl text-white px-6 py-4 rounded-2xl z-20 border border-slate-700/50 shadow-2xl">
+                                    <div className="text-sm space-y-2">
+                                        <div className="font-semibold text-lg">
                                             {userType === 'student' 
-                                                ? `Dr. ${consultation.doctor.name}`
-                                                : consultation.student.user.name
+                                                ? `Dr. ${consultation?.doctor?.name || 'Doctor'}`
+                                                : consultation?.student?.user?.name || 'Student'
                                             }
                                         </div>
-                                        <div className="text-xs text-gray-300">
-                                                    <CallTimer /> • <span>{participantsCount} participant{participantsCount !== 1 ? 's' : ''}</span>
+                                        <div className="flex items-center gap-3 text-xs text-gray-300">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                <span>Connected</span>
+                                            </div>
+                                            <span>•</span>
+                                            <span><CallTimer /></span>
+                                            <span>•</span>
+                                            <span>{participantsCount} {participantsCount === 1 ? 'participant' : 'participants'}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </StreamCall>
-                    </StreamVideo>
+                        </div>
+
+                        {/* Patient Sidebar (Doctor only) */}
+                        {userType === 'doctor' && (
+                            <PatientSidebar 
+                                consultation={consultation}
+                                isOpen={sidebarOpen}
+                                onClose={() => setSidebarOpen(false)}
+                            />
+                        )}
+                    </div>
                 </div>
 
-                {/* Patient Sidebar (Doctor only) */}
-                {userType === 'doctor' && (
-                    <PatientSidebar 
-                        consultation={consultation}
-                        isOpen={sidebarOpen}
-                        onClose={() => setSidebarOpen(false)}
-                    />
-                )}
-            </div>
-        </div>
+                {/* Mobile View */}
+                <div className="md:hidden flex h-screen w-full flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-black">
+                    <div className="h-full w-full relative flex flex-col">
+                        {/* Video Container - Full Screen */}
+                        <div className="flex-1 relative">
+                            <SpeakerLayout />
+                        </div>
+                        
+                        {/* Mobile Bottom Controls */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 space-y-4">
+                            {/* Call Info */}
+                            <div className="flex items-center justify-between text-white px-4">
+                                <div>
+                                    <div className="font-semibold">
+                                        {userType === 'student' 
+                                            ? `Dr. ${consultation?.doctor?.name || 'Doctor'}`
+                                            : consultation?.student?.user?.name || 'Student'
+                                        }
+                                    </div>
+                                    <div className="text-xs text-gray-300 flex items-center gap-2">
+                                        <span><CallTimer /></span>
+                                        <span>•</span>
+                                        <span>{participantsCount} {participantsCount === 1 ? 'participant' : 'participants'}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span className="text-xs">Connected</span>
+                                </div>
+                            </div>
+
+                            {/* Controls */}
+                            <div className="flex justify-center">
+                                <CustomCallControls onEndCall={handleEndCall} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </StreamCall>
+        </StreamVideo>
     );
 };
 

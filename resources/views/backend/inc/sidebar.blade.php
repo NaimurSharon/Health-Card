@@ -153,6 +153,11 @@
                        {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
                         <span>General Settings</span>
                     </a>
+                    <a href="{{ route('admin.website-settings.index') }}" 
+                       class="sidebar-item flex items-center px-3 py-2 text-lg rounded-lg 
+                       {{ request()->routeIs('admin.website-settings.index') ? 'active' : '' }}">
+                        <span>Website Settings</span>
+                    </a>
                     <a href="{{ route('admin.health-report-fields.manage') }}" 
                        class="sidebar-item flex items-center px-3 py-2 text-lg rounded-lg 
                        {{ request()->routeIs('admin.health-report-fields.manage') ? 'active' : '' }}">

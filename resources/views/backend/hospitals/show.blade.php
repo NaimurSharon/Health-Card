@@ -25,6 +25,30 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Information -->
         <div class="lg:col-span-2 space-y-6">
+            <!-- Hospital Images Card -->
+            @if($hospital->images && count($hospital->images) > 0)
+            <div class="content-card rounded-lg p-6 shadow-sm">
+                <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4">Hospital Images</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    @foreach($hospital->images as $index => $image)
+                    <div class="relative group">
+                        <img src="{{ asset('public/storage/' . $image) }}" 
+                             alt="Hospital Image {{ $index + 1 }}"
+                             class="w-full h-32 object-cover rounded-lg border border-gray-300">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-300 flex items-center justify-center">
+                            <button type="button" 
+                                    onclick="viewImage('{{ asset('public/storage/' . $image) }}')"
+                                    class="opacity-0 group-hover:opacity-100 bg-white bg-opacity-90 rounded-full p-2 transition-all duration-300 transform scale-90 group-hover:scale-100">
+                                <i class="fas fa-expand text-gray-700 text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <p class="text-sm text-gray-500 mt-3 text-center">Total {{ count($hospital->images) }} images</p>
+            </div>
+            @endif
+
             <!-- Basic Information Card -->
             <div class="content-card rounded-lg p-6 shadow-sm">
                 <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4">Basic Information</h4>
@@ -49,7 +73,35 @@
                         <p class="mt-1 text-sm text-gray-900">{{ $hospital->doctors_count }} doctors</p>
                     </div>
                 </div>
+
+                <!-- Description -->
+                @if($hospital->description)
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-500 mb-2">Description</label>
+                    <p class="text-sm text-gray-700 leading-relaxed bg-gray-50 tiro rounded-lg p-4">nl2br(e({!! $hospital->description !!}))</p>
+                </div>
+                @endif
             </div>
+
+            <!-- YouTube Video Card -->
+            @if($hospital->youtube_video_url)
+            <div class="content-card rounded-lg p-6 shadow-sm">
+                <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4">Hospital Virtual Tour</h4>
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe 
+                        class="w-full h-64 md:h-80 rounded-lg"
+                        src="{{ $hospital->youtube_embed_url }}" 
+                        title="Hospital Virtual Tour"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <p class="text-sm text-gray-500 mt-3 text-center">
+                    Watch our virtual tour to learn more about our facilities and services
+                </p>
+            </div>
+            @endif
 
             <!-- Contact Information Card -->
             <div class="content-card rounded-lg p-6 shadow-sm">
@@ -158,9 +210,17 @@
             <!-- Profile Summary Card -->
             <div class="content-card rounded-lg p-6 shadow-sm">
                 <div class="text-center">
-                    <div class="mx-auto h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-hospital text-green-600 text-3xl"></i>
-                    </div>
+                    @if($hospital->images && count($hospital->images) > 0)
+                        <div class="mx-auto h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                            <img src="{{ asset('public/storage/' . $hospital->images[0]) }}" 
+                                 alt="{{ $hospital->name }}"
+                                 class="w-full h-full object-cover">
+                        </div>
+                    @else
+                        <div class="mx-auto h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-hospital text-green-600 text-3xl"></i>
+                        </div>
+                    @endif
                     <h3 class="text-lg font-semibold text-gray-900">{{ $hospital->name }}</h3>
                     <p class="text-sm text-gray-500">{{ $hospital->type_label }} Hospital</p>
                     
@@ -172,6 +232,10 @@
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-500">Total Doctors:</span>
                             <span class="font-medium text-gray-900">{{ $hospital->doctors_count }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Total Images:</span>
+                            <span class="font-medium text-gray-900">{{ $hospital->images ? count($hospital->images) : 0 }}</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-500">Member Since:</span>
@@ -201,6 +265,12 @@
                        class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
                         <i class="fas fa-phone mr-2"></i>Call Hospital
                     </a>
+                    @if($hospital->website)
+                    <a href="{{ $hospital->website }}" target="_blank"
+                       class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                        <i class="fas fa-globe mr-2"></i>Visit Website
+                    </a>
+                    @endif
                     @if($hospital->doctors_count == 0)
                         <form action="{{ route('admin.hospitals.destroy', $hospital) }}" method="POST" 
                               onsubmit="return confirm('Are you sure you want to delete this hospital?');">
@@ -230,15 +300,46 @@
                 <div class="text-center">
                     <div class="bg-red-50 rounded-lg p-4">
                         <i class="fas fa-ambulance text-red-500 text-2xl mb-2"></i>
-                        <p class="text-lg font-semibold text-red-700">{{ $hospital->emergency_contact }}</p>
+                        <p class="text-lg font-semibold text-red-700 emergency-contact cursor-pointer" 
+                           onclick="copyToClipboard('{{ $hospital->emergency_contact }}', this)">
+                            {{ $hospital->emergency_contact }}
+                        </p>
                         <p class="text-sm text-red-600 mt-1">24/7 Emergency Service</p>
                     </div>
                     <p class="text-xs text-gray-500 mt-3">
-                        Use this number for emergency situations only
+                        Click to copy emergency number
                     </p>
                 </div>
             </div>
+
+            <!-- YouTube Video Quick Link -->
+            @if($hospital->youtube_video_url)
+            <div class="content-card rounded-lg p-6 shadow-sm">
+                <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4">Virtual Tour</h4>
+                <div class="text-center">
+                    <a href="{{ $hospital->youtube_video_url }}" target="_blank"
+                       class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                        <i class="fab fa-youtube mr-2"></i>Watch Virtual Tour
+                    </a>
+                    <p class="text-xs text-gray-500 mt-3">
+                        Opens YouTube in new tab
+                    </p>
+                </div>
+            </div>
+            @endif
         </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+    <div class="relative max-w-4xl max-h-full mx-4">
+        <button type="button" 
+                onclick="closeImageModal()"
+                class="absolute -top-12 right-0 text-white text-2xl hover:text-gray-300 transition-colors">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="modalImage" src="" alt="Hospital Image" class="max-w-full max-h-screen object-contain rounded-lg">
     </div>
 </div>
 
@@ -253,25 +354,78 @@
     .table-header {
         border-bottom: 1px solid rgba(229, 231, 235, 0.6);
     }
+
+    .aspect-w-16 {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    }
+
+    .aspect-w-16 iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add copy to clipboard functionality for emergency contact
-        const emergencyContact = document.querySelector('.emergency-contact');
-        if (emergencyContact) {
-            emergencyContact.addEventListener('click', function() {
-                const text = this.textContent || this.innerText;
-                navigator.clipboard.writeText(text).then(function() {
-                    // Show copied notification
-                    const originalText = emergencyContact.innerHTML;
-                    emergencyContact.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
-                    setTimeout(() => {
-                        emergencyContact.innerHTML = originalText;
-                    }, 2000);
-                });
+        // Add smooth interactions
+        const imageCards = document.querySelectorAll('.content-card img');
+        imageCards.forEach(img => {
+            img.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
             });
+            
+            img.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    });
+
+    function viewImage(imageUrl) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        
+        modalImage.src = imageUrl;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modal on background click
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeImageModal();
         }
     });
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+
+    function copyToClipboard(text, element) {
+        navigator.clipboard.writeText(text).then(function() {
+            const originalText = element.innerHTML;
+            element.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+            element.classList.add('text-green-600');
+            
+            setTimeout(() => {
+                element.innerHTML = originalText;
+                element.classList.remove('text-green-600');
+            }, 2000);
+        }).catch(function() {
+            alert('Failed to copy text');
+        });
+    }
 </script>
 @endsection

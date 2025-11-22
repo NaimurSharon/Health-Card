@@ -17,6 +17,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Bootstrap JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -172,7 +173,7 @@
         }
         
         .tiro {
-          font-family: "Tiro Bangla", serif!important;
+          font-family: "Tiro Bangla", 'Inter'!important;
           font-weight: 400;
           font-style: normal;
         }
@@ -181,6 +182,10 @@
           font-family: "Tiro Bangla", serif;
           font-weight: 400;
           font-style: italic;
+        }
+        
+        .inter{
+            font-family: 'Inter', sans-serif;
         }
 
         
@@ -250,174 +255,8 @@
          class="fixed inset-0 z-40 bg-black/50 lg:hidden" x-transition.opacity></div>
     
     <div class="flex flex-col h-full">
-        <!-- Header with Navigation -->
-        <header class="header-blur sticky top-0 z-30">
-            <div class="flex items-center justify-between px-6 py-3">
-                <div class="flex items-center">
-                    <div class="flex items-center space-x-3">
-                        <img src="{{ Auth::user()?->school->logo ? asset('public/storage/' . Auth::user()->school->logo) : asset('public/storage/' . setting('site_favicon')) }}" 
-                             alt="School Logo" class="w-8 h-8 rounded">
-                        <div>
-                            <h1 class="text-xl font-bold tiro text-gray-900">{{ Auth::user()->school->name ?? setting('site_title') }}</h1>
-                            <p class="text-sm text-gray-600">Student Portal</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Desktop Navigation -->
-                <nav class="hidden lg:flex items-center space-x-1">
-                    <a href="{{ route('home') }}" 
-                       class="nav-link {{ Request::is('student/dashboard') ? 'active' : '' }}">
-                        <i class="fas fa-home me-2"></i>Home
-                    </a>
-                    <a href="{{ route('student.health-report') }}" 
-                       class="nav-link {{ Request::is('student/health-report*') ? 'active' : '' }}">
-                        <i class="fas fa-file-medical me-2"></i>Health Report
-                    </a>
-                    <a href="{{ route('student.id-card') }}" 
-                       class="nav-link {{ Request::is('student/id-card*') ? 'active' : '' }}">
-                        <i class="fas fa-id-card me-2"></i>ID Card
-                    </a>
-                    <a href="{{ route('student.school-notices') }}" 
-                       class="nav-link {{ Request::is('student/school-notices*') ? 'active' : '' }}">
-                        <i class="fas fa-school me-2"></i>School Notices
-                    </a>
-                    <a href="{{ route('student.city-notices') }}" 
-                       class="nav-link {{ Request::is('student/city-notices*') ? 'active' : '' }}">
-                        <i class="fas fa-city me-2"></i>City Notices
-                    </a>
-                    <a href="{{ route('student.school-diary') }}" 
-                       class="nav-link {{ Request::is('student/school-diary*') ? 'active' : '' }}">
-                        <i class="fas fa-book me-2"></i>School Diary
-                    </a>
-                    <a href="{{ route('student.hello-doctor') }}" 
-                       class="nav-link {{ Request::is('student/hello-doctor*') ? 'active' : '' }}">
-                        <i class="fas fa-user-md me-2"></i>Hello Doctor
-                    </a>
-                    <!--<a href="{{ route('student.scholarship') }}" -->
-                    <!--   class="nav-link {{ Request::is('student/scholarship*') ? 'active' : '' }}">-->
-                    <!--    <i class="fas fa-graduation-cap me-2"></i>Scholarship-->
-                    <!--</a>-->
-                    <a href="{{ route('student.scholarship.register') }}" 
-                       class="nav-link {{ Request::is('student/scholarship*') ? 'active' : '' }}">
-                        <i class="fas fa-graduation-cap me-2"></i>Register
-                    </a>
-                    
-                </nav>
-
-                <!-- Right side buttons -->
-                <div class="flex items-center space-x-4">
-                    <!-- Mobile menu button -->
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-2 text-gray-600 hover:text-gray-900">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    
-                    <div class="flex items-center space-x-3">
-                        <!-- User dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                                    <i class="fas fa-user text-white text-sm"></i>
-                                </div>
-                                <span class="text-sm font-medium text-gray-700 hidden md:block">{{ Auth::user()?->name }}</span>
-                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                            </button>
-                            
-                            <div x-show="open" @click.outside="open = false" 
-                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-user me-2"></i>My Profile
-                                </a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-cog me-2"></i>Settings
-                                </a>
-                                <div class="border-t border-gray-200"></div>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page Title Bar -->
-            <!--<div class="border-t border-gray-200/60">-->
-            <!--    <div class="px-6 py-3">-->
-            <!--        <div class="flex items-center justify-between">-->
-            <!--            <div>-->
-            <!--                <h2 class="text-lg font-semibold text-gray-900">@yield('title', 'Dashboard')</h2>-->
-            <!--                <p class="text-sm text-gray-600">@yield('subtitle', 'Welcome to your student portal')</p>-->
-            <!--            </div>-->
-            <!--            <div class="flex items-center space-x-2 text-sm text-gray-500">-->
-            <!--                <i class="fas fa-calendar"></i>-->
-            <!--                <span>{{ now()->format('l, F j, Y') }}</span>-->
-            <!--            </div>-->
-            <!--        </div>-->
-            <!--    </div>-->
-            <!--</div>-->
-        </header>
-
-        <!-- Mobile Navigation Menu -->
-        <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="lg:hidden fixed top-20 inset-x-4 z-40 mobile-menu rounded-lg shadow-xl" 
-             style="display: none;">
-            <div class="p-4 space-y-2">
-                <a href="{{ route('student.dashboard') }}" 
-                   class="nav-link block {{ Request::is('student/dashboard') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-home me-3"></i>Home
-                </a>
-                <a href="{{ route('student.health-report') }}" 
-                   class="nav-link block {{ Request::is('student/health-report*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-file-medical me-3"></i>Health Report
-                </a>
-                <a href="{{ route('student.id-card') }}" 
-                   class="nav-link block {{ Request::is('student/id-card*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-id-card me-3"></i>ID Card
-                </a>
-                <a href="{{ route('student.school-notices') }}" 
-                   class="nav-link block {{ Request::is('student/school-notices*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-school me-3"></i>School Notices
-                </a>
-                <a href="{{ route('student.city-notices') }}" 
-                   class="nav-link block {{ Request::is('student/city-notices*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-city me-3"></i>City Notices
-                </a>
-                <a href="{{ route('student.school-diary') }}" 
-                   class="nav-link block {{ Request::is('student/school-diary*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-book me-3"></i>School Diary
-                </a>
-                <a href="{{ route('student.hello-doctor') }}" 
-                   class="nav-link block {{ Request::is('student/hello-doctor*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-user-md me-3"></i>Hello Doctor
-                </a>
-                <a href="{{ route('student.scholarship') }}" 
-                   class="nav-link block {{ Request::is('student/scholarship*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-graduation-cap me-3"></i>Scholarship
-                </a>
-                <a href="{{ route('student.scholarship.register') }}"
-                   class="nav-link block {{ Request::is('student/scholarship*') ? 'active' : '' }}"
-                   @click="mobileMenuOpen = false">
-                    <i class="fas fa-graduation-cap me-3"></i>Register
-                </a>
-                
-                
-            </div>
-        </div>
+        
+        @include('student.inc.navbar')
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto scrollbar p-6">

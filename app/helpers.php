@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Setting;
+use App\Models\WebsiteSetting;
 
 if (!function_exists('setting')) {
     /**
@@ -24,5 +25,33 @@ if (!function_exists('setting')) {
         }
         
         return Setting::getValue($key, $default);
+    }
+}
+
+if (!function_exists('website_setting')) {
+    function website_setting($section, $key = null, $default = null)
+    {
+        if ($key === null) {
+            return WebsiteSetting::getSection($section);
+        }
+        
+        return WebsiteSetting::getValue($section, $key, $default);
+    }
+}
+
+if (!function_exists('detectLanguageClass')) {
+    function detectLanguageClass($text) {
+        if (empty($text)) {
+            return 'inter'; // Default to English font
+        }
+        
+        // Bengali Unicode range: U+0980 to U+09FF
+        $bengaliRegex = '/[\x{0980}-\x{09FF}]/u';
+        
+        if (preg_match($bengaliRegex, $text)) {
+            return 'tiro';
+        }
+        
+        return 'inter';
     }
 }

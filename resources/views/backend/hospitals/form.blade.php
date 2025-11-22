@@ -19,7 +19,7 @@
     <div class="content-card rounded-lg p-6 shadow-sm">
         <form id="hospital-form" 
               action="{{ ($hospital ?? null)?->exists ? route('admin.hospitals.update', ($hospital ?? null)) : route('admin.hospitals.store') }}" 
-              method="POST">
+              method="POST" enctype="multipart/form-data">
             @csrf
             @if(($hospital ?? null)?->exists)
                 @method('PUT')
@@ -138,6 +138,20 @@
                         </div>
                     </div>
 
+                    <!-- YouTube Video URL -->
+                    <div>
+                        <label for="youtube_video_url" class="block text-sm font-medium text-gray-700 mb-2">YouTube Video URL</label>
+                        <input type="url" name="youtube_video_url" id="youtube_video_url" 
+                               value="{{ old('youtube_video_url', ($hospital->youtube_video_url ?? '')) }}"
+                               class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm 
+                                      focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                               placeholder="https://www.youtube.com/embed/example">
+                        <p class="mt-1 text-xs text-gray-500">Enter YouTube embed URL for virtual tour</p>
+                        @error('youtube_video_url')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Address -->
                     <div>
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
@@ -146,6 +160,23 @@
                                        focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                 placeholder="Enter full hospital address">{{ old('address', ($hospital->address ?? '')) }}</textarea>
                         @error('address')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="space-y-4">
+                    <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-2">Hospital Description</h4>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea name="description" id="description" rows="4"
+                            class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm 
+                                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                            placeholder="Enter hospital description...">{!! old('description', $hospital->description ?? '') !!}</textarea>
+
+                        @error('description')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -162,6 +193,7 @@
                                 class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm 
                                        focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                 placeholder="List hospital services (comma separated)...">{{ old('services', is_array(($hospital->services ?? '')) ? implode(', ', ($hospital->services ?? [])) : ($hospital->services ?? '')) }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500">Enter services separated by commas (e.g., Emergency, Surgery, Cardiology)</p>
                         @error('services')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -179,6 +211,51 @@
                         @enderror
                     </div>
                 </div>
+
+                <!-- Images Section -->
+                <div class="space-y-4">
+                    <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-2">Hospital Images</h4>
+                    
+                    <!-- Existing Images -->
+                    @if(($hospital ?? null)?->exists && $hospital->images)
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Current Images</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                @foreach($hospital->images as $index => $image)
+                                    <div class="relative group">
+                                        <img src="{{ asset('public/storage/' . $image) }}" 
+                                             alt="Hospital Image {{ $index + 1 }}"
+                                             class="w-full h-32 object-cover rounded-lg border border-gray-300">
+                                        <button type="button" 
+                                                onclick="removeImage({{ $index }})"
+                                                class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                            ×
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                
+                    <!-- New Image Upload -->
+                    <div>
+                        <label for="images" class="block text-sm font-medium text-gray-700 mb-2">Upload New Images</label>
+                        <input type="file" name="images[]" id="images" multiple
+                               class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm 
+                                      focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                               accept="image/*">
+                        <p class="mt-1 text-xs text-gray-500">You can select multiple images. Maximum file size: 2MB each</p>
+                        @error('images')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('images.*')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                
+                    <!-- Image Preview -->
+                    <div id="image-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 hidden"></div>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -195,7 +272,6 @@
         </form>
     </div>
 </div>
-
 
 <style>
     .content-card {
@@ -224,6 +300,71 @@
                 this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-lg');
             });
         });
+
+        // Image preview functionality
+        const imageInput = document.getElementById('images');
+        const imagePreview = document.getElementById('image-preview');
+
+        imageInput.addEventListener('change', function() {
+            imagePreview.innerHTML = '';
+            imagePreview.classList.add('hidden');
+
+            if (this.files.length > 0) {
+                imagePreview.classList.remove('hidden');
+                
+                Array.from(this.files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'relative group';
+                            div.innerHTML = `
+                                <img src="${e.target.result}" 
+                                     alt="Preview" 
+                                     class="w-full h-32 object-cover rounded-lg border border-gray-300">
+                                <button type="button" 
+                                        onclick="this.parentElement.remove()"
+                                        class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ×
+                                </button>
+                            `;
+                            imagePreview.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
     });
+    
+    const removeImageUrl = "{{ route('admin.hospitals.removeImage', ['hospital' => $hospital->id, 'imageIndex' => '___INDEX___']) }}";
+    // Remove image function
+    function removeImage(index) {
+    if (confirm('Are you sure you want to delete this image?')) {
+
+        let url = removeImageUrl.replace('___INDEX___', index);
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error deleting image');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting image');
+        });
+    }
+}
+
 </script>
 @endsection
