@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
 
+=======
+>>>>>>> c356163 (video call ui setup)
     <title>Health Card - {{ $healthCard->card_number }}</title>
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('public/storage/' . setting('site_favicon', 'logo/amardesh-shadhinotar-kotha-bole.webp')) }}" type="image/webp">
     
+<<<<<<< HEAD
         <!-- Inter Font -->
+=======
+    <!-- Fonts -->
+>>>>>>> c356163 (video call ui setup)
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -26,8 +33,14 @@
             .no-print { 
                 display: none !important; 
             }
+<<<<<<< HEAD
             .card-container { 
                 margin: 0 !important;
+=======
+            .health-card-container { 
+                margin: 0 !important;
+                
+>>>>>>> c356163 (video call ui setup)
                 box-shadow: none !important;
                 border: none !important;
                 page-break-inside: avoid;
@@ -68,7 +81,11 @@
         }
         
         .tiro {
+<<<<<<< HEAD
           font-family: "Tiro Bangla", serif!important;
+=======
+          font-family: "Tiro Bangla", 'Inter'!important;
+>>>>>>> c356163 (video call ui setup)
           font-weight: 400;
           font-style: normal;
         }
@@ -79,6 +96,13 @@
           font-style: italic;
         }
         
+<<<<<<< HEAD
+=======
+        .inter{
+            font-family: 'Inter', sans-serif;
+        }
+        
+>>>>>>> c356163 (video call ui setup)
         .no-print {
             position: fixed;
             top: 20px;
@@ -114,6 +138,7 @@
             color: white;
         }
         
+<<<<<<< HEAD
         .card-container {
             width: 85mm;
             height: 54mm;
@@ -243,16 +268,106 @@
         .info-section {
             flex: 1;
             min-width: 0;
+=======
+        .health-card-container {
+            width: 400px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Header Styles */
+        .health-card-header {
+            text-align: center;
+            padding: 24px;
+        }
+        
+        .health-card-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #16a34a;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .health-card-subtitle {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        
+        .mayor-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #dc2626;
+            margin-bottom: 4px;
+        }
+        
+        .mayor-title {
+            font-size: 12px;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        
+        .school-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #dc2626;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+        
+        .student-id-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        /* Student Info Section */
+        .student-info-section {
+            padding: 0 24px 24px;
+        }
+        
+        .student-info-container {
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 20px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .student-info-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 16px;
+>>>>>>> c356163 (video call ui setup)
         }
         
         .info-grid {
             display: grid;
             grid-template-columns: 1fr;
+<<<<<<< HEAD
             gap: 1mm;
+=======
+            gap: 8px;
+>>>>>>> c356163 (video call ui setup)
         }
         
         .info-row {
             display: flex;
+<<<<<<< HEAD
             align-items: center;
             padding: 0.5mm 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -361,11 +476,84 @@
         .blood-group {
             color: #e74c3c;
             font-weight: 700;
+=======
+            align-items: flex-start;
+        }
+        
+        .info-label {
+            width: 40%;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        
+        .info-value {
+            width: 60%;
+            font-weight: 600;
+            color: #111827;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        
+        .blood-group-value {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        
+        .expiry-section {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .expiry-text {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .expiry-date {
+            font-weight: 600;
+            color: #374151;
+>>>>>>> c356163 (video call ui setup)
         }
         
         .hidden {
             display: none !important;
         }
+<<<<<<< HEAD
+=======
+
+        /* Print optimizations */
+        @media print {
+            .health-card-container {
+                width: 100% !important;
+                max-width: 400px !important;
+                border-radius: 8px;
+                box-shadow: none !important;
+                border: 1px solid #e5e7eb !important;
+            }
+            
+            .health-card-header {
+                padding: 20px !important;
+            }
+            
+            .student-info-section {
+                padding: 0 20px 20px !important;
+            }
+            
+            .health-card-title {
+                font-size: 22px !important;
+            }
+            
+            .mayor-name {
+                font-size: 18px !important;
+            }
+            
+            .school-name {
+                font-size: 15px !important;
+            }
+        }
+>>>>>>> c356163 (video call ui setup)
     </style>
 </head>
 <body>
@@ -379,6 +567,7 @@
     </div>
 
     <div class="print-page">
+<<<<<<< HEAD
         <div class="card-container">
             <!-- Expiry Badge -->
             <div class="expiry-badge">
@@ -486,6 +675,90 @@
                     <div class="signature-section">
                         <div class="signature-line"></div>
                         <div class="signature-text">MEDICAL OFFICER</div>
+=======
+        <div class="health-card-container">
+            <!-- Header Section -->
+            <div class="health-card-header">
+                <h1 class="health-card-title tiro">
+                    স্কুল শিক্ষার্থীর স্বাস্থ্য কার্ড
+                </h1>
+                <p class="health-card-subtitle inter">
+                    School's Student Health Card
+                </p>
+                
+                <h2 class="mayor-name tiro">
+                    ডা. শাহাদাত হোসেন
+                </h2>
+                <p class="mayor-title tiro">
+                    মেয়র, চট্টগ্রাম সিটি কর্পোরেশন
+                </p>
+                
+                <h3 class="school-name tiro">
+                    {{ Auth::user()->school->name ?? 'গুল এজার বেগম সিটি কর্পোরেশন মুসলিম বালিকা উচ্চ বিদ্যালয়' }}
+                </h3>
+                
+                <div class="student-id-section inter">
+                    <span class="tiro">ID NO :</span>
+                    <span class="font-bold">0233366831</span>
+                </div>
+            </div>
+            
+            <!-- Student Information Section -->
+            <div class="student-info-section">
+                <div class="student-info-container">
+                    <h4 class="student-info-title tiro">
+                        শিক্ষার্থীর পরিচয়
+                    </h4>
+                    
+                    <div class="info-grid">
+                        <!-- Student Name -->
+                        <div class="info-row">
+                            <span class="info-label tiro">শিক্ষার্থীর নাম</span>
+                            <span class="info-value {{ detectLanguageClass(Auth::user()->name) }}">: {{ Auth::user()->name }}</span>
+                        </div>
+                        
+                        <!-- Date of Birth -->
+                        <div class="info-row">
+                            <span class="info-label tiro">জন্ম তারিখ</span>
+                            <span class="info-value inter">: {{ Auth::user()->student->date_of_birth ? \Carbon\Carbon::parse(Auth::user()->student->date_of_birth)->format('d/m/Y') : 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Blood Group -->
+                        <div class="info-row">
+                            <span class="info-label tiro">রক্তের গ্রুপ</span>
+                            <span class="info-value blood-group-value inter">: {{ Auth::user()->student->blood_group ?? 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Father's Name -->
+                        <div class="info-row">
+                            <span class="info-label tiro">পিতার নাম</span>
+                            <span class="info-value {{ detectLanguageClass(Auth::user()->student->father_name ?? 'N/A') }}">: {{ Auth::user()->student->father_name ?? 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Mother's Name -->
+                        <div class="info-row">
+                            <span class="info-label tiro">মাতার নাম</span>
+                            <span class="info-value {{ detectLanguageClass(Auth::user()->student->mother_name ?? 'N/A') }}">: {{ Auth::user()->student->mother_name ?? 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Mobile Number -->
+                        <div class="info-row">
+                            <span class="info-label tiro">মোবাইল নং</span>
+                            <span class="info-value inter">: {{ Auth::user()->student->emergency_contact ?? Auth::user()->phone ?? 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Class -->
+                        <div class="info-row">
+                            <span class="info-label tiro">শ্রেণি</span>
+                            <span class="info-value {{ detectLanguageClass(Auth::user()->student->class->name ?? 'N/A') }}">: {{ Auth::user()->student->class->name ?? 'N/A' }}</span>
+                        </div>
+                        
+                        <!-- Section -->
+                        <div class="info-row">
+                            <span class="info-label tiro">শাখা</span>
+                            <span class="info-value {{ detectLanguageClass(Auth::user()->student->section->name ?? 'N/A') }}">: {{ Auth::user()->student->section->name ?? 'N/A' }}</span>
+                        </div>
+>>>>>>> c356163 (video call ui setup)
                     </div>
                 </div>
             </div>

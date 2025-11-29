@@ -11,6 +11,10 @@ class ClassDiary extends Model
         'class_id', 
         'section_id',
         'subject_id',
+<<<<<<< HEAD
+=======
+        'school_id',
+>>>>>>> c356163 (video call ui setup)
         'entry_date',
         'homework_title',
         'homework_description',
@@ -30,6 +34,14 @@ class ClassDiary extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+<<<<<<< HEAD
+=======
+    
+    public function school()
+    {
+        return $this->belongsTo(School::class, 'school_id');
+    }
+>>>>>>> c356163 (video call ui setup)
 
     public function class()
     {

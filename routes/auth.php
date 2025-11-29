@@ -5,6 +5,11 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\Auth\StudentLoginController;
+use App\Http\Controllers\LoginController;
+>>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -21,6 +26,25 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+<<<<<<< HEAD
+=======
+    
+    Route::post('/global_register', [LoginController::class, 'register'])->name('global.register');
+    
+    Route::get('/auth-login', [StudentLoginController::class, 'create'])
+        ->name('auth.login');
+        
+    Route::post('/global-register', [LoginController::class, 'register'])->name('global.register');
+    
+    Route::get('/global-signup', [LoginController::class, 'showRegister'])->name('global.signup');
+    
+    Route::post('/auth-login', [LoginController::class, 'store'])
+        ->name('auth.login.submit');
+        
+    Route::post('/student-login/logging', [StudentLoginController::class, 'store'])
+        ->name('student.login.submit');
+        
+>>>>>>> c356163 (video call ui setup)
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

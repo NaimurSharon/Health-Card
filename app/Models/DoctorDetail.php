@@ -22,7 +22,12 @@ class DoctorDetail extends Model
         'department',
         'designation',
         'max_patients_per_day',
+<<<<<<< HEAD
         'is_available'
+=======
+        'is_available',
+        'signature'
+>>>>>>> c356163 (video call ui setup)
     ];
 
     protected $casts = [
@@ -32,7 +37,12 @@ class DoctorDetail extends Model
         'specializations' => 'array',
         'languages' => 'array',
         'is_available' => 'boolean',
+<<<<<<< HEAD
         'max_patients_per_day' => 'integer'
+=======
+        'max_patients_per_day' => 'integer',
+        'signature' => 'string'
+>>>>>>> c356163 (video call ui setup)
     ];
 
     public function user()
@@ -91,4 +101,8 @@ class DoctorDetail extends Model
             return 'Other';
         }
     }
+<<<<<<< HEAD
+=======
+    
+>>>>>>> c356163 (video call ui setup)
 }

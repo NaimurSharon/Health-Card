@@ -1,6 +1,10 @@
 <?php
 
+<<<<<<< HEAD
 namespace App\Http\Controllers\Student;
+=======
+namespace App\Http\Controllers;
+>>>>>>> c356163 (video call ui setup)
 
 use App\Http\Controllers\Controller;
 use App\Models\ScholarshipRegistration;
@@ -21,12 +25,17 @@ class ScholarshipController extends Controller
             ->orderBy('application_date', 'desc')
             ->paginate(10);
 
+<<<<<<< HEAD
         return view('student.scholarship.index', compact('applications'));
+=======
+        return view('frontend.scholarship.index', compact('applications'));
+>>>>>>> c356163 (video call ui setup)
     }
     
         // Show registration form with exam information
     public function showRegistration()
     {
+<<<<<<< HEAD
         $user = Auth::user();
         
         if ($user->role === 'student') {
@@ -34,6 +43,8 @@ class ScholarshipController extends Controller
         } else {
             return redirect()->route('admin.dashboard');
         }
+=======
+>>>>>>> c356163 (video call ui setup)
 
         // Check if already registered
         $existingRegistration = ScholarshipRegistration::where('student_id', $student->id)
@@ -53,7 +64,11 @@ class ScholarshipController extends Controller
             ->where('exam_date', '>=', now())
             ->get();
 
+<<<<<<< HEAD
         return view('student.scholarship.register', compact('availableExams'));
+=======
+        return view('frontend.scholarship.register', compact('availableExams'));
+>>>>>>> c356163 (video call ui setup)
     }
 
     // Submit registration
@@ -119,7 +134,11 @@ class ScholarshipController extends Controller
             return redirect()->route('student.scholarship.register');
         }
 
+<<<<<<< HEAD
         return view('student.scholarship.status', compact('registration'));
+=======
+        return view('frontend.scholarship.status', compact('registration'));
+>>>>>>> c356163 (video call ui setup)
     }
 
     public function exams()
@@ -135,7 +154,11 @@ class ScholarshipController extends Controller
             ->pluck('scholarship_exam_id')
             ->toArray();
 
+<<<<<<< HEAD
         return view('student.scholarship.exams', compact('upcomingExams', 'appliedExamIds'));
+=======
+        return view('frontend.scholarship.exams', compact('upcomingExams', 'appliedExamIds'));
+>>>>>>> c356163 (video call ui setup)
     }
 
     public function apply($examId)

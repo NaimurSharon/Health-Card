@@ -42,6 +42,9 @@ class AuthenticatedSessionController extends Controller
                 
             case 'teacher':
                 return redirect()->route('teacher.dashboard');
+                
+            case 'principal':
+                return redirect()->route('principal.dashboard');
     
             default:
                 Auth::logout();

@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+<<<<<<< HEAD
 const api = axios.create({
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
+=======
+// Get CSRF token from meta tag
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+const api = axios.create({
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrfToken
+>>>>>>> c356163 (video call ui setup)
     }
 });
 

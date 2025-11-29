@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 @extends('layouts.app')
+=======
+@extends('layouts.teacher')
+>>>>>>> c356163 (video call ui setup)
 
 @section('title', 'Homework Management')
 

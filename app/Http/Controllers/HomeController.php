@@ -26,7 +26,11 @@ class HomeController extends Controller
         $studentDetails = $student?->student; // null if not logged in
     
         // School Information
+<<<<<<< HEAD
         if ($student) {
+=======
+        if ($studentDetails) {
+>>>>>>> c356163 (video call ui setup)
             $school = $student->school;
             $schoolId = $student->school_id;
         } else {
@@ -144,7 +148,11 @@ class HomeController extends Controller
                 ->get();
         }
     
+<<<<<<< HEAD
         return view('student.home', compact(
+=======
+        return view('frontend.home', compact(
+>>>>>>> c356163 (video call ui setup)
             'school',
             'class',
             'section',

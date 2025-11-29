@@ -1,0 +1,589 @@
+Replace basic implementation with polished UI components:
+// Updated App.tsx - Production Ready
+import {
+  CallControls,
+  CallingState,
+  SpeakerLayout,
+  StreamCall,
+  StreamTheme,
+  StreamVideo,
+  StreamVideoClient,
+  useCallStateHooks,
+  type User,
+  useCall,
+  ParticipantView,
+} from '@stream-io/video-react-sdk';
+
+import '@stream-io/video-react-sdk/dist/css/styles.css';
+import './layout.css'; // We'll create this
+
+const apiKey = 'mmhfdzb5evj2';
+const token = 'your_token_here';
+const userId = 'current_user_id';
+const callId = 'dynamic_call_id'; // This should be dynamic in production
+
+// User setup
+const user: User = {
+  id: userId,
+  name: 'Current User',
+  image: 'https://getstream.io/random_svg/?id=user&name=User',
+};
+
+// Client initialization - should be outside component to avoid re-renders
+const client = new StreamVideoClient({ apiKey, user, token });
+
+export default function VideoCallApp() {
+  return (
+    <StreamVideo client={client}>
+      <VideoCallLayout />
+    </StreamVideo>
+  );
+}
+
+export const VideoCallLayout = () => {
+  // In production, callId should come from props/params
+  const call = client.call('default', callId);
+  
+  const joinCall = async () => {
+    try {
+      await call.join({ create: true });
+    } catch (error) {
+      console.error('Failed to join call:', error);
+    }
+  };
+
+  return (
+    <StreamCall call={call}>
+      <ProductionCallUI onJoinCall={joinCall} />
+    </StreamCall>
+  );
+};
+
+export const ProductionCallUI = ({ onJoinCall }: { onJoinCall: () => void }) => {
+  const { useCallCallingState, useParticipants } = useCallStateHooks();
+  const callingState = useCallCallingState();
+  const participants = useParticipants();
+
+  // Handle call states
+  if (callingState === CallingState.IDLE) {
+    return (
+      <div className="call-lobby">
+        <h2>Ready to join call?</h2>
+        <button onClick={onJoinCall} className="join-button">
+          Join Call
+        </button>
+      </div>
+    );
+  }
+
+  if (callingState === CallingState.JOINING) {
+    return (
+      <div className="loading-state">
+        <div className="spinner"></div>
+        <p>Joining call...</p>
+      </div>
+    );
+  }
+
+  if (callingState === CallingState.JOINED) {
+    return (
+      <StreamTheme>
+        <div className="video-call-container">
+          <SpeakerLayout 
+            participantsBarPosition="bottom"
+            participantsBarLimit={6}
+          />
+          <div className="call-controls-wrapper">
+            <CallControls />
+          </div>
+          <CallStats />
+          <NetworkIndicator />
+        </div>
+      </StreamTheme>
+    );
+  }
+
+  return <div>Unexpected state: {callingState}</div>;
+};
+Create layout.css for professional styling:
+/* layout.css - Production Ready Styles */
+body, html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f0f;
+}
+
+.str-video {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.video-call-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.call-lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.join-button {
+  background: #005fff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.2s;
+}
+
+.join-button:hover {
+  background: #004ecc;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #1a1a1a;
+  color: white;
+}
+
+.spinner {
+  border: 3px solid #333;
+  border-top: 3px solid #005fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.call-controls-wrapper {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+/* Custom participant view enhancements */
+.str-video__participant-view {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.str-video__participant-view:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Network indicator */
+.network-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 1000;
+}
+
+.network-good {
+  background: #10b981;
+  color: white;
+}
+
+.network-poor {
+  background: #f59e0b;
+  color: white;
+}
+
+.network-bad {
+  background: #ef4444;
+  color: white;
+}
+
+Create additional components for production features:
+// AdditionalComponents.tsx
+import { useCallStateHooks, useCall, CallingState } from '@stream-io/video-react-sdk';
+
+// Network quality indicator
+export const NetworkIndicator = () => {
+  const { useNetworkState } = useCallStateHooks();
+  const networkState = useNetworkState();
+  
+  const getNetworkStatus = () => {
+    if (!networkState) return { quality: 'unknown', text: 'Network: Checking...' };
+    
+    const { quality } = networkState;
+    switch (quality) {
+      case 'excellent':
+      case 'good':
+        return { quality: 'good', text: 'Network: Good' };
+      case 'poor':
+        return { quality: 'poor', text: 'Network: Poor' };
+      case 'bad':
+        return { quality: 'bad', text: 'Network: Bad' };
+      default:
+        return { quality: 'unknown', text: 'Network: Unknown' };
+    }
+  };
+
+  const status = getNetworkStatus();
+  
+  return (
+    <div className={`network-indicator network-${status.quality}`}>
+      {status.text}
+    </div>
+  );
+};
+
+// Call statistics component
+export const CallStats = () => {
+  const call = useCall();
+  const { useParticipants, useCallCallingState } = useCallStateHooks();
+  const participants = useParticipants();
+  const callingState = useCallCallingState();
+
+  if (callingState !== CallingState.JOINED) return null;
+
+  return (
+    <div className="call-stats">
+      <div className="stat-item">
+        <span className="stat-label">Participants:</span>
+        <span className="stat-value">{participants.length}</span>
+      </div>
+      <div className="stat-item">
+        <span className="stat-label">Call ID:</span>
+        <span className="stat-value">{call?.id}</span>
+      </div>
+    </div>
+  );
+};
+
+// Custom call controls with additional features
+export const EnhancedCallControls = () => {
+  const call = useCall();
+  
+  const handleScreenShare = async () => {
+    try {
+      await call?.toggleScreenShare();
+    } catch (error) {
+      console.error('Screen share failed:', error);
+    }
+  };
+
+  const handleRecordCall = async () => {
+    try {
+      await call?.startRecording();
+    } catch (error) {
+      console.error('Recording failed:', error);
+    }
+  };
+
+  return (
+    <div className="enhanced-controls">
+      <CallControls />
+      <div className="additional-controls">
+        <button onClick={handleScreenShare} className="control-button">
+          📺 Share
+        </button>
+        <button onClick={handleRecordCall} className="control-button">
+          ⏺️ Record
+        </button>
+      </div>
+    </div>
+  );
+};
+
+Add comprehensive error handling:
+// ErrorHandling.tsx
+import { useState, useEffect } from 'react';
+import { useCallStateHooks, CallingState } from '@stream-io/video-react-sdk';
+
+export const ErrorBoundaryUI = () => {
+  const { useCallCallingState } = useCallStateHooks();
+  const callingState = useCallCallingState();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (callingState === CallingState.JOINED) {
+      setError(null);
+    }
+  }, [callingState]);
+
+  // Render different error states
+  if (error) {
+    return (
+      <div className="error-state">
+        <h3>Call Error</h3>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>
+          Reconnect
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export const useCallHealthCheck = () => {
+  const call = useCall();
+  const [isHealthy, setIsHealthy] = useState(true);
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        // Simple health check - you might want more sophisticated checks
+        const participants = call?.state.participants;
+        if (participants && Object.keys(participants).length > 0) {
+          setIsHealthy(true);
+        }
+      } catch (error) {
+        setIsHealthy(false);
+        console.error('Call health check failed:', error);
+      }
+    };
+
+    const interval = setInterval(checkHealth, 30000); // Check every 30 seconds
+    return () => clearInterval(interval);
+  }, [call]);
+
+  return isHealthy;
+};
+
+Create reusable hooks for common functionality:
+// CustomHooks.tsx
+import { useState, useEffect } from 'react';
+import { useCallStateHooks, useCall } from '@stream-io/video-react-sdk';
+
+// Hook for managing participant states
+export const useParticipantManagement = () => {
+  const { useParticipants, useLocalParticipant } = useCallStateHooks();
+  const participants = useParticipants();
+  const localParticipant = useLocalParticipant();
+  const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Find active speaker
+    const speaker = participants.find(p => p.isSpeaking);
+    if (speaker) {
+      setActiveSpeaker(speaker.sessionId);
+    }
+  }, [participants]);
+
+  return {
+    participants,
+    localParticipant,
+    activeSpeaker,
+    remoteParticipants: participants.filter(p => !p.isLocalParticipant),
+  };
+};
+
+// Hook for call state management
+export const useCallManagement = () => {
+  const call = useCall();
+  const { useCallCallingState } = useCallStateHooks();
+  const callingState = useCallCallingState();
+
+  const leaveCall = async () => {
+    try {
+      await call?.leave();
+    } catch (error) {
+      console.error('Error leaving call:', error);
+    }
+  };
+
+  const toggleAudio = async () => {
+    try {
+      await call?.microphone.toggle();
+    } catch (error) {
+      console.error('Error toggling audio:', error);
+    }
+  };
+
+  const toggleVideo = async () => {
+    try {
+      await call?.camera.toggle();
+    } catch (error) {
+      console.error('Error toggling video:', error);
+    }
+  };
+
+  return {
+    callingState,
+    leaveCall,
+    toggleAudio,
+    toggleVideo,
+    isAudioEnabled: call?.microphone.state.status === 'enabled',
+    isVideoEnabled: call?.camera.state.status === 'enabled',
+  };
+};
+
+Complete production-ready App.tsx:
+// Final App.tsx - Production Ready
+import React from 'react';
+import {
+  CallControls,
+  CallingState,
+  SpeakerLayout,
+  StreamCall,
+  StreamTheme,
+  StreamVideo,
+  StreamVideoClient,
+  type User,
+} from '@stream-io/video-react-sdk';
+
+import '@stream-io/video-react-sdk/dist/css/styles.css';
+import './layout.css';
+import { NetworkIndicator, CallStats, EnhancedCallControls } from './AdditionalComponents';
+import { ErrorBoundaryUI, useCallHealthCheck } from './ErrorHandling';
+import { useParticipantManagement, useCallManagement } from './CustomHooks';
+
+// Configuration - in production, these should come from environment variables
+const apiKey = process.env.REACT_APP_STREAM_API_KEY || 'mmhfdzb5evj2';
+const token = process.env.REACT_APP_STREAM_TOKEN;
+const userId = process.env.REACT_APP_USER_ID;
+
+const user: User = {
+  id: userId || 'anonymous',
+  name: 'User',
+  image: 'https://getstream.io/random_svg/?id=user&name=User',
+};
+
+const client = new StreamVideoClient({ apiKey, user, token });
+
+interface VideoCallAppProps {
+  callId: string;
+  onCallEnd?: () => void;
+}
+
+export default function VideoCallApp({ callId, onCallEnd }: VideoCallAppProps) {
+  return (
+    <StreamVideo client={client}>
+      <CallWrapper callId={callId} onCallEnd={onCallEnd} />
+    </StreamVideo>
+  );
+}
+
+const CallWrapper = ({ callId, onCallEnd }: VideoCallAppProps) => {
+  const call = client.call('default', callId);
+  
+  React.useEffect(() => {
+    // Auto-join call when component mounts
+    const joinCall = async () => {
+      try {
+        await call.join({ create: true });
+      } catch (error) {
+        console.error('Failed to join call:', error);
+      }
+    };
+
+    joinCall();
+
+    // Cleanup on unmount
+    return () => {
+      call.leave().catch(console.error);
+    };
+  }, [call]);
+
+  return (
+    <StreamCall call={call}>
+      <ProductionCallUI onCallEnd={onCallEnd} />
+    </StreamCall>
+  );
+};
+
+const ProductionCallUI = ({ onCallEnd }: { onCallEnd?: () => void }) => {
+  const { callingState } = useCallManagement();
+  const isHealthy = useCallHealthCheck();
+
+  // Handle different call states
+  if (!isHealthy) {
+    return (
+      <div className="error-state">
+        <h3>Connection Issues</h3>
+        <p>Attempting to reconnect...</p>
+      </div>
+    );
+  }
+
+  if (callingState === CallingState.JOINING) {
+    return (
+      <div className="loading-state">
+        <div className="spinner"></div>
+        <p>Connecting to call...</p>
+      </div>
+    );
+  }
+
+  if (callingState === CallingState.JOINED) {
+    return (
+      <StreamTheme>
+        <div className="video-call-container">
+          <SpeakerLayout 
+            participantsBarPosition="bottom"
+            participantsBarLimit={8}
+            highlightedParticipant={activeSpeaker}
+          />
+          <div className="call-controls-wrapper">
+            <EnhancedCallControls />
+          </div>
+          <NetworkIndicator />
+          <CallStats />
+          <ErrorBoundaryUI />
+        </div>
+      </StreamTheme>
+    );
+  }
+
+  if (callingState === CallingState.LEFT) {
+    React.useEffect(() => {
+      onCallEnd?.();
+    }, [onCallEnd]);
+
+    return (
+      <div className="call-ended">
+        <h2>Call Ended</h2>
+        <button onClick={() => window.location.reload()}>
+          Start New Call
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="loading-state">
+      <p>Initializing call...</p>
+    </div>
+  );
+};

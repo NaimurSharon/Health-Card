@@ -6,7 +6,11 @@ use App\Models\CityCorporationNotice;
 use App\Models\School;
 use Illuminate\Http\Request;
 
+<<<<<<< HEAD
 class CityCorporationNoticeController extends Controller
+=======
+class AdminCityCorporationNoticeController extends Controller
+>>>>>>> c356163 (video call ui setup)
 {
     public function index()
     {

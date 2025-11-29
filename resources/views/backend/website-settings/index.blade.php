@@ -61,6 +61,7 @@
                                 Enter the YouTube playlist ID (found in the playlist URL)
                             </p>
                         </div>
+<<<<<<< HEAD
 
                         <!-- YouTube Playlist URL -->
                         <div>
@@ -74,12 +75,37 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Hero Title -->
+=======
+                        
+>>>>>>> c356163 (video call ui setup)
                         <div>
                             <label for="hero_title" class="block text-sm font-medium text-gray-700 mb-2">Hero Title</label>
                             <input type="text" name="hero_title" id="hero_title" 
                                    value="{{ old('hero_title', website_setting('hero', 'hero_title')) }}"
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                         </div>
+<<<<<<< HEAD
+=======
+                        <!-- YouTube Playlist URL -->
+                        <!--<div>-->
+                        <!--    <label for="youtube_playlist_url" class="block text-sm font-medium text-gray-700 mb-2">YouTube Playlist URL</label>-->
+                        <!--    <input type="url" name="youtube_playlist_url" id="youtube_playlist_url" -->
+                        <!--           value="{{ old('youtube_playlist_url', website_setting('hero', 'youtube_playlist_url')) }}"-->
+                        <!--           placeholder="https://www.youtube.com/playlist?list=..."-->
+                        <!--           class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">-->
+                        <!--</div>-->
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- CTA Button Link -->
+                        <div>
+                            <label for="cta_button_link" class="block text-sm font-medium text-gray-700 mb-2">CTA Button Link</label>
+                            <input type="text" name="cta_button_link" id="cta_button_link" 
+                                   value="{{ old('cta_button_link', website_setting('hero', 'cta_button_link')) }}"
+                                   placeholder="/register or https://..."
+                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+                        </div>
+>>>>>>> c356163 (video call ui setup)
 
                         <!-- CTA Button Text -->
                         <div>
@@ -100,6 +126,7 @@
                         </p>
                     </div>
 
+<<<<<<< HEAD
                     <!-- CTA Button Link -->
                     <div>
                         <label for="cta_button_link" class="block text-sm font-medium text-gray-700 mb-2">CTA Button Link</label>
@@ -109,6 +136,8 @@
                                class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                     </div>
 
+=======
+>>>>>>> c356163 (video call ui setup)
                     <!-- YouTube Auto Play -->
                     <div class="flex items-center space-x-3">
                         <input type="checkbox" name="youtube_auto_play" id="youtube_auto_play" value="1"

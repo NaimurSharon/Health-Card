@@ -254,9 +254,15 @@
             @if(auth()->user()->role === 'admin')
                 @include('backend.inc.sidebar')
             @elseif(auth()->user()->role === 'teacher')  
+<<<<<<< HEAD
                 @include('backend.inc.sidebar-teacher')
             @elseif(auth()->user()->role === 'doctor')
                 @include('backend.inc.sidebar-doctor')
+=======
+                @include('teacher.inc.sidebar-teacher')
+            @elseif(auth()->user()->role === 'doctor')
+                @include('doctor.inc.sidebar-doctor')
+>>>>>>> c356163 (video call ui setup)
             @endif
         @endauth
 

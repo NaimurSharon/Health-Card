@@ -22,8 +22,17 @@ class WebsiteSettingsController extends Controller
 
     public function update(Request $request)
     {
+<<<<<<< HEAD
         // Debug: Check what's coming in the request
         // dd($request->all());
+=======
+
+        if ($request->has('youtube_playlist_id')) {
+            $request->merge([
+                'youtube_playlist_id' => $this->extractPlaylistId($request->youtube_playlist_id)
+            ]);
+        }
+>>>>>>> c356163 (video call ui setup)
 
         $validated = $request->validate([
             // Hero Section
@@ -168,6 +177,29 @@ class WebsiteSettingsController extends Controller
             }
         }
     }
+<<<<<<< HEAD
+=======
+    
+    private function extractPlaylistId($value)
+    {
+        if (!$value) return null;
+    
+        // If user pasted a complete URL:
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            $parts = parse_url($value);
+            if (!empty($parts['query'])) {
+                parse_str($parts['query'], $query);
+    
+                // Return the ?list=ID value if found
+                return $query['list'] ?? null;
+            }
+        }
+    
+        // Otherwise assume user pasted the raw ID directly
+        return $value;
+    }
+
+>>>>>>> c356163 (video call ui setup)
 
     private function updateGeneralSettings(Request $request, $userId)
     {

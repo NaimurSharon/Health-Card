@@ -256,7 +256,11 @@
     
     <div class="flex flex-col h-full">
         
+<<<<<<< HEAD
         @include('student.inc.navbar')
+=======
+        @include('inc.navbar')
+>>>>>>> c356163 (video call ui setup)
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto scrollbar p-6">

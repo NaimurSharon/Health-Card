@@ -1,6 +1,10 @@
 <?php
 
+<<<<<<< HEAD
 namespace App\Http\Controllers;
+=======
+namespace App\Http\Controllers\Auth;
+>>>>>>> c356163 (video call ui setup)
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -24,7 +28,10 @@ class StudentLoginController extends Controller
      */
     public function store(Request $request)
     {
+<<<<<<< HEAD
     dd($request);
+=======
+>>>>>>> c356163 (video call ui setup)
         $request->validate([
             'phone' => 'required|string|max:11',
             'student_id' => 'nullable|string',
@@ -33,8 +40,11 @@ class StudentLoginController extends Controller
         // Clean the phone number (remove any formatting)
         $phone = preg_replace('/\D/', '', $request->phone);
         
+<<<<<<< HEAD
         dd($phone);
 
+=======
+>>>>>>> c356163 (video call ui setup)
         // Find student by emergency_contact (phone) and active status
         $student = Student::where('emergency_contact', $phone)
                          ->where('status', 'active')
@@ -67,7 +77,62 @@ class StudentLoginController extends Controller
 
         $request->session()->regenerate();
 
+<<<<<<< HEAD
         return redirect()->route('student.dashboard');
+=======
+        return redirect()->route('home');
+    }
+    
+    /**
+ * Handle student registration
+ */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:11|unique:students,emergency_contact',
+            'email' => 'nullable|email|max:255',
+            'student_id' => 'nullable|string|max:50',
+        ]);
+    
+        try {
+            // Create student record
+            $student = Student::create([
+                'name' => $request->name,
+                'emergency_contact' => $request->phone,
+                'student_id' => $request->student_id,
+                'status' => 'active',
+            ]);
+    
+            // Create user record
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email ?? $request->phone . '@student.local',
+                'phone' => $request->phone,
+                'password' => Hash::make($request->phone), // Use phone as default password
+                'role' => 'student',
+                'school_id' => null, // You might want to set this based on your logic
+                'status' => 'active',
+            ]);
+    
+            // Link student to user
+            $student->update(['user_id' => $user->id]);
+    
+            // Log in the student
+            Auth::login($user);
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful!'
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed. Please try again.'
+            ], 500);
+        }
+>>>>>>> c356163 (video call ui setup)
     }
 
     /**

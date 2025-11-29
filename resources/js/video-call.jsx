@@ -1,6 +1,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './components/App';
+<<<<<<< HEAD
+=======
+import '@stream-io/video-react-sdk/dist/css/styles.css';
+import './../css/app.css';
+import './../css/custom-video-layout.css';
+>>>>>>> c356163 (video call ui setup)
 
 // Global state to hold initialization config
 let initializationConfig = null;
@@ -9,26 +15,44 @@ let mountAttempted = false;
 
 // Exported function for external initialization (called from blade loader)
 window.initializeVideoCallApp = (containerId, streamConfig, consultation, userType) => {
+<<<<<<< HEAD
     console.log('initializeVideoCallApp called with:', { containerId, streamConfig, consultation, userType });
     
+=======
+    console.log('Video Call App v2.0 - Dark Theme Loaded');
+    console.log('initializeVideoCallApp called with:', { containerId, streamConfig, consultation, userType });
+
+>>>>>>> c356163 (video call ui setup)
     if (mountAttempted) {
         console.log('App already mounted, skipping duplicate mount');
         return rootInstance;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> c356163 (video call ui setup)
     const config = {
         streamConfig,
         consultation,
         userType
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> c356163 (video call ui setup)
     initializationConfig = config;
     const container = document.getElementById(containerId);
     if (!container) {
         console.error(`Container #${containerId} not found`);
         return null;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> c356163 (video call ui setup)
     console.log('video-call entry: mounting to #' + containerId);
     try {
         const root = createRoot(container);
@@ -45,11 +69,19 @@ window.initializeVideoCallApp = (containerId, streamConfig, consultation, userTy
 // Fallback: Try mount without config if not already mounted
 const attemptFallbackMount = () => {
     if (mountAttempted || initializationConfig) return;
+<<<<<<< HEAD
     
     console.log('video-call entry: attempting fallback mount');
     const container = document.getElementById('video-call-root');
     if (!container) return;
     
+=======
+
+    console.log('video-call entry: attempting fallback mount');
+    const container = document.getElementById('video-call-root');
+    if (!container) return;
+
+>>>>>>> c356163 (video call ui setup)
     try {
         const root = createRoot(container);
         root.render(<App />);

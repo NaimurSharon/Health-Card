@@ -77,12 +77,15 @@ class DoctorConsultationController extends Controller
             ->with(['student.user'])
             ->firstOrFail();
 
+<<<<<<< HEAD
         // Prevent rejoin to completed calls (like Zoom/Google Meet)
         if ($consultation->status === 'completed') {
             return redirect()->route('doctor.video-consultation.show', $id)
                 ->with('message', 'This call has already ended.');
         }
 
+=======
+>>>>>>> c356163 (video call ui setup)
         // Update status to ongoing
         if ($consultation->status === 'scheduled') {
             $consultation->update([
@@ -112,6 +115,7 @@ class DoctorConsultationController extends Controller
             ->with(['student.user'])
             ->firstOrFail();
 
+<<<<<<< HEAD
         // Prevent API access to completed calls
         if ($consultation->status === 'completed') {
             return response()->json([
@@ -120,6 +124,8 @@ class DoctorConsultationController extends Controller
             ], 403);
         }
 
+=======
+>>>>>>> c356163 (video call ui setup)
         $streamConfig = $this->streamService->getFrontendConfig(
             $doctor->id, 
             'Dr. ' . $doctor->name,
@@ -184,6 +190,7 @@ class DoctorConsultationController extends Controller
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
 
+<<<<<<< HEAD
         // Get participant count before updating
         $meta = $consultation->call_metadata ?? [];
         $participants = isset($meta['participants']) && is_array($meta['participants']) ? $meta['participants'] : [];
@@ -215,6 +222,15 @@ class DoctorConsultationController extends Controller
             'consultation' => $consultation->load(['student.user', 'doctor', 'appointment']),
             'redirect_url' => route('doctor.video-consultation.show', $id)
         ]);
+=======
+        $consultation->update([
+            'status' => 'completed',
+            'ended_at' => now(),
+            'duration' => $request->duration ?? 0
+        ]);
+
+        return response()->json(['success' => true]);
+>>>>>>> c356163 (video call ui setup)
     }
 
     /**
@@ -418,4 +434,46 @@ class DoctorConsultationController extends Controller
             'count' => count($meta['participants'])
         ]);
     }
+<<<<<<< HEAD
 }
+=======
+
+    /**
+     * Check presence of both participants in waiting room
+     */
+    public function checkPresence($id)
+    {
+        $doctor = Auth::user();
+        $consultation = VideoConsultation::where('id', $id)->where('doctor_id', $doctor->id)->firstOrFail();
+        $meta = $consultation->call_metadata ?? [];
+        $studentReady = $meta['student_ready'] ?? false;
+        $doctorReady = $meta['doctor_ready'] ?? false;
+        $now = \Carbon\Carbon::now();
+        if (isset($meta['student_ready_at'])) {
+            $studentReadyAt = \Carbon\Carbon::parse($meta['student_ready_at']);
+            if ($now->diffInSeconds($studentReadyAt) > 10) { $studentReady = false; }
+        }
+        if (isset($meta['doctor_ready_at'])) {
+            $doctorReadyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
+            if ($now->diffInSeconds($doctorReadyAt) > 10) { $doctorReady = false; }
+        }
+        return response()->json(['success' => true, 'student_present' => $studentReady, 'doctor_present' => $doctorReady, 'both_ready' => $studentReady && $doctorReady]);
+    }
+
+    /**
+     * Mark doctor as ready in waiting room
+     */
+    public function markReady($id)
+    {
+        $doctor = Auth::user();
+        $consultation = VideoConsultation::where('id', $id)->where('doctor_id', $doctor->id)->firstOrFail();
+        $meta = $consultation->call_metadata ?? [];
+        $meta['doctor_ready'] = true;
+        $meta['doctor_ready_at'] = now()->toISOString();
+        $consultation->call_metadata = $meta;
+        $consultation->save();
+        $bothReady = ($meta['student_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+        return response()->json(['success' => true, 'student_ready' => $meta['student_ready'] ?? false, 'doctor_ready' => true, 'both_ready' => $bothReady]);
+    }
+}
+>>>>>>> c356163 (video call ui setup)

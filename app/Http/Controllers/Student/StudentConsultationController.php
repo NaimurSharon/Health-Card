@@ -393,4 +393,74 @@ class StudentConsultationController extends Controller
             'count' => count($meta['participants'])
         ]);
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Check presence of both participants in waiting room
+     */
+    public function checkPresence($id)
+    {
+        $student = Auth::user();
+
+        $consultation = VideoConsultation::where('id', $id)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+
+        $meta = $consultation->call_metadata ?? [];
+        $studentReady = $meta['student_ready'] ?? false;
+        $doctorReady = $meta['doctor_ready'] ?? false;
+
+        // Check timestamps to ensure they're recent (within last 10 seconds)
+        $now = \Carbon\Carbon::now();
+        if (isset($meta['student_ready_at'])) {
+            $studentReadyAt = \Carbon\Carbon::parse($meta['student_ready_at']);
+            if ($now->diffInSeconds($studentReadyAt) > 10) {
+                $studentReady = false;
+            }
+        }
+        if (isset($meta['doctor_ready_at'])) {
+            $doctorReadyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
+            if ($now->diffInSeconds($doctorReadyAt) > 10) {
+                $doctorReady = false;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'student_present' => $studentReady,
+            'doctor_present' => $doctorReady,
+            'both_ready' => $studentReady && $doctorReady
+        ]);
+    }
+
+    /**
+     * Mark student as ready in waiting room
+     */
+    public function markReady($id)
+    {
+        $student = Auth::user();
+
+        $consultation = VideoConsultation::where('id', $id)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+
+        $meta = $consultation->call_metadata ?? [];
+        $meta['student_ready'] = true;
+        $meta['student_ready_at'] = now()->toISOString();
+
+        $consultation->call_metadata = $meta;
+        $consultation->save();
+
+        // Check if both are ready
+        $bothReady = ($meta['student_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+
+        return response()->json([
+            'success' => true,
+            'student_ready' => true,
+            'doctor_ready' => $meta['doctor_ready'] ?? false,
+            'both_ready' => $bothReady
+        ]);
+    }
+>>>>>>> c356163 (video call ui setup)
 }

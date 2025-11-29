@@ -66,7 +66,11 @@ class UserController extends Controller
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'in:male,female,other'],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // 5MB max
+<<<<<<< HEAD
             'role' => ['required', 'in:admin,teacher,student,doctor'],
+=======
+            'role' => ['required', 'in:admin,teacher,student,doctor,principal'],
+>>>>>>> c356163 (video call ui setup)
             'specialization' => ['nullable', 'string', 'max:255'],
             'qualifications' => ['nullable', 'string'],
             'school_id' => ['nullable', 'exists:schools,id'],
@@ -83,7 +87,11 @@ class UserController extends Controller
             'gender' => $validated['gender'],
             'role' => $validated['role'],
             'specialization' => $validated['specialization'],
+<<<<<<< HEAD
             'qualifications' => $validated['qualifications'],
+=======
+            'qualifications' => $this->formatQualifications($validated['qualifications']),
+>>>>>>> c356163 (video call ui setup)
             'school_id' => $validated['school_id'],
             'status' => $validated['status'],
         ];
@@ -135,7 +143,11 @@ class UserController extends Controller
             'date_of_birth' => ['nullable', 'date'],
             'gender' => ['nullable', 'in:male,female,other'],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // 5MB max
+<<<<<<< HEAD
             'role' => ['required', 'in:admin,teacher,student,doctor'],
+=======
+            'role' => ['required', 'in:admin,teacher,student,doctor,principal'],
+>>>>>>> c356163 (video call ui setup)
             'specialization' => ['nullable', 'string', 'max:255'],
             'qualifications' => ['nullable', 'string'],
             'school_id' => ['nullable', 'exists:schools,id'],
@@ -151,7 +163,11 @@ class UserController extends Controller
             'gender' => $validated['gender'],
             'role' => $validated['role'],
             'specialization' => $validated['specialization'],
+<<<<<<< HEAD
             'qualifications' => $validated['qualifications'],
+=======
+            'qualifications' => $this->formatQualifications($validated['qualifications']),
+>>>>>>> c356163 (video call ui setup)
             'school_id' => $validated['school_id'],
             'status' => $validated['status'],
         ];
@@ -199,6 +215,15 @@ class UserController extends Controller
                 ->with('error', 'Cannot delete student with medical records.');
         }
 
+<<<<<<< HEAD
+=======
+        // Check if user is a principal assigned to a school
+        if ($user->role === 'principal' && $user->managedSchool()->exists()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Cannot delete principal who is assigned to a school. Please reassign the school principal first.');
+        }
+
+>>>>>>> c356163 (video call ui setup)
         // Delete profile image if exists
         if ($user->profile_image) {
             $this->deleteOldFile($user->profile_image);
@@ -240,6 +265,17 @@ class UserController extends Controller
                     'health_tips_count' => $user->publishedHealthTips()->count(),
                 ];
                 break;
+<<<<<<< HEAD
+=======
+
+            case 'principal':
+                $statistics = [
+                    'managed_school' => $user->managedSchool ? $user->managedSchool->name : 'None',
+                    'school_students' => $user->managedSchool ? $user->managedSchool->getStudentCountAttribute() : 0,
+                    'school_teachers' => $user->managedSchool ? $user->managedSchool->getTeacherCountAttribute() : 0,
+                ];
+                break;
+>>>>>>> c356163 (video call ui setup)
             
             default:
                 $statistics = [
@@ -252,6 +288,27 @@ class UserController extends Controller
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * Format qualifications string
+     */
+    protected function formatQualifications($qualifications)
+    {
+        if (empty($qualifications)) {
+            return null;
+        }
+
+        // If qualifications is already an array, convert to string
+        if (is_array($qualifications)) {
+            return implode(', ', $qualifications);
+        }
+
+        // Clean up the string
+        return trim($qualifications);
+    }
+
+    /**
+>>>>>>> c356163 (video call ui setup)
      * Handle image upload and conversion to WebP
      */
     protected function handleImageUpload($file, $type)

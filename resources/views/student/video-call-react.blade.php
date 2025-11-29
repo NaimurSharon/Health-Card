@@ -1,8 +1,16 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+=======
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+>>>>>>> c356163 (video call ui setup)
     <title>Video Consultation - Dr. {{ $consultation->doctor->name }}</title>
     
     <!-- Stream Video SDK Styles -->
@@ -23,7 +31,11 @@
     }
     ?>
 </head>
+<<<<<<< HEAD
 <body class="antialiased">
+=======
+<body class="antialiased h-full bg-slate-900">
+>>>>>>> c356163 (video call ui setup)
     <div id="video-call-root"></div>
     <script>
         window.streamVideoConfig = @json($streamConfig);
@@ -74,7 +86,19 @@
                     }
                     loadNext();
                 })();
+<<<<<<< HEAD
             </script>";
+=======
+
+            </script>";
+            
+            // Load CSS associated with the JS entry
+            if (isset($manifest['resources/js/video-call.jsx']['css'])) {
+                foreach ($manifest['resources/js/video-call.jsx']['css'] as $cssFile) {
+                    echo '<link rel="stylesheet" href="' . asset('build/' . $cssFile) . '" />';
+                }
+            }
+>>>>>>> c356163 (video call ui setup)
         } else {
             echo app('Illuminate\Foundation\Vite')(['resources/js/video-call.jsx']);
         }

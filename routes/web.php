@@ -17,6 +17,10 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HealthCardController;
 use App\Http\Controllers\HealthTipController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\HelloDoctorController;
+>>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\HealthReportController;
 
@@ -34,7 +38,11 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfileController;
 
+<<<<<<< HEAD
 use App\Http\Controllers\StudentLoginController;
+=======
+use App\Http\Controllers\LoginController;
+>>>>>>> c356163 (video call ui setup)
 
 use App\Http\Controllers\RoutineController;
 
@@ -43,6 +51,10 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\ScholarshipController;
+>>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\IndividualMemberController;
 
 use App\Http\Controllers\TeacherController;
@@ -55,17 +67,41 @@ use App\Http\Controllers\WebsiteSettingsController;
 
 use App\Http\Controllers\Doctor\DoctorConsultationController;
 use App\Http\Controllers\Doctor\DoctorCallController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\Doctor\DoctorProfileController;
+use App\Http\Controllers\Doctor\DoctorAvailabilityController;
+>>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\EditorController;
 
 use App\Http\Controllers\Teacher\TeacherRoutineController;
 use App\Http\Controllers\Teacher\TeacherHomeworkController;
 use App\Http\Controllers\Teacher\TeacherDashboardController;
 
+<<<<<<< HEAD
 use App\Http\Controllers\Student\CityNoticesController;
 use App\Http\Controllers\Student\SchoolDiaryController;
 use App\Http\Controllers\Student\HelloDoctorController;
 use App\Http\Controllers\Student\StudentConsultationController;
 use App\Http\Controllers\Student\ScholarshipController;
+=======
+use App\Http\Controllers\Principal\PrincipalDashboardController;
+use App\Http\Controllers\Principal\PrincipalRoutineController;
+use App\Http\Controllers\Principal\PrincipalHomeworkController;
+use App\Http\Controllers\Principal\PrincipalStudentController;
+use App\Http\Controllers\Principal\PrincipalTeacherController;
+use App\Http\Controllers\Principal\PrincipalClassController;
+use App\Http\Controllers\Principal\PrincipalSectionController;
+use App\Http\Controllers\Principal\PrincipalSubjectController;
+use App\Http\Controllers\Principal\PrincipalNoticeController;
+use App\Http\Controllers\Principal\PrincipalProfileController;
+use App\Http\Controllers\Principal\PrincipalHealthController;
+use App\Http\Controllers\Principal\PrincipalIdCardController;
+
+use App\Http\Controllers\Student\CityNoticesController;
+use App\Http\Controllers\Student\SchoolDiaryController;
+use App\Http\Controllers\Student\StudentConsultationController;
+>>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\Student\SchoolNoticesController;
 use App\Http\Controllers\Student\StudentIdCardController;
 use App\Http\Controllers\Student\StudentHealthReportController;
@@ -109,6 +145,7 @@ Route::post('/hello-doctor/instant-video-call', [HelloDoctorController::class, '
 
 Route::get('/doctors/{doctor}', [DoctorController::class, 'view'])->name('doctors.view');
 
+<<<<<<< HEAD
 //------------------------------------------------------ END GLOBAL ROUTES --------------------------------------------------------------------------------------
     
     // Student Authentication Routes
@@ -121,6 +158,13 @@ Route::post('/student-login/logging', [StudentLoginController::class, 'store'])
 Route::post('/student-logout', [StudentLoginController::class, 'destroy'])
     ->name('student.logout');
 
+=======
+// Scholarship Registration Routes
+Route::get('/scholarship/register', [ScholarshipController::class, 'showRegistration'])->name('scholarship.register');
+
+//------------------------------------------------------ END GLOBAL ROUTES --------------------------------------------------------------------------------------
+    
+>>>>>>> c356163 (video call ui setup)
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     
     // Dashboard
@@ -448,20 +492,28 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 });
 
 
+<<<<<<< HEAD
 // Student Exam Routes
 Route::middleware(['auth', 'role:student'])->group(function () {
     
     
 });
 
+=======
+>>>>>>> c356163 (video call ui setup)
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     // Route::get('/', [HomeController::class, 'index'])->name('home');
     
     // Health Report
+<<<<<<< HEAD
     Route::get('/health-report', [StudentHealthReportController::class, 'index'])->name('health-report');
     Route::get('/health-report/{id}', [StudentHealthReportController::class, 'show'])->name('health-report.show');
+=======
+    Route::get('/health-reports', [StudentHealthReportController::class, 'index'])->name('health-report.index');
+    Route::get('/health-report', [StudentHealthReportController::class, 'show'])->name('health-report');
+>>>>>>> c356163 (video call ui setup)
     Route::post('/health-report/upload-prescription', [StudentHealthReportController::class, 'uploadPrescription'])->name('health-report.upload-prescription');
     
     // ID Card
@@ -510,6 +562,13 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::post('/video-consultations/{id}/heartbeat', [StudentConsultationController::class, 'heartbeat'])->name('video-consultation.heartbeat');
     Route::get('/video-consultations/{id}/participants', [StudentConsultationController::class, 'getParticipants'])->name('video-consultation.participants');
     
+<<<<<<< HEAD
+=======
+    // Waiting room endpoints
+    Route::get('/video-consultations/{id}/presence', [StudentConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
+    Route::post('/video-consultations/{id}/ready', [StudentConsultationController::class, 'markReady'])->name('video-consultation.ready');
+    
+>>>>>>> c356163 (video call ui setup)
     // Scholarship Registration Routes
     Route::get('/scholarship/register', [ScholarshipController::class, 'showRegistration'])->name('scholarship.register');
     Route::post('/scholarship/register', [ScholarshipController::class, 'submitRegistration'])->name('scholarship.register.submit');
@@ -526,7 +585,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 });
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c356163 (video call ui setup)
 // Teacher Routes
 Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:teacher'])->group(function () {
     // Dashboard
@@ -554,6 +616,156 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:teacher'])
     });
 });
 
+<<<<<<< HEAD
+=======
+Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:principal'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [PrincipalDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/assigned-classes', [PrincipalDashboardController::class, 'assignedClasses'])->name('assigned-classes');
+    
+    // Students Management
+    Route::prefix('students')->name('students.')->group(function () {
+        Route::get('/', [PrincipalStudentController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalStudentController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalStudentController::class, 'store'])->name('store');
+        Route::get('/{id}', [PrincipalStudentController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PrincipalStudentController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalStudentController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalStudentController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/health-records', [PrincipalStudentController::class, 'healthRecords'])->name('health-records');
+        Route::get('/{id}/generate-id-card', [PrincipalStudentController::class, 'generateIdCard'])->name('generate-id-card');
+        
+        // AJAX Routes
+        Route::get('/get-sections/{classId}', [PrincipalStudentController::class, 'getSections'])->name('get-sections');
+    });
+    
+    // Teachers Management
+    Route::prefix('teachers')->name('teachers.')->group(function () {
+        Route::get('/', [PrincipalTeacherController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalTeacherController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalTeacherController::class, 'store'])->name('store');
+        Route::get('/{id}', [PrincipalTeacherController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PrincipalTeacherController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalTeacherController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalTeacherController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/assign-classes', [PrincipalTeacherController::class, 'assignClasses'])->name('assign-classes');
+        Route::post('/{id}/assign-classes', [PrincipalTeacherController::class, 'storeAssignClasses'])->name('store-assign-classes');
+        Route::get('/{id}/generate-id-card', [PrincipalTeacherController::class, 'generateIdCard'])->name('generate-id-card');
+    });
+    
+    // Classes Management
+    Route::prefix('classes')->name('classes.')->group(function () {
+        Route::get('/', [PrincipalClassController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalClassController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalClassController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalClassController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalClassController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalClassController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/sections', [PrincipalClassController::class, 'sections'])->name('sections');
+    });
+    
+    // Sections Management
+    Route::prefix('sections')->name('sections.')->group(function () {
+        Route::get('/', [PrincipalSectionController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalSectionController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalSectionController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalSectionController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalSectionController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalSectionController::class, 'destroy'])->name('destroy');
+    });
+    
+    // Subjects Management
+    Route::prefix('subjects')->name('subjects.')->group(function () {
+        Route::get('/', [PrincipalSubjectController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalSubjectController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalSubjectController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalSubjectController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalSubjectController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalSubjectController::class, 'destroy'])->name('destroy');
+        
+        // Teacher Assignment Routes
+        Route::get('/assign-teachers', [PrincipalSubjectController::class, 'assignTeachers'])->name('assign-teachers');
+        Route::post('/assign-teachers', [PrincipalSubjectController::class, 'storeAssignTeachers'])->name('store-assign-teachers');
+        Route::delete('/assignments/{id}', [PrincipalSubjectController::class, 'destroyAssignment'])->name('destroy-assignment');
+        
+        // AJAX Routes
+        Route::get('/get-sections/{classId}', [PrincipalSubjectController::class, 'getSections'])->name('get-sections');
+    });
+    
+    Route::prefix('routine')->name('routine.')->group(function () {
+        Route::get('/', [PrincipalRoutineController::class, 'index'])->name('index');
+        Route::get('/weekly', [PrincipalRoutineController::class, 'weekly'])->name('weekly');
+        Route::get('/create', [PrincipalRoutineController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalRoutineController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalRoutineController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalRoutineController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalRoutineController::class, 'destroy'])->name('destroy');
+        
+        // AJAX Routes - Fixed to match JavaScript calls
+        Route::get('/get-sections/{classId}', [PrincipalRoutineController::class, 'getSections'])->name('get-sections');
+        Route::get('/get-class-subjects/{classId}', [PrincipalRoutineController::class, 'getClassSubjects'])->name('get-class-subjects');
+        Route::get('/get-teachers/{subjectId}', [PrincipalRoutineController::class, 'getTeachers'])->name('get-teachers');
+    });
+    // Homework Management
+    Route::prefix('homework')->name('homework.')->group(function () {
+        Route::get('/', [PrincipalHomeworkController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalHomeworkController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalHomeworkController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalHomeworkController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalHomeworkController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalHomeworkController::class, 'destroy'])->name('destroy');
+        
+        // AJAX Routes
+        Route::get('/get-sections/{classId}', [PrincipalHomeworkController::class, 'getSections'])->name('get-sections');
+        Route::get('/get-subjects/{classId}/{sectionId}', [PrincipalHomeworkController::class, 'getSubjects'])->name('get-subjects');
+    });
+    
+    // Notices Management
+    Route::prefix('notices')->name('notices.')->group(function () {
+        Route::get('/', [PrincipalNoticeController::class, 'index'])->name('index');
+        Route::get('/create', [PrincipalNoticeController::class, 'create'])->name('create');
+        Route::post('/store', [PrincipalNoticeController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PrincipalNoticeController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [PrincipalNoticeController::class, 'update'])->name('update');
+        Route::delete('/{id}/delete', [PrincipalNoticeController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/publish', [PrincipalNoticeController::class, 'publish'])->name('publish');
+    });
+    
+    // Health Records
+    Route::prefix('health')->name('health.')->group(function () {
+        Route::get('/records', [PrincipalHealthController::class, 'index'])->name('records');
+        Route::get('/records/{studentId}', [PrincipalHealthController::class, 'studentRecords'])->name('student-records');
+        Route::get('/annual-records', [PrincipalHealthController::class, 'annualRecords'])->name('annual-records');
+        Route::get('/annual-records/create', [PrincipalHealthController::class, 'createAnnualRecord'])->name('create-annual-record');
+        Route::post('/annual-records/store', [PrincipalHealthController::class, 'storeAnnualRecord'])->name('store-annual-record');
+        Route::get('/annual-records/{id}/edit', [PrincipalHealthController::class, 'editAnnualRecord'])->name('edit-annual-record');
+        Route::put('/annual-records/{id}/update', [PrincipalHealthController::class, 'updateAnnualRecord'])->name('update-annual-record');
+    });
+    
+    // ID Cards Management
+    Route::prefix('id-cards')->name('id-cards.')->group(function () {
+        Route::get('/', [PrincipalIdCardController::class, 'index'])->name('index');
+        Route::get('/templates', [PrincipalIdCardController::class, 'templates'])->name('templates');
+        Route::get('/generate-student/{studentId}', [PrincipalIdCardController::class, 'generateStudentCard'])->name('generate-student');
+        Route::get('/generate-teacher/{teacherId}', [PrincipalIdCardController::class, 'generateTeacherCard'])->name('generate-teacher');
+        Route::post('/bulk-generate', [PrincipalIdCardController::class, 'bulkGenerate'])->name('bulk-generate');
+    });
+    
+    // Profile Management
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [PrincipalProfileController::class, 'index'])->name('index');
+        Route::put('/update', [PrincipalProfileController::class, 'update'])->name('update');
+        Route::put('/update-password', [PrincipalProfileController::class, 'updatePassword'])->name('update-password');
+    });
+    
+    // School Management
+    Route::prefix('school')->name('school.')->group(function () {
+        Route::get('/edit', [PrincipalProfileController::class, 'editSchool'])->name('edit');
+        Route::put('/update', [PrincipalProfileController::class, 'updateSchool'])->name('update');
+    });
+});
+
+>>>>>>> c356163 (video call ui setup)
 // Doctor Routes
 Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->group(function () {
     // Dashboard
@@ -603,14 +815,33 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::get('/video-consultations/{id}/notes', [DoctorConsultationController::class, 'getNotes'])->name('video-consultation.get-notes');
     Route::post('/video-consultations/{id}/notes', [DoctorConsultationController::class, 'saveNotes'])->name('video-consultation.save-notes');
     
+<<<<<<< HEAD
+=======
+    // Waiting room endpoints
+    Route::get('/video-consultations/{id}/presence', [DoctorConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
+    Route::post('/video-consultations/{id}/ready', [DoctorConsultationController::class, 'markReady'])->name('video-consultation.ready');
+    
+>>>>>>> c356163 (video call ui setup)
     
     // Health Cards
     Route::get('/health-cards', [HealthCardController::class, 'doctorIndex'])->name('health-cards.index');
     Route::get('/health-cards/{healthCard}', [HealthCardController::class, 'doctorView'])->name('health-cards.show');
     
+<<<<<<< HEAD
     // Profile
     Route::get('/profile', [ProfileController::class, 'doctorsEdit'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+=======
+    Route::put('/profile', [DoctorProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [DoctorProfileController::class, 'edit'])->name('profile.edit');
+    
+    Route::get('/availability', [DoctorAvailabilityController::class, 'index'])->name('availability.index');
+    Route::post('/availability', [DoctorAvailabilityController::class, 'updateAvailability'])->name('availability.update');
+    Route::post('/leave-dates', [DoctorAvailabilityController::class, 'storeLeaveDate'])->name('availability.leave.store');
+    Route::delete('/leave-dates/{leaveDate}', [DoctorAvailabilityController::class, 'destroyLeaveDate'])->name('availability.leave.destroy');
+    Route::post('/toggle-availability', [DoctorAvailabilityController::class, 'toggleAvailability'])->name('availability.toggle');
+    Route::get('/time-slots/{day}', [DoctorAvailabilityController::class, 'getTimeSlots'])->name('availability.slots');
+>>>>>>> c356163 (video call ui setup)
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -761,6 +992,7 @@ Route::get('/build/{path}', function ($path) {
     if (!file_exists($file)) {
         abort(404);
     }
+<<<<<<< HEAD
     // Set Content-Type based on extension to avoid module MIME type errors
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
     $mime = 'application/octet-stream';
@@ -808,6 +1040,32 @@ Route::get('/build/{path}', function ($path) {
     return response($contents, 200, $headers);
 })->where('path', '.*');
 
+=======
+
+    // Set Content-Type based on extension to avoid module MIME type errors
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    $mime = match($ext) {
+        'js', 'mjs' => 'text/javascript',
+        'css' => 'text/css',
+        'map', 'json' => 'application/json',
+        'wasm' => 'application/wasm',
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'webp' => 'image/webp',
+        default => 'application/octet-stream',
+    };
+
+    // Return file response with headers
+    return response()->file($file, [
+        'Content-Type' => $mime,
+        'Content-Length' => filesize($file),
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+});
+
+// Video call route
+>>>>>>> c356163 (video call ui setup)
 Route::get('/video-call', function () {
     return view('video-call');
 })->name('video-call');

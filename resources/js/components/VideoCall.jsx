@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState, useRef } from 'react';
 import { 
     StreamVideo, 
@@ -5,11 +6,22 @@ import {
     SpeakerLayout,
     StreamVideoClient
 } from '@stream-io/video-react-sdk';
+=======
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {
+    StreamVideo,
+    StreamCall,
+    StreamVideoClient,
+    useCallStateHooks
+} from '@stream-io/video-react-sdk';
+import { Box, Typography } from '@mui/material';
+>>>>>>> c356163 (video call ui setup)
 import CallHeader from './CallHeader';
 import PatientSidebar from './PatientSidebar';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorDisplay from './ErrorDisplay';
 import CustomCallControls from './CustomCallControls';
+<<<<<<< HEAD
 import WaitingScreen from './WaitingScreen';
 import { endCall } from '../services/api';
 
@@ -40,12 +52,19 @@ const CallTimer = () => {
     return <span>{formatTime(duration)}</span>;
 };
 
+=======
+import CustomVideoLayout from './CustomVideoLayout';
+import SessionTimer, { useParticipantDisconnectionMonitor } from './SessionTimer';
+import { endCall } from '../services/api';
+
+>>>>>>> c356163 (video call ui setup)
 const VideoCall = ({ streamConfig, consultation, userType }) => {
     const [client, setClient] = useState(null);
     const [call, setCall] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+<<<<<<< HEAD
     const [participantsCount, setParticipantsCount] = useState(0);
     const [remoteParticipantCount, setRemoteParticipantCount] = useState(0);
     const [callStarted, setCallStarted] = useState(false);
@@ -55,26 +74,62 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     const disconnectTimerRef = useRef(null);
     const isMountedRef = useRef(true);
     const hasJoinedRef = useRef(false);
+=======
+
+    // Track if we've already left the call to prevent duplicate leave attempts
+    const callLeftRef = useRef(false);
+    const isMountedRef = useRef(true);
+
+    // Handle session timeout
+    const handleSessionTimeout = useCallback(async () => {
+        console.log('Session timeout - 15 minutes expired');
+        await handleEndCall();
+    }, []);
+
+    // Handle participant disconnection (2 minutes offline)
+    const handleParticipantDisconnection = useCallback(async (participant) => {
+        console.log('Participant disconnected for 2 minutes:', participant.name);
+        await handleEndCall();
+    }, []);
+
+    // Monitor participant disconnections (only apply after call is initialized)
+    useParticipantDisconnectionMonitor(handleParticipantDisconnection);
+>>>>>>> c356163 (video call ui setup)
 
     // Initialize Stream client
     useEffect(() => {
         isMountedRef.current = true;
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> c356163 (video call ui setup)
         if (!streamConfig) return;
 
         const initializeClient = async () => {
             try {
                 console.log('Initializing StreamVideoClient...');
+<<<<<<< HEAD
                 
                 const c = new StreamVideoClient({ 
                     apiKey: streamConfig.apiKey 
                 });
                 
+=======
+                const c = new StreamVideoClient({
+                    apiKey: streamConfig.apiKey
+                });
+
+>>>>>>> c356163 (video call ui setup)
                 await c.connectUser(
                     streamConfig.user,
                     streamConfig.token
                 );
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> c356163 (video call ui setup)
                 console.log('User connected successfully');
                 if (isMountedRef.current) {
                     setClient(c);
@@ -92,6 +147,7 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
 
         return () => {
             isMountedRef.current = false;
+<<<<<<< HEAD
         };
     }, [streamConfig]);
 
@@ -108,12 +164,42 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
             } catch (err) {
                 console.error('Failed to initialize call:', err);
                 if (isMountedRef.current) {
+=======
+            if (client) {
+                client.disconnectUser().catch(err => console.warn('Failed to disconnect:', err));
+            }
+        };
+    }, [streamConfig]);
+
+    // Join call when client is ready
+    useEffect(() => {
+        let mounted = true;
+
+        const initializeCall = async () => {
+            try {
+                if (!client) return;
+
+                const callInstance = client.call('default', streamConfig.callId);
+                setCall(callInstance);
+
+                console.log('Joining call with ID:', streamConfig.callId);
+                await callInstance.join({ create: true });
+
+                if (mounted) {
+                    setLoading(false);
+                }
+
+            } catch (err) {
+                console.error('Failed to initialize call:', err);
+                if (mounted) {
+>>>>>>> c356163 (video call ui setup)
                     setError(err.message);
                     setLoading(false);
                 }
             }
         };
 
+<<<<<<< HEAD
         initializeCall();
     }, [client, streamConfig.callId]);
 
@@ -303,11 +389,24 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
             console.error('Error ending call:', err);
         }
     };
+=======
+        if (client) {
+            initializeCall();
+        }
+
+        return () => {
+            mounted = false;
+            // Don't leave here - let handleEndCall or beforeunload handle it
+            // This prevents duplicate leave() calls
+        };
+    }, [client, streamConfig.callId]);
+>>>>>>> c356163 (video call ui setup)
 
     const handleEndCall = async () => {
         try {
             console.log('End call initiated');
             setLoading(true);
+<<<<<<< HEAD
             
             // Leave Stream Video call
             if (call) {
@@ -316,11 +415,29 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
                     console.log('Successfully left Stream Video call');
                 } catch (err) {
                     console.error('Error leaving Stream call:', err);
+=======
+
+            // Leave Stream Video call
+            if (call && !callLeftRef.current) {
+                console.log('Leaving Stream Video call...');
+                try {
+                    callLeftRef.current = true;
+                    await call.leave();
+                    console.log('Successfully left Stream Video call');
+                } catch (err) {
+                    if (!err.message?.includes('already been left')) {
+                        console.error('Error leaving Stream call:', err);
+                    }
+>>>>>>> c356163 (video call ui setup)
                 }
             }
 
             // Disconnect Stream Video client
             if (client) {
+<<<<<<< HEAD
+=======
+                console.log('Disconnecting Stream Video client...');
+>>>>>>> c356163 (video call ui setup)
                 try {
                     await client.disconnectUser();
                     console.log('Successfully disconnected from Stream');
@@ -328,16 +445,28 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
                     console.error('Error disconnecting from Stream:', err);
                 }
             }
+<<<<<<< HEAD
             
             // Notify backend
             let redirectUrl = null;
             try {
                 const response = await endCall(consultation.id);
+=======
+
+            // Notify backend that call ended
+            let redirectUrl = null;
+            try {
+                console.log('Notifying backend of call end...');
+                const response = await endCall(consultation.id);
+                console.log('Backend response:', response);
+
+>>>>>>> c356163 (video call ui setup)
                 if (response.redirect_url) {
                     redirectUrl = response.redirect_url;
                 }
             } catch (err) {
                 console.error('Backend notification error:', err);
+<<<<<<< HEAD
                 redirectUrl = userType === 'doctor' 
                     ? `/doctor/consultations/${consultation.id}`
                     : `/student/video-consultations/${consultation.id}`;
@@ -347,6 +476,23 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
             setTimeout(() => {
                 if (redirectUrl) {
                     window.location.href = redirectUrl;
+=======
+                redirectUrl = userType === 'doctor'
+                    ? `/doctor/consultations/${consultation.id}`
+                    : `/student/video-consultations/${consultation.id}`;
+            }
+
+            // Redirect to consultation show page
+            setTimeout(() => {
+                if (redirectUrl) {
+                    console.log('Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
+                } else {
+                    console.log('Using fallback redirect');
+                    window.location.href = userType === 'doctor'
+                        ? `/doctor/consultations/${consultation.id}`
+                        : `/student/video-consultations/${consultation.id}`;
+>>>>>>> c356163 (video call ui setup)
                 }
             }, 500);
         } catch (err) {
@@ -357,10 +503,19 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
 
     // Handle page unload
     useEffect(() => {
+<<<<<<< HEAD
         const handleBeforeUnload = async (e) => {
             if (!call) return;
 
             try {
+=======
+        const handleBeforeUnload = async () => {
+            if (!call) return;
+
+            try {
+                console.log('Page unloading - cleaning up call...');
+
+>>>>>>> c356163 (video call ui setup)
                 if (navigator.sendBeacon) {
                     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                     navigator.sendBeacon(
@@ -369,9 +524,18 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
                     );
                 }
 
+<<<<<<< HEAD
                 await call.leave().catch(() => {});
                 if (client) {
                     await client.disconnectUser().catch(() => {});
+=======
+                if (!callLeftRef.current) {
+                    callLeftRef.current = true;
+                    await call.leave().catch(() => { });
+                }
+                if (client) {
+                    await client.disconnectUser().catch(() => { });
+>>>>>>> c356163 (video call ui setup)
                 }
             } catch (err) {
                 console.warn('Unload cleanup error:', err);
@@ -381,6 +545,7 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
+<<<<<<< HEAD
             clearDisconnectTimeout();
         };
     }, [call, client, consultation, userType]);
@@ -388,6 +553,13 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     // Loading state
     if (loading) {
         return <LoadingSpinner message="Initializing video call..." />;
+=======
+        };
+    }, [call, client, consultation]);
+
+    if (loading) {
+        return <LoadingSpinner message="Joining video call..." />;
+>>>>>>> c356163 (video call ui setup)
     }
 
     if (error) {
@@ -395,6 +567,7 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     }
 
     if (!client || !call) {
+<<<<<<< HEAD
         return <LoadingSpinner message="Preparing connection..." />;
     }
 
@@ -508,6 +681,88 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
                 </div>
             </StreamCall>
         </StreamVideo>
+=======
+        return null;
+    }
+
+    return (
+        <Box
+            sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100vw',
+                height: '100vh',
+                bgcolor: '#000',
+                overflow: 'hidden',
+                margin: 0,
+                padding: 0
+            }}
+        >
+            {/* Header */}
+            <CallHeader
+                consultation={consultation}
+                userType={userType}
+                onEndCall={handleEndCall}
+                onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                sidebarOpen={sidebarOpen}
+            />
+
+            {/* Video Area - Full Screen */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: sidebarOpen ? { xs: 0, lg: '320px' } : 0,
+                    bottom: 0,
+                    width: sidebarOpen ? { xs: '100%', lg: 'calc(100% - 320px)' } : '100%',
+                    height: '100%',
+                    transition: 'right 0.3s, width 0.3s'
+                }}
+            >
+                <StreamVideo client={client}>
+                    <StreamCall call={call}>
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }}>
+                            {/* Full Screen Video Layout */}
+                            <CustomVideoLayout />
+
+                            {/* Session Timer with Alerts (15 min limit) */}
+                            <SessionTimer onTimeExpired={handleSessionTimeout} />
+
+                            {/* Floating Call Controls */}
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    bottom: { xs: 80, sm: 100 },
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    zIndex: 30,
+                                    width: '100%',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    px: 2
+                                }}
+                            >
+                                <CustomCallControls onEndCall={handleEndCall} />
+                            </Box>
+                        </Box>
+                    </StreamCall>
+                </StreamVideo>
+            </Box>
+
+            {/* Patient Sidebar (Doctor only) */}
+            {userType === 'doctor' && (
+                <PatientSidebar
+                    consultation={consultation}
+                    isOpen={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                />
+            )}
+        </Box>
+>>>>>>> c356163 (video call ui setup)
     );
 };
 

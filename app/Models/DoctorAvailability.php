@@ -32,6 +32,7 @@ class DoctorAvailability extends Model
         return $this->belongsTo(User::class, 'doctor_id');
     }
 
+<<<<<<< HEAD
     // Helper methods
     public function getTimeSlots()
     {
@@ -49,6 +50,27 @@ class DoctorAvailability extends Model
                 ];
             }
             $current->addMinutes($this->slot_duration);
+=======
+        /**
+     * Generate time slots based on availability
+     */
+    public function getTimeSlots()
+    {
+        $slots = [];
+        $start = \Carbon\Carbon::parse($this->start_time);
+        $end = \Carbon\Carbon::parse($this->end_time);
+        $slotDuration = $this->slot_duration;
+
+        while ($start->addMinutes($slotDuration) <= $end) {
+            $slotEnd = clone $start;
+            $slotEnd->subMinutes($slotDuration);
+            
+            $slots[] = [
+                'start' => $slotEnd->format('H:i'),
+                'end' => $start->format('H:i'),
+                'display' => $slotEnd->format('g:i A') . ' - ' . $start->format('g:i A')
+            ];
+>>>>>>> c356163 (video call ui setup)
         }
 
         return $slots;

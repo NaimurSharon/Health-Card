@@ -19,7 +19,11 @@ class StudentHealthReportController extends Controller
 
         // Health Reports - Fixed relationship
         $healthReports = \App\Models\StudentHealthReport::where('student_id', $studentDetails->id)
+<<<<<<< HEAD
             ->with(['reportData.field.category']) // Fixed relationship name
+=======
+            ->with(['reportData.field.category'])
+>>>>>>> c356163 (video call ui setup)
             ->orderBy('checkup_date', 'desc')
             ->get();
 
@@ -75,6 +79,7 @@ class StudentHealthReportController extends Controller
         ));
     }
 
+<<<<<<< HEAD
     public function show($id)
     {
         $student = Auth::user();
@@ -99,14 +104,132 @@ class StudentHealthReportController extends Controller
         // Calculate BMI if weight and height are available
         $bmiData = $this->calculateBMI($healthReport);
 
+=======
+    public function show()
+    {
+        $student = Auth::user();
+        // Ensure studentDetails relationship is loaded if not already
+        $studentDetails = $student->student;
+        
+        
+        if (!$studentDetails) {
+            abort(404, 'Student details not found');
+        }
+        
+    
+        // Get specific health report with correct relationship
+        // Note: The second 'where' clause is redundant but kept for consistency
+        $healthReport = \App\Models\StudentHealthReport::where('student_id', $studentDetails->id)
+            ->where('student_id', $studentDetails->id)
+            ->with(['reportData.field.category'])
+            // Changed from firstOrFail() to first() to allow the Blade to handle missing report gracefully
+            ->first(); 
+            
+    
+        // Get all categories with fields for display
+        $categories = \App\Models\HealthReportCategory::with(['fields'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+    
+        // School and Class Information
+        $school = $student->school;
+        
+        // Ensure class and section relationships are loaded
+        $studentDetails->load(['class', 'section']); 
+        $class = $studentDetails->class;
+        $section = $studentDetails->section;
+        
+        $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
+            ->latestFirst()
+            ->get();
+            
+        // 💡 NEW ADDITION: Fetch Active Health Card
+        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+            ->where('status', 'active')
+            ->where('expiry_date', '>=', now())
+            ->first();
+            
+    
+        // Pre-calculate field values and formatted values for the view
+        $fieldValues = [];
+        if ($healthReport) {
+            foreach ($categories as $category) {
+                foreach ($category->fields as $field) {
+                    $value = $this->getFieldValueForReport($healthReport, $field->field_name);
+                    $formattedValue = $this->formatFieldValue($value, $field->field_type);
+                    $fieldValues[$field->id] = [
+                        'value' => $value,
+                        'formatted' => $formattedValue
+                    ];
+                }
+            }
+        }
+        
+    
+>>>>>>> c356163 (video call ui setup)
         return view('student.health-report.show', compact(
             'healthReport',
             'studentDetails',
             'categories',
+<<<<<<< HEAD
             'bmiData'
         ));
     }
 
+=======
+            'annualRecords',
+            'school',
+            'student',
+            'class',
+            'section',
+            'fieldValues',
+            // 💡 NEW ADDITION: Pass to the view
+            'activeHealthCard' 
+        ));
+    }
+    
+    /**
+     * Get field value for a specific health report
+     */
+    private function getFieldValueForReport($healthReport, $fieldName)
+    {
+        foreach ($healthReport->reportData as $data) {
+            if ($data->field && $data->field->field_name === $fieldName) {
+                return $data->field_value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Format field value for display based on field type
+     */
+    private function formatFieldValue($value, $fieldType)
+    {
+        if (!$value || $value === 'Not Recorded' || $value === 'null') {
+            return null;
+        }
+        
+        switch($fieldType) {
+            case 'date':
+                try {
+                    return \Carbon\Carbon::parse($value)->format('M j, Y');
+                } catch (\Exception $e) {
+                    return $value;
+                }
+            case 'checkbox':
+                return $value === '1' || $value === 1 || $value === true ? 'Yes' : 'No';
+            case 'number':
+                return is_numeric($value) ? number_format($value, 2) : $value;
+            case 'select':
+                return ucfirst($value);
+            default:
+                return $value;
+        }
+    }
+    
+>>>>>>> c356163 (video call ui setup)
     public function uploadPrescription(Request $request)
     {
         $request->validate([
@@ -140,6 +263,7 @@ class StudentHealthReportController extends Controller
         return redirect()->back()->with('error', 'Failed to upload prescription.');
     }
 
+<<<<<<< HEAD
     private function calculateBMI($healthReport)
     {
         $weight = null;
@@ -212,4 +336,6 @@ class StudentHealthReportController extends Controller
                 return $value;
         }
     }
+=======
+>>>>>>> c356163 (video call ui setup)
 }

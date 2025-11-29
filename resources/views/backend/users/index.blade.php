@@ -17,6 +17,10 @@
                         <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Teacher</option>
                         <option value="student" {{ request('role') == 'student' ? 'selected' : '' }}>Student</option>
                         <option value="doctor" {{ request('role') == 'doctor' ? 'selected' : '' }}>Doctor</option>
+<<<<<<< HEAD
+=======
+                        <option value="principal" {{ request('role') == 'principal' ? 'selected' : '' }}>Principal</option>
+>>>>>>> c356163 (video call ui setup)
                     </select>
                 </div>
 

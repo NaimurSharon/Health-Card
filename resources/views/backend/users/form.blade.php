@@ -225,6 +225,10 @@
                                 <option value="teacher" {{ old('role', $user->role ?? '') == 'teacher' ? 'selected' : '' }}>Teacher</option>
                                 <option value="student" {{ old('role', $user->role ?? '') == 'student' ? 'selected' : '' }}>Student</option>
                                 <option value="doctor" {{ old('role', $user->role ?? '') == 'doctor' ? 'selected' : '' }}>Doctor</option>
+<<<<<<< HEAD
+=======
+                                <option value="principal" {{ old('role', $user->role ?? '') == 'principal' ? 'selected' : '' }}>Principal</option>
+>>>>>>> c356163 (video call ui setup)
                             </select>
                             @error('role')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -282,7 +286,11 @@
                         <label for="qualifications" class="block text-sm font-medium text-gray-700 mb-2">Qualifications</label>
                         <textarea name="qualifications" id="qualifications" rows="3"
                                 class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+<<<<<<< HEAD
                                 placeholder="Enter qualifications">{{ old('qualifications', $user->qualifications ?? '') }}</textarea>
+=======
+                                placeholder="Enter qualifications (one per line or comma separated)">{{ is_array(old('qualifications', $user->qualifications ?? '')) ? implode(', ', old('qualifications', $user->qualifications ?? [])) : old('qualifications', $user->qualifications ?? '') }}</textarea>
+>>>>>>> c356163 (video call ui setup)
                         @error('qualifications')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -339,7 +347,11 @@
 
         function toggleProfessionalFields() {
             const role = roleSelect.value;
+<<<<<<< HEAD
             if (role === 'teacher' || role === 'doctor') {
+=======
+            if (role === 'teacher' || role === 'doctor' || role === 'principal') {
+>>>>>>> c356163 (video call ui setup)
                 specializationField.style.display = 'block';
                 qualificationsField.style.display = 'block';
             } else {
