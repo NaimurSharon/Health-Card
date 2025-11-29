@@ -1,0 +1,39 @@
+/* Custom Video Layout Styles - Stream.io Best Practices */
+
+/* Ensure video fills container */
+.custom-video-layout .str-video__participant-view {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.custom-video-layout .str-video__video {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Main participant container */
+.main-participant-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* Local participant PiP */
+.local-participant-pip {
+    pointer-events: auto;
+}
+
+/* Remove default Stream SDK borders on fullscreen view */
+.custom-video-layout .main-participant-container .str-video__participant-view {
+    border-radius: 0 !important;
+}
+
+/* Ensure PiP has proper border radius */
+.local-participant-pip .str-video__participant-view {
+    border-radius: 12px !important;
+}
+
+/* Hide default Stream SDK participant name overlay as we're using custom */
+.custom-video-layout .str-video__participant-details {
+    display: none !important;
+}
