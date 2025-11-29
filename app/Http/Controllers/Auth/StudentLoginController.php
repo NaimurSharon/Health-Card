@@ -1,10 +1,6 @@
 <?php
 
-<<<<<<< HEAD
-namespace App\Http\Controllers;
-=======
 namespace App\Http\Controllers\Auth;
->>>>>>> c356163 (video call ui setup)
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -28,10 +24,6 @@ class StudentLoginController extends Controller
      */
     public function store(Request $request)
     {
-<<<<<<< HEAD
-    dd($request);
-=======
->>>>>>> c356163 (video call ui setup)
         $request->validate([
             'phone' => 'required|string|max:11',
             'student_id' => 'nullable|string',
@@ -40,11 +32,6 @@ class StudentLoginController extends Controller
         // Clean the phone number (remove any formatting)
         $phone = preg_replace('/\D/', '', $request->phone);
         
-<<<<<<< HEAD
-        dd($phone);
-
-=======
->>>>>>> c356163 (video call ui setup)
         // Find student by emergency_contact (phone) and active status
         $student = Student::where('emergency_contact', $phone)
                          ->where('status', 'active')
@@ -77,9 +64,6 @@ class StudentLoginController extends Controller
 
         $request->session()->regenerate();
 
-<<<<<<< HEAD
-        return redirect()->route('student.dashboard');
-=======
         return redirect()->route('home');
     }
     
@@ -132,7 +116,6 @@ class StudentLoginController extends Controller
                 'message' => 'Registration failed. Please try again.'
             ], 500);
         }
->>>>>>> c356163 (video call ui setup)
     }
 
     /**

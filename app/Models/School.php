@@ -8,22 +8,12 @@ class School extends Model
 {
     protected $fillable = [
         'name', 'code', 'type', 'established_year', 'address', 'city', 'district', 'division',
-<<<<<<< HEAD
-        'phone', 'email', 'website', 'principal_name', 'principal_phone', 'principal_email',
-        'logo', 'cover_image', 'school_image', 'motto', 'vision', 'mission', 'academic_system',
-        'medium', 'total_students', 'total_teachers', 'total_staff', 'campus_area', 'facilities',
-        'accreditations', 'social_links', 'status'
-    ];
-
-
-=======
         'phone', 'email', 'website', 'principal_id', 'assigned_doctor', 'logo', 'cover_image', 'school_image', 
         'motto', 'vision', 'mission', 'academic_system', 'medium', 'total_students', 
         'total_teachers', 'total_staff', 'campus_area', 'facilities', 'accreditations', 
         'social_links', 'status'
     ];
 
->>>>>>> c356163 (video call ui setup)
     // Relationships
     public function users()
     {
@@ -35,8 +25,6 @@ class School extends Model
         return $this->hasMany(Classes::class);
     }
 
-<<<<<<< HEAD
-=======
     public function principal()
     {
         return $this->belongsTo(User::class, 'principal_id')->where('role', 'principal');
@@ -67,19 +55,12 @@ class School extends Model
         return $this->hasMany(User::class)->where('role', 'doctor');
     }
 
->>>>>>> c356163 (video call ui setup)
     // Scopes
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
 
-<<<<<<< HEAD
-    // Accessors
-    public function getLogoUrlAttribute()
-    {
-        return $this->logo ? asset('storage/' . $this->logo) : null;
-=======
     public function scopeByType($query, $type)
     {
         return $query->where('type', $type);
@@ -117,23 +98,15 @@ class School extends Model
     public function getLogoUrlAttribute()
     {
         return $this->logo ? asset('public/storage/' . $this->logo) : null;
->>>>>>> c356163 (video call ui setup)
     }
 
     public function getCoverImageUrlAttribute()
     {
-<<<<<<< HEAD
-        return $this->cover_image ? asset('storage/' . $this->cover_image) : null;
-=======
         return $this->cover_image ? asset('public/storage/' . $this->cover_image) : null;
->>>>>>> c356163 (video call ui setup)
     }
 
     public function getSchoolImageUrlAttribute()
     {
-<<<<<<< HEAD
-        return $this->school_image ? asset('storage/' . $this->school_image) : null;
-=======
         return $this->school_image ? asset('public/storage/' . $this->school_image) : null;
     }
 
@@ -204,7 +177,6 @@ class School extends Model
     public function getFacilitiesListAttribute()
     {
         return $this->facilities ? implode(', ', $this->facilities) : 'No facilities listed';
->>>>>>> c356163 (video call ui setup)
     }
 
     // Methods
@@ -222,8 +194,6 @@ class School extends Model
     {
         return $this->users()->where('role', 'teacher')->count();
     }
-<<<<<<< HEAD
-=======
 
     public function getDoctorCountAttribute()
     {
@@ -375,5 +345,4 @@ class School extends Model
             ->orderBy('leave_date')
             ->get();
     }
->>>>>>> c356163 (video call ui setup)
 }

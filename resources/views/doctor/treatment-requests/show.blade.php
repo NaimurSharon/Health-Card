@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-@extends('layouts.app')
-
-=======
 @extends('layouts.doctor
->>>>>>> c356163 (video call ui setup)
 @section('title', 'Treatment Request Details')
 
 @section('content')

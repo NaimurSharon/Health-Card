@@ -17,10 +17,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HealthCardController;
 use App\Http\Controllers\HealthTipController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\HelloDoctorController;
->>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\HealthReportController;
 
@@ -38,11 +35,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfileController;
 
-<<<<<<< HEAD
-use App\Http\Controllers\StudentLoginController;
-=======
 use App\Http\Controllers\LoginController;
->>>>>>> c356163 (video call ui setup)
 
 use App\Http\Controllers\RoutineController;
 
@@ -51,10 +44,7 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\ScholarshipController;
->>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\IndividualMemberController;
 
 use App\Http\Controllers\TeacherController;
@@ -67,24 +57,14 @@ use App\Http\Controllers\WebsiteSettingsController;
 
 use App\Http\Controllers\Doctor\DoctorConsultationController;
 use App\Http\Controllers\Doctor\DoctorCallController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\Doctor\DoctorProfileController;
 use App\Http\Controllers\Doctor\DoctorAvailabilityController;
->>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\EditorController;
 
 use App\Http\Controllers\Teacher\TeacherRoutineController;
 use App\Http\Controllers\Teacher\TeacherHomeworkController;
 use App\Http\Controllers\Teacher\TeacherDashboardController;
 
-<<<<<<< HEAD
-use App\Http\Controllers\Student\CityNoticesController;
-use App\Http\Controllers\Student\SchoolDiaryController;
-use App\Http\Controllers\Student\HelloDoctorController;
-use App\Http\Controllers\Student\StudentConsultationController;
-use App\Http\Controllers\Student\ScholarshipController;
-=======
 use App\Http\Controllers\Principal\PrincipalDashboardController;
 use App\Http\Controllers\Principal\PrincipalRoutineController;
 use App\Http\Controllers\Principal\PrincipalHomeworkController;
@@ -101,7 +81,6 @@ use App\Http\Controllers\Principal\PrincipalIdCardController;
 use App\Http\Controllers\Student\CityNoticesController;
 use App\Http\Controllers\Student\SchoolDiaryController;
 use App\Http\Controllers\Student\StudentConsultationController;
->>>>>>> c356163 (video call ui setup)
 use App\Http\Controllers\Student\SchoolNoticesController;
 use App\Http\Controllers\Student\StudentIdCardController;
 use App\Http\Controllers\Student\StudentHealthReportController;
@@ -145,26 +124,11 @@ Route::post('/hello-doctor/instant-video-call', [HelloDoctorController::class, '
 
 Route::get('/doctors/{doctor}', [DoctorController::class, 'view'])->name('doctors.view');
 
-<<<<<<< HEAD
-//------------------------------------------------------ END GLOBAL ROUTES --------------------------------------------------------------------------------------
-    
-    // Student Authentication Routes
-Route::get('/auth-login', [StudentLoginController::class, 'create'])
-    ->name('student.login');
-
-Route::post('/student-login/logging', [StudentLoginController::class, 'store'])
-    ->name('student.login.submit');
-    
-Route::post('/student-logout', [StudentLoginController::class, 'destroy'])
-    ->name('student.logout');
-
-=======
 // Scholarship Registration Routes
 Route::get('/scholarship/register', [ScholarshipController::class, 'showRegistration'])->name('scholarship.register');
 
 //------------------------------------------------------ END GLOBAL ROUTES --------------------------------------------------------------------------------------
     
->>>>>>> c356163 (video call ui setup)
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     
     // Dashboard
@@ -492,28 +456,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 });
 
 
-<<<<<<< HEAD
-// Student Exam Routes
-Route::middleware(['auth', 'role:student'])->group(function () {
-    
-    
-});
-
-=======
->>>>>>> c356163 (video call ui setup)
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     // Route::get('/', [HomeController::class, 'index'])->name('home');
     
     // Health Report
-<<<<<<< HEAD
-    Route::get('/health-report', [StudentHealthReportController::class, 'index'])->name('health-report');
-    Route::get('/health-report/{id}', [StudentHealthReportController::class, 'show'])->name('health-report.show');
-=======
     Route::get('/health-reports', [StudentHealthReportController::class, 'index'])->name('health-report.index');
     Route::get('/health-report', [StudentHealthReportController::class, 'show'])->name('health-report');
->>>>>>> c356163 (video call ui setup)
     Route::post('/health-report/upload-prescription', [StudentHealthReportController::class, 'uploadPrescription'])->name('health-report.upload-prescription');
     
     // ID Card
@@ -562,13 +512,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::post('/video-consultations/{id}/heartbeat', [StudentConsultationController::class, 'heartbeat'])->name('video-consultation.heartbeat');
     Route::get('/video-consultations/{id}/participants', [StudentConsultationController::class, 'getParticipants'])->name('video-consultation.participants');
     
-<<<<<<< HEAD
-=======
     // Waiting room endpoints
     Route::get('/video-consultations/{id}/presence', [StudentConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
     Route::post('/video-consultations/{id}/ready', [StudentConsultationController::class, 'markReady'])->name('video-consultation.ready');
     
->>>>>>> c356163 (video call ui setup)
     // Scholarship Registration Routes
     Route::get('/scholarship/register', [ScholarshipController::class, 'showRegistration'])->name('scholarship.register');
     Route::post('/scholarship/register', [ScholarshipController::class, 'submitRegistration'])->name('scholarship.register.submit');
@@ -585,10 +532,6 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
 });
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c356163 (video call ui setup)
 // Teacher Routes
 Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:teacher'])->group(function () {
     // Dashboard
@@ -616,8 +559,6 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:teacher'])
     });
 });
 
-<<<<<<< HEAD
-=======
 Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:principal'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [PrincipalDashboardController::class, 'dashboard'])->name('dashboard');
@@ -765,7 +706,6 @@ Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:princi
     });
 });
 
->>>>>>> c356163 (video call ui setup)
 // Doctor Routes
 Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->group(function () {
     // Dashboard
@@ -815,23 +755,15 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::get('/video-consultations/{id}/notes', [DoctorConsultationController::class, 'getNotes'])->name('video-consultation.get-notes');
     Route::post('/video-consultations/{id}/notes', [DoctorConsultationController::class, 'saveNotes'])->name('video-consultation.save-notes');
     
-<<<<<<< HEAD
-=======
     // Waiting room endpoints
     Route::get('/video-consultations/{id}/presence', [DoctorConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
     Route::post('/video-consultations/{id}/ready', [DoctorConsultationController::class, 'markReady'])->name('video-consultation.ready');
     
->>>>>>> c356163 (video call ui setup)
     
     // Health Cards
     Route::get('/health-cards', [HealthCardController::class, 'doctorIndex'])->name('health-cards.index');
     Route::get('/health-cards/{healthCard}', [HealthCardController::class, 'doctorView'])->name('health-cards.show');
     
-<<<<<<< HEAD
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'doctorsEdit'])->name('profile');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-=======
     Route::put('/profile', [DoctorProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile', [DoctorProfileController::class, 'edit'])->name('profile.edit');
     
@@ -841,7 +773,6 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::delete('/leave-dates/{leaveDate}', [DoctorAvailabilityController::class, 'destroyLeaveDate'])->name('availability.leave.destroy');
     Route::post('/toggle-availability', [DoctorAvailabilityController::class, 'toggleAvailability'])->name('availability.toggle');
     Route::get('/time-slots/{day}', [DoctorAvailabilityController::class, 'getTimeSlots'])->name('availability.slots');
->>>>>>> c356163 (video call ui setup)
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -992,55 +923,6 @@ Route::get('/build/{path}', function ($path) {
     if (!file_exists($file)) {
         abort(404);
     }
-<<<<<<< HEAD
-    // Set Content-Type based on extension to avoid module MIME type errors
-    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-    $mime = 'application/octet-stream';
-    switch ($ext) {
-        case 'js':
-            $mime = 'text/javascript';
-            break;
-        case 'mjs':
-            $mime = 'text/javascript';
-            break;
-        case 'css':
-            $mime = 'text/css';
-            break;
-        case 'map':
-            $mime = 'application/json';
-            break;
-        case 'wasm':
-            $mime = 'application/wasm';
-            break;
-        case 'json':
-            $mime = 'application/json';
-            break;
-        case 'svg':
-            $mime = 'image/svg+xml';
-            break;
-        case 'png':
-            $mime = 'image/png';
-            break;
-        case 'jpg':
-        case 'jpeg':
-            $mime = 'image/jpeg';
-            break;
-        case 'webp':
-            $mime = 'image/webp';
-            break;
-    }
-
-    // Force-send file contents with explicit headers to avoid server MIME sniffing issues
-    $contents = file_get_contents($file);
-    $headers = [
-        'Content-Type' => $mime,
-        'Content-Length' => filesize($file),
-        'Cache-Control' => 'public, max-age=31536000'
-    ];
-    return response($contents, 200, $headers);
-})->where('path', '.*');
-
-=======
 
     // Set Content-Type based on extension to avoid module MIME type errors
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -1065,7 +947,6 @@ Route::get('/build/{path}', function ($path) {
 });
 
 // Video call route
->>>>>>> c356163 (video call ui setup)
 Route::get('/video-call', function () {
     return view('video-call');
 })->name('video-call');

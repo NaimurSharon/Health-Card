@@ -1,40 +1,20 @@
-<<<<<<< HEAD
-@extends('layouts.app')
-
-@section('title', 'Edit Profile')
-=======
 @extends('layouts.doctor')
 
 @section('title', 'My Profile')
->>>>>>> c356163 (video call ui setup)
 
 @section('content')
 <div class="space-y-6">
     <!-- Profile Header -->
     <div class="content-card rounded-lg overflow-hidden">
         <div class="table-header px-6 py-4 flex justify-between items-center">
-<<<<<<< HEAD
-            <h3 class="text-2xl font-bold">Edit Profile</h3>
-            <button type="submit" form="profile-form" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 text-sm font-medium transition-colors flex items-center">
-=======
             <h3 class="text-2xl font-bold">My Profile</h3>
             <button type="submit" form="doctor-profile-form" 
                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 text-sm font-medium transition-colors">
->>>>>>> c356163 (video call ui setup)
                 <i class="fas fa-save mr-2"></i>Update Profile
             </button>
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- Profile Form -->
-    <div class="content-card rounded-lg p-6 shadow-sm">
-        <form id="profile-form" action="{{ route('doctor.profile.update') }}" method="POST">
-            @csrf
-            @method('PUT')
-
-=======
     <!-- Doctor Profile Form -->
     <div class="content-card rounded-lg p-6 shadow-sm">
         <form id="doctor-profile-form" 
@@ -180,7 +160,6 @@
                 </div>
             </div>
 
->>>>>>> c356163 (video call ui setup)
             <div class="space-y-8">
                 <!-- Personal Information Section -->
                 <div class="space-y-4">
@@ -191,11 +170,7 @@
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <input type="text" name="name" id="name" 
-<<<<<<< HEAD
-                                   value="{{ old('name', $user->name) }}" required
-=======
                                    value="{{ old('name', $doctor->name) }}"
->>>>>>> c356163 (video call ui setup)
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="Enter your full name">
                             @error('name')
@@ -207,15 +182,9 @@
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                             <input type="email" name="email" id="email" 
-<<<<<<< HEAD
-                                   value="{{ old('email', $user->email) }}" required
-                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                   placeholder="Enter your email address">
-=======
                                    value="{{ old('email', $doctor->email) }}"
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="Enter email address">
->>>>>>> c356163 (video call ui setup)
                             @error('email')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -227,15 +196,9 @@
                         <div>
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                             <input type="text" name="phone" id="phone" 
-<<<<<<< HEAD
-                                   value="{{ old('phone', $user->phone) }}" required
-                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                   placeholder="Enter your phone number">
-=======
                                    value="{{ old('phone', $doctor->phone) }}"
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="e.g., 01812345678">
->>>>>>> c356163 (video call ui setup)
                             @error('phone')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -245,11 +208,7 @@
                         <div>
                             <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
                             <input type="date" name="date_of_birth" id="date_of_birth" 
-<<<<<<< HEAD
-                                   value="{{ old('date_of_birth', $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : '') }}"
-=======
                                    value="{{ old('date_of_birth', $doctor->date_of_birth ? $doctor->date_of_birth->format('Y-m-d') : '') }}"
->>>>>>> c356163 (video call ui setup)
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                             @error('date_of_birth')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -259,20 +218,11 @@
                         <!-- Gender -->
                         <div>
                             <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
-<<<<<<< HEAD
-                            <select name="gender" id="gender" required
-                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                                <option value="">Select Gender</option>
-                                <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>Male</option>
-                                <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>Female</option>
-                                <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>Other</option>
-=======
                             <select name="gender" id="gender" 
                                     class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                                 <option value="">Select Gender</option>
                                 <option value="male" {{ old('gender', $doctor->gender) == 'male' ? 'selected' : '' }}>Male</option>
                                 <option value="female" {{ old('gender', $doctor->gender) == 'female' ? 'selected' : '' }}>Female</option>
->>>>>>> c356163 (video call ui setup)
                             </select>
                             @error('gender')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -283,15 +233,9 @@
                     <!-- Address -->
                     <div>
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
-<<<<<<< HEAD
-                        <textarea name="address" id="address" rows="3" required
-                                class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                placeholder="Enter your complete address">{{ old('address', $user->address) }}</textarea>
-=======
                         <textarea name="address" id="address" rows="3"
                                 class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                 placeholder="Enter complete address">{{ old('address', $doctor->address) }}</textarea>
->>>>>>> c356163 (video call ui setup)
                         @error('address')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -307,30 +251,13 @@
                         <div>
                             <label for="specialization" class="block text-sm font-medium text-gray-700 mb-2">Specialization *</label>
                             <input type="text" name="specialization" id="specialization" 
-<<<<<<< HEAD
-                                   value="{{ old('specialization', $user->specialization) }}" required
-                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                   placeholder="Enter your medical specialization">
-=======
                                    value="{{ old('specialization', $doctor->specialization) }}"
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="e.g., Pediatrics, Cardiology">
->>>>>>> c356163 (video call ui setup)
                             @error('specialization')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-<<<<<<< HEAD
-                    </div>
-
-                    <!-- Qualifications -->
-                    <div>
-                        <label for="qualifications" class="block text-sm font-medium text-gray-700 mb-2">Qualifications *</label>
-                        <textarea name="qualifications" id="qualifications" rows="3" required
-                                class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                placeholder="Enter your qualifications and certifications">{{ old('qualifications', $user->qualifications) }}</textarea>
-                        @error('qualifications')
-=======
 
                         <!-- Qualifications -->
                         <div>
@@ -437,27 +364,11 @@
 
                         <p class="mt-1 text-xs text-gray-500">Enter languages separated by commas</p>
                         @error('languages')
->>>>>>> c356163 (video call ui setup)
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-<<<<<<< HEAD
-                <!-- Change Password Section -->
-                <div class="space-y-4">
-                    <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-2">Change Password</h4>
-                    <p class="text-sm text-gray-600">Leave these fields blank if you don't want to change your password.</p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Current Password -->
-                        <div>
-                            <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                            <input type="password" name="current_password" id="current_password" 
-                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                   placeholder="Enter current password">
-                            @error('current_password')
-=======
                 <!-- Fees Information Section -->
                 <div class="space-y-4">
                     <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-2">Fee Structure (BDT)</h4>
@@ -471,20 +382,10 @@
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="0.00">
                             @error('consultation_fee')
->>>>>>> c356163 (video call ui setup)
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
-<<<<<<< HEAD
-                        <!-- New Password -->
-                        <div>
-                            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                            <input type="password" name="new_password" id="new_password" 
-                                   class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                   placeholder="Enter new password">
-                            @error('new_password')
-=======
                         <!-- Follow-up Fee -->
                         <div>
                             <label for="follow_up_fee" class="block text-sm font-medium text-gray-700 mb-2">Follow-up Fee</label>
@@ -505,20 +406,11 @@
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="0.00">
                             @error('emergency_fee')
->>>>>>> c356163 (video call ui setup)
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
-<<<<<<< HEAD
-                    <!-- Confirm New Password -->
-                    <div class="md:col-span-2">
-                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
-                               class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                               placeholder="Confirm new password">
-=======
                     <!-- Max Patients Per Day -->
                     <div class="max-w-xs">
                         <label for="max_patients_per_day" class="block text-sm font-medium text-gray-700 mb-2">Max Patients Per Day</label>
@@ -558,7 +450,6 @@
                                    class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                                    placeholder="Confirm new password">
                         </div>
->>>>>>> c356163 (video call ui setup)
                     </div>
                 </div>
             </div>
@@ -576,50 +467,6 @@
             </div>
         </form>
     </div>
-<<<<<<< HEAD
-
-    <!-- Profile Information Card -->
-    <div class="content-card rounded-lg p-6 shadow-sm">
-        <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4">Profile Information</h4>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Role</p>
-                    <p class="text-lg font-semibold text-gray-900 capitalize">{{ $user->role }}</p>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Account Status</p>
-                    <span class="px-3 py-1 rounded-full text-sm font-medium 
-                        {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ ucfirst($user->status) }}
-                    </span>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Member Since</p>
-                    <p class="text-lg text-gray-900">{{ $user->created_at->format('F j, Y') }}</p>
-                </div>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Last Login</p>
-                    <p class="text-lg text-gray-900">
-                        @if($user->last_login_at)
-                            {{ $user->last_login_at->format('F j, Y g:i A') }}
-                        @else
-                            Never logged in
-                        @endif
-                    </p>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Profile Last Updated</p>
-                    <p class="text-lg text-gray-900">{{ $user->updated_at->format('F j, Y g:i A') }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-=======
->>>>>>> c356163 (video call ui setup)
 </div>
 
 <style>
@@ -637,8 +484,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-<<<<<<< HEAD
-=======
         // Auto-resize textarea
         const addressTextarea = document.getElementById('address');
         const bioTextarea = document.getElementById('bio');
@@ -655,7 +500,6 @@
             }
         });
 
->>>>>>> c356163 (video call ui setup)
         // Add smooth interactions
         const inputs = document.querySelectorAll('input, select, textarea');
         
@@ -668,24 +512,6 @@
                 this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-lg');
             });
         });
-<<<<<<< HEAD
-
-        // Password field validation
-        const newPassword = document.getElementById('new_password');
-        const confirmPassword = document.getElementById('new_password_confirmation');
-
-        function validatePassword() {
-            if (newPassword.value !== confirmPassword.value) {
-                confirmPassword.setCustomValidity("Passwords don't match");
-            } else {
-                confirmPassword.setCustomValidity('');
-            }
-        }
-
-        newPassword.addEventListener('change', validatePassword);
-        confirmPassword.addEventListener('keyup', validatePassword);
-    });
-=======
     });
 
     // Image upload and preview functionality
@@ -794,6 +620,5 @@
             defaultSignature.classList.add('hidden');
         });
     }
->>>>>>> c356163 (video call ui setup)
 </script>
 @endsection

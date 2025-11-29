@@ -393,8 +393,6 @@ class StudentConsultationController extends Controller
             'count' => count($meta['participants'])
         ]);
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Check presence of both participants in waiting room
@@ -462,5 +460,4 @@ class StudentConsultationController extends Controller
             'both_ready' => $bothReady
         ]);
     }
->>>>>>> c356163 (video call ui setup)
 }

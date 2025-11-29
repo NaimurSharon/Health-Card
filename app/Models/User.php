@@ -10,15 +10,9 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-<<<<<<< HEAD
-        'name', 'email', 'hospital_id','password', 'phone', 'address', 'date_of_birth', 
-        'gender', 'profile_image', 'role', 'specialization', 'qualifications', 
-        'school_id', 'status'
-=======
         'name', 'email', 'hospital_id', 'password', 'phone', 'address', 'date_of_birth', 
         'gender', 'profile_image', 'role', 'specialization', 'qualifications', 
         'school_id', 'status', 'principal_id'
->>>>>>> c356163 (video call ui setup)
     ];
 
     protected $hidden = [
@@ -28,10 +22,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
-<<<<<<< HEAD
-=======
         'qualifications' => 'array',
->>>>>>> c356163 (video call ui setup)
     ];
 
     // Relationships
@@ -40,55 +31,31 @@ class User extends Authenticatable
         return $this->belongsTo(School::class);
     }
     
-<<<<<<< HEAD
-=======
     // Assigned doctor relationship (schools where this doctor is assigned)
     public function assignedSchools()
     {
         return $this->hasMany(School::class, 'assigned_doctor');
     }
 
->>>>>>> c356163 (video call ui setup)
     public function hospital()
     {
         return $this->belongsTo(Hospital::class);
     }
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> c356163 (video call ui setup)
     public function idCards()
     {
         return $this->hasMany(IdCard::class, 'user_id');
     }
-<<<<<<< HEAD
-    
-    // public function students()
-    // {
-    //     return $this->hasMany(Student::class, 'parent_id');
-    // }
-    
-    // students renamed to children 
-=======
 
->>>>>>> c356163 (video call ui setup)
     public function children()
     {
         return $this->hasMany(Student::class, 'parent_id');
     }
 
-<<<<<<< HEAD
-    
-=======
->>>>>>> c356163 (video call ui setup)
     public function student()
     {
         return $this->hasOne(Student::class, 'user_id');
     }
-<<<<<<< HEAD
-    
-=======
 
     // Principal relationship
     public function managedSchool()
@@ -96,17 +63,12 @@ class User extends Authenticatable
         return $this->hasOne(School::class, 'principal_id');
     }
 
->>>>>>> c356163 (video call ui setup)
     // DOCTOR 
     public function doctorDetail()
     {
         return $this->hasOne(DoctorDetail::class, 'user_id');
     }
-<<<<<<< HEAD
-
-=======
     
->>>>>>> c356163 (video call ui setup)
     public function doctorAvailabilities()
     {
         return $this->hasMany(DoctorAvailability::class, 'doctor_id');
@@ -203,8 +165,6 @@ class User extends Authenticatable
         ];
     }
     
-<<<<<<< HEAD
-=======
     public function principal()
     {
         return $this->hasOne(Teacher::class, 'user_id')
@@ -219,7 +179,6 @@ class User extends Authenticatable
     }
 
     
->>>>>>> c356163 (video call ui setup)
     public function teacherSections()
     {
         return $this->hasMany(Section::class, 'teacher_id');
@@ -368,8 +327,6 @@ class User extends Authenticatable
         return $this->role === 'parent';
     }
 
-<<<<<<< HEAD
-=======
     public function isPrincipal()
     {
         return $this->role === 'principal';
@@ -394,7 +351,6 @@ class User extends Authenticatable
         return $this->managedSchool()->first();
     }
 
->>>>>>> c356163 (video call ui setup)
     // Attribute accessors
     public function getFullNameAttribute()
     {
@@ -409,10 +365,7 @@ class User extends Authenticatable
             'student' => 'bg-green-100 text-green-800',
             'doctor' => 'bg-red-100 text-red-800',
             'parent' => 'bg-orange-100 text-orange-800',
-<<<<<<< HEAD
-=======
             'principal' => 'bg-indigo-100 text-indigo-800',
->>>>>>> c356163 (video call ui setup)
         ][$this->role] ?? 'bg-gray-100 text-gray-800';
     }
 
@@ -438,8 +391,6 @@ class User extends Authenticatable
         return $this->date_of_birth ? $this->date_of_birth->age : null;
     }
 
-<<<<<<< HEAD
-=======
     public function getProfileImageUrlAttribute()
     {
         return $this->profile_image ? asset('storage/' . $this->profile_image) : null;
@@ -456,7 +407,6 @@ class User extends Authenticatable
             : $this->qualifications;
     }
 
->>>>>>> c356163 (video call ui setup)
     // Scopes
     public function scopeDoctors($query)
     {
@@ -483,14 +433,11 @@ class User extends Authenticatable
         return $query->where('role', 'admin');
     }
 
-<<<<<<< HEAD
-=======
     public function scopePrincipals($query)
     {
         return $query->where('role', 'principal');
     }
 
->>>>>>> c356163 (video call ui setup)
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -506,14 +453,11 @@ class User extends Authenticatable
         return $query->where('school_id', $schoolId);
     }
 
-<<<<<<< HEAD
-=======
     public function scopeWithoutSchool($query)
     {
         return $query->whereNull('school_id');
     }
 
->>>>>>> c356163 (video call ui setup)
     public function scopeSearch($query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
@@ -521,15 +465,12 @@ class User extends Authenticatable
                     ->orWhere('phone', 'like', "%{$search}%");
     }
 
-<<<<<<< HEAD
-=======
     public function scopeAvailablePrincipals($query)
     {
         return $query->where('role', 'principal')
                     ->whereDoesntHave('managedSchool');
     }
 
->>>>>>> c356163 (video call ui setup)
     // Statistics methods
     public function getTeacherStatistics()
     {
@@ -567,11 +508,6 @@ class User extends Authenticatable
         ];
     }
 
-<<<<<<< HEAD
-    // Business logic methods
-    public function canDelete()
-    {
-=======
     public function getPrincipalStatistics()
     {
         if (!$this->managedSchool) {
@@ -594,7 +530,6 @@ class User extends Authenticatable
             return false; // Cannot delete principal who manages a school
         }
 
->>>>>>> c356163 (video call ui setup)
         if ($this->isTeacher()) {
             return $this->teacherSections()->count() === 0 && 
                    $this->teacherSubjects()->count() === 0 &&
@@ -614,14 +549,11 @@ class User extends Authenticatable
         return true;
     }
 
-<<<<<<< HEAD
-=======
     public function canBePrincipal()
     {
         return $this->isPrincipal() && !$this->managedSchool;
     }
 
->>>>>>> c356163 (video call ui setup)
     public function getAssignedClasses()
     {
         if (!$this->isTeacher()) {
@@ -655,8 +587,6 @@ class User extends Authenticatable
                     ->limit($limit)
                     ->get();
     }
-<<<<<<< HEAD
-=======
 
     public function getPrincipalViewData()
     {
@@ -680,5 +610,4 @@ class User extends Authenticatable
             'health_tips' => $this->publishedHealthTips()->latest()->limit(5)->get(),
         ];
     }
->>>>>>> c356163 (video call ui setup)
 }

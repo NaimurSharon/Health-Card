@@ -6,9 +6,6 @@
 @section('content')
 <div class="space-y-16 tiro">
 
-<<<<<<< HEAD
-   @include('student.partial.hero')
-=======
     {{-- ===========================
          HERO SECTION
     ============================ --}}
@@ -75,7 +72,6 @@
             <div class="text-gray-600">বর্গফুট ক্যাম্পাস</div>
         </div>
     </section>
->>>>>>> c356163 (video call ui setup)
 
     {{-- ===========================
          ABOUT SECTION
@@ -230,72 +226,6 @@
          STUDENT SPOTLIGHT (Only for logged in students)
     ============================ --}}
     @auth
-<<<<<<< HEAD
-    <!--<section class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-white shadow-2xl">-->
-    <!--    <div class="text-center mb-12">-->
-    <!--        <h2 class="text-3xl font-bold mb-4">আপনার আজকের সারসংক্ষেপ</h2>-->
-    <!--        <p class="text-purple-100 text-lg">আজকের ক্লাস, পরীক্ষা এবং গুরুত্বপূর্ণ আপডেট</p>-->
-    <!--    </div>-->
-
-    <!--    <div class="grid md:grid-cols-3 gap-8">-->
-    <!--        {{-- Today's Classes --}}-->
-    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
-    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
-    <!--                <span class="mr-3">📚</span> আজকের ক্লাস-->
-    <!--            </h3>-->
-    <!--            @if($todaysSchedule && count($todaysSchedule) > 0)-->
-    <!--            <div class="space-y-3">-->
-    <!--                @foreach($todaysSchedule->take(3) as $schedule)-->
-    <!--                <div class="flex justify-between items-center py-2 border-b border-white border-opacity-20">-->
-    <!--                    <span class="font-medium">{{ $schedule->subject->name ?? 'ক্লাস' }}</span>-->
-    <!--                    <span class="text-sm opacity-90">{{ $schedule->start_time }}</span>-->
-    <!--                </div>-->
-    <!--                @endforeach-->
-    <!--            </div>-->
-    <!--            @else-->
-    <!--            <p class="text-purple-100 opacity-90">আজ কোনো ক্লাস নেই</p>-->
-    <!--            @endif-->
-    <!--        </div>-->
-
-    <!--        {{-- Upcoming Exams --}}-->
-    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
-    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
-    <!--                <span class="mr-3">🧾</span> আসন্ন পরীক্ষা-->
-    <!--            </h3>-->
-    <!--            @if($upcomingExams && count($upcomingExams) > 0)-->
-    <!--            <div class="space-y-3">-->
-    <!--                @foreach($upcomingExams as $exam)-->
-    <!--                <div class="py-2 border-b border-white border-opacity-20">-->
-    <!--                    <div class="font-medium">{{ $exam->title ?? 'পরীক্ষা' }}</div>-->
-    <!--                    <div class="text-sm opacity-90">{{ $exam->exam_date ?? 'N/A' }}</div>-->
-    <!--                </div>-->
-    <!--                @endforeach-->
-    <!--            </div>-->
-    <!--            @else-->
-    <!--            <p class="text-purple-100 opacity-90">কোনো পরীক্ষা নেই</p>-->
-    <!--            @endif-->
-    <!--        </div>-->
-
-    <!--        {{-- Quick Actions --}}-->
-    <!--        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20">-->
-    <!--            <h3 class="font-semibold text-xl mb-4 flex items-center">-->
-    <!--                <span class="mr-3">⚡</span> দ্রুত একশন-->
-    <!--            </h3>-->
-    <!--            <div class="space-y-3">-->
-    <!--                <a href="{{ route('student.school-diary') }}" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
-    <!--                    হোমওয়ার্ক দেখুন-->
-    <!--                </a>-->
-    <!--                <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
-    <!--                    ক্লাস রুটিন-->
-    <!--                </a>-->
-    <!--                <a href="#" class="block bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-3 px-4 rounded-xl text-center transition-all duration-300">-->
-    <!--                    স্বাস্থ্য রেকর্ড-->
-    <!--                </a>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--</section>-->
-=======
     <section class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-white shadow-2xl">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold mb-4">আপনার আজকের সারসংক্ষেপ</h2>
@@ -360,7 +290,6 @@
             </div>
         </div>
     </section>
->>>>>>> c356163 (video call ui setup)
     @endauth
     
     {{-- ===========================
@@ -368,11 +297,7 @@
         ============================ --}}
     <section class="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl p-12 shadow-xl">
         <div class="text-center mb-12">
-<<<<<<< HEAD
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">জরুরি স্বাস্থ্য সেবা</h2>
-=======
             <h2 class="text-3xl font-bold text-gray-800 mb-4">🏥 জরুরি স্বাস্থ্য সেবা</h2>
->>>>>>> c356163 (video call ui setup)
             <p class="text-gray-600 text-lg">নিকটস্থ হাসপাতাল ও স্বাস্থ্য কেন্দ্রসমূহ</p>
         </div>
     
@@ -386,15 +311,7 @@
                 
                 {{-- Hospital Type Badge --}}
                 <div class="flex justify-between items-start mb-4">
-<<<<<<< HEAD
-                    <h3 class="font-bold text-xl text-gray-800">
-                        <a href="{{ route('hospitals.view', $hospital->id) }}" class="hover:underline hover:text-blue-600">
-                            {{ $hospital->name }}
-                        </a>
-                    </h3>
-=======
                     <h3 class="font-bold text-xl text-gray-800">{{ $hospital->name }}</h3>
->>>>>>> c356163 (video call ui setup)
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
                         @if($hospital->type == 'government') bg-green-100 text-green-800
                         @elseif($hospital->type == 'private') bg-blue-100 text-blue-800
@@ -420,11 +337,7 @@
                     @if($hospital->phone)
                     <div class="flex items-center space-x-3">
                         <span class="text-gray-500">📞</span>
-<<<<<<< HEAD
-                        <a href="tel:{{ $hospital->phone }}" class="text-blue-600 hover:text-blue-800 inter text-sm">
-=======
                         <a href="tel:{{ $hospital->phone }}" class="text-blue-600 hover:text-blue-800 text-sm">
->>>>>>> c356163 (video call ui setup)
                             {{ $hospital->phone }}
                         </a>
                     </div>
@@ -434,11 +347,7 @@
                     <div class="flex items-center space-x-3">
                         <span class="text-red-500">🚨</span>
                         <a href="tel:{{ $hospital->emergency_contact }}" class="text-red-600 hover:text-red-800 text-sm font-semibold">
-<<<<<<< HEAD
-                            জরুরি: <span class='inter'>{{ $hospital->emergency_contact }}</span>
-=======
                             জরুরি: {{ $hospital->emergency_contact }}
->>>>>>> c356163 (video call ui setup)
                         </a>
                     </div>
                     @endif
@@ -446,11 +355,7 @@
                     @if($hospital->email)
                     <div class="flex items-center space-x-3">
                         <span class="text-gray-500">📧</span>
-<<<<<<< HEAD
-                        <a href="mailto:{{ $hospital->email }}" class="text-blue-600 hover:text-blue-800 inter text-sm">
-=======
                         <a href="mailto:{{ $hospital->email }}" class="text-blue-600 hover:text-blue-800 text-sm">
->>>>>>> c356163 (video call ui setup)
                             {{ $hospital->email }}
                         </a>
                     </div>
@@ -539,11 +444,7 @@
                         <span class="text-2xl">📞</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ফোন</h3>
-<<<<<<< HEAD
-                            <p class="text-gray-600 inter">{{ $school->phone ?? 'ফোন নম্বর আপডেট করা হবে' }}</p>
-=======
                             <p class="text-gray-600">{{ $school->phone ?? 'ফোন নম্বর আপডেট করা হবে' }}</p>
->>>>>>> c356163 (video call ui setup)
                         </div>
                     </div>
                     
@@ -551,11 +452,7 @@
                         <span class="text-2xl">📧</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ইমেইল</h3>
-<<<<<<< HEAD
-                            <p class="text-gray-600 inter">{{ $school->email ?? 'ইমেইল আপডেট করা হবে' }}</p>
-=======
                             <p class="text-gray-600">{{ $school->email ?? 'ইমেইল আপডেট করা হবে' }}</p>
->>>>>>> c356163 (video call ui setup)
                         </div>
                     </div>
 
@@ -564,11 +461,7 @@
                         <span class="text-2xl">🌐</span>
                         <div>
                             <h3 class="font-semibold text-gray-800">ওয়েবসাইট</h3>
-<<<<<<< HEAD
-                            <a href="{{ $school->website }}" class="text-blue-600 hover:text-blue-800 inter" target="_blank">
-=======
                             <a href="{{ $school->website }}" class="text-blue-600 hover:text-blue-800" target="_blank">
->>>>>>> c356163 (video call ui setup)
                                 {{ $school->website }}
                             </a>
                         </div>
@@ -591,11 +484,8 @@
 
 @push('styles')
 <style>
-<<<<<<< HEAD
-=======
 
     
->>>>>>> c356163 (video call ui setup)
     .backdrop-blur-sm {
         backdrop-filter: blur(8px);
     }

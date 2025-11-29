@@ -58,9 +58,6 @@
 [15-Nov-2025 06:33:56 UTC] PHP Fatal error:  Cannot redeclare App\Models\ExamAttempt::getCurrentQuestionIndex() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Models/ExamAttempt.php on line 80
 [19-Nov-2025 10:30:07 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Admin\WebsiteSettingsController, because the name is already in use in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/WebsiteSettingsController.php on line 11
 [20-Nov-2025 11:17:43 UTC] PHP Fatal error:  Cannot redeclare App\Models\User::scopeDoctors() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Models/User.php on line 356
-<<<<<<< HEAD
-=======
 [22-Nov-2025 09:41:15 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Student\StudentHealthReportController::formatFieldValue() in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/Student/StudentHealthReportController.php on line 229
 [24-Nov-2025 06:27:17 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\StudentLoginController, because the name is already in use in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/Auth/StudentLoginController.php on line 12
 [25-Nov-2025 07:19:40 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Student\CityNoticesController, because the name is already in use in /home/facreat2/public_html/healthcard.facreativefirm.com/app/Http/Controllers/CityNoticesController.php on line 10
->>>>>>> c356163 (video call ui setup)

@@ -22,17 +22,12 @@ class WebsiteSettingsController extends Controller
 
     public function update(Request $request)
     {
-<<<<<<< HEAD
-        // Debug: Check what's coming in the request
-        // dd($request->all());
-=======
 
         if ($request->has('youtube_playlist_id')) {
             $request->merge([
                 'youtube_playlist_id' => $this->extractPlaylistId($request->youtube_playlist_id)
             ]);
         }
->>>>>>> c356163 (video call ui setup)
 
         $validated = $request->validate([
             // Hero Section
@@ -177,8 +172,6 @@ class WebsiteSettingsController extends Controller
             }
         }
     }
-<<<<<<< HEAD
-=======
     
     private function extractPlaylistId($value)
     {
@@ -199,7 +192,6 @@ class WebsiteSettingsController extends Controller
         return $value;
     }
 
->>>>>>> c356163 (video call ui setup)
 
     private function updateGeneralSettings(Request $request, $userId)
     {

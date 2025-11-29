@@ -34,11 +34,7 @@
                 <i class="fas fa-user-circle w-4 mr-3"></i>
                 Profile
             </a>
-<<<<<<< HEAD
-            <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
-=======
             <a href="{{ route('admin.settings.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
->>>>>>> c356163 (video call ui setup)
                 <i class="fas fa-cog w-4 mr-3"></i>
                 Settings
             </a>

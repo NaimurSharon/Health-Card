@@ -42,24 +42,15 @@
                class="nav-link {{ Request::is('student/school-diary*') ? 'active' : '' }}">
                 <i class="fas fa-book me-2"></i>স্কুল ডায়েরি
             </a>
-<<<<<<< HEAD
-            <a href="{{ route('student.hello-doctor') }}" 
-               class="nav-link {{ Request::is('student/hello-doctor*') ? 'active' : '' }}">
-=======
             <a href="{{ route('hello-doctor') }}" 
                class="nav-link {{ Request::is('hello-doctor*') ? 'active' : '' }}">
->>>>>>> c356163 (video call ui setup)
                 <i class="fas fa-user-md me-2"></i><span class='inter'>Hello</span> ডাক্তার
             </a>
             <!--<a href="{{ route('student.scholarship') }}" -->
             <!--   class="nav-link {{ Request::is('student/scholarship*') ? 'active' : '' }}">-->
             <!--    <i class="fas fa-graduation-cap me-2"></i>স্কলারশিপ-->
             <!--</a>-->
-<<<<<<< HEAD
-            <a href="{{ route('student.scholarship.register') }}" 
-=======
             <a href="{{ route('scholarship.register') }}" 
->>>>>>> c356163 (video call ui setup)
                class="nav-link {{ Request::is('student/scholarship*') ? 'active' : '' }}">
                 <i class="fas fa-graduation-cap me-2"></i>রেজিস্টার
             </a>

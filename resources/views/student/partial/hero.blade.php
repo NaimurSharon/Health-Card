@@ -8,18 +8,6 @@
     <div class="flex flex-col lg:flex-row items-stretch justify-between gap-6">
         <!-- YouTube Video Section -->
         <div class="w-full lg:w-2/3 lg:h-full mb-6 lg:mb-0">
-<<<<<<< HEAD
-            @if(website_setting('hero', 'youtube_playlist_id'))
-            <div class="bg-black rounded-2xl overflow-hidden shadow-2xl h-full flex flex-col">
-                <div class="flex-1">
-                    <iframe 
-                        class="w-full h-full min-h-[500px]"
-                        src="https://www.youtube.com/embed?listType=playlist&list={{ website_setting('hero', 'youtube_playlist_id') }}&autoplay={{ website_setting('hero', 'youtube_auto_play') ? 1 : 0 }}&rel=0&modestbranding=1"
-                        title="YouTube video player"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-=======
             @if(website_setting('hero', 'youtube_playlist_url'))
             <div class="bg-black rounded-2xl overflow-hidden shadow-2xl h-full flex flex-col">
                 <div class="flex-1">
@@ -30,7 +18,6 @@
                     frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                     allowfullscreen>
->>>>>>> c356163 (video call ui setup)
                     </iframe>
                 </div>
             </div>
@@ -60,14 +47,6 @@
             $ministers = website_setting('ministers', 'ministers_list', []);
             $displayCount = website_setting('ministers', 'display_count', 6);
             $sectionTitle = website_setting('ministers', 'section_title', 'আমাদের সম্মানিত মন্ত্রীবর্গ');
-<<<<<<< HEAD
-        
-            // Determine PC columns dynamically
-            $pcColumns = ($displayCount == 3) ? 3 : 2;
-        @endphp
-        
-        @if(count($ministers) > 0)
-=======
             
             // Add principal as the last item
             $principalData = [
@@ -85,17 +64,12 @@
         @endphp
         
         @if(count($allDisplayItems) > 0)
->>>>>>> c356163 (video call ui setup)
         <div class="w-full lg:w-1/3 h-auto lg:h-full">
             <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-6 md:p-8 h-full flex flex-col shadow-xl">
         
                 <!-- Section Header -->
                 <div class="text-center mb-6">
                     <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-3">{{ $sectionTitle }}</h2>
-<<<<<<< HEAD
-                    <p class="text-gray-600 text-lg">দেশের উন্নয়নে নিবেদিত প্রাণ</p>
-=======
->>>>>>> c356163 (video call ui setup)
                 </div>
         
                 <!-- Ministers Grid -->
@@ -109,19 +83,11 @@
                         gap-4 md:gap-6
                         justify-items-center
                     ">
-<<<<<<< HEAD
-                        @foreach(array_slice($ministers, 0, $displayCount) as $minister)
-                        <div class="text-center group w-full max-w-[180px] sm:max-w-[200px] md:max-w-none">
-                            <div class="relative inline-block mb-4">
-        
-                                <!-- Minister Image - Large and consistent across devices -->
-=======
                         @foreach(array_slice($allDisplayItems, 0, $totalDisplayCount) as $index => $minister)
                         <div class="text-center group w-full max-w-[180px] sm:max-w-[200px] md:max-w-none">
                             <div class="relative inline-block mb-4">
         
                                 <!-- Minister/Principal Image - Large and consistent across devices -->
->>>>>>> c356163 (video call ui setup)
                                 <div class="
                                     w-28 h-28     <!-- Mobile: 112px -->
                                     sm:w-32 sm:h-32 <!-- Small: 128px -->
@@ -152,11 +118,7 @@
         
                             </div>
         
-<<<<<<< HEAD
-                            <!-- Minister Details -->
-=======
                             <!-- Minister/Principal Details -->
->>>>>>> c356163 (video call ui setup)
                             <div class="text-gray-800 px-1 sm:px-2">
                                 <h3 class="font-semibold text-sm sm:text-base md:text-lg leading-tight mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                                     {{ $minister['name'] }}
@@ -171,17 +133,10 @@
                 </div>
         
                 <!-- View All Button -->
-<<<<<<< HEAD
-                @if(count($ministers) > $displayCount)
-                <div class="text-center mt-6 pt-6 border-t border-gray-200">
-                    <button onclick="showAllMinisters()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-base">
-                        সব মন্ত্রী দেখুন ({{ count($ministers) }})
-=======
                 @if(count($allDisplayItems) > $displayCount)
                 <div class="text-center mt-6 pt-6 border-t border-gray-200">
                     <button onclick="showAllMinisters()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-sm md:text-base">
                         সব দেখুন ({{ count($allDisplayItems) }})
->>>>>>> c356163 (video call ui setup)
                     </button>
                 </div>
                 @endif
@@ -215,11 +170,7 @@
         </div>
         <div class="p-4 md:p-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-<<<<<<< HEAD
-                @foreach($ministers as $minister)
-=======
                 @foreach($allDisplayItems as $minister)
->>>>>>> c356163 (video call ui setup)
                 <div class="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6 text-center border border-gray-200 hover:border-blue-300 transition-all duration-300">
                     <div class="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-full overflow-hidden border-4 border-blue-500 mb-3 md:mb-4 shadow-lg">
                         @if(!empty($minister['image_link']) && file_exists(public_path('storage/' . $minister['image_link'])))

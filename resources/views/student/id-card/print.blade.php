@@ -108,11 +108,7 @@
         }
         
         .tiro {
-<<<<<<< HEAD
-          font-family: "Tiro Bangla", serif!important;
-=======
           font-family: "Tiro Bangla", 'Inter'!important;
->>>>>>> c356163 (video call ui setup)
           font-weight: 400;
           font-style: normal;
         }
@@ -123,13 +119,10 @@
           font-style: italic;
         }
         
-<<<<<<< HEAD
-=======
         .inter{
             font-family: 'Inter', sans-serif;
         }
         
->>>>>>> c356163 (video call ui setup)
         /* Dynamic ID Card Size from Database */
         .card-container {
             width: {{ $idCard->template->width ?? 85 }}mm;
@@ -400,11 +393,7 @@
     <div class="print-page">
         <div class="card-container">
             <!-- Expiry Badge -->
-<<<<<<< HEAD
-            <div class="expiry-badge">
-=======
             <div class="expiry-badge {{ detectLanguageClass($idCard->is_expired ? 'EXPIRED' : 'VALID') }}">
->>>>>>> c356163 (video call ui setup)
                 {{ $idCard->is_expired ? 'EXPIRED' : 'VALID' }}
             </div>
             
@@ -433,13 +422,8 @@
                             $organizationName = $idCard->user->school->name;
                         }
                     @endphp
-<<<<<<< HEAD
-                    <div class="organization-name tiro">{{ $organizationName }}</div>
-                    <div class="card-type">
-=======
                     <div class="organization-name {{ detectLanguageClass($organizationName) }}">{{ $organizationName }}</div>
                     <div class="card-type {{ detectLanguageClass(ucfirst($idCard->type) . ' ID CARD') }}">
->>>>>>> c356163 (video call ui setup)
                         {{ ucfirst($idCard->type) }} ID CARD
                     </div>
                 </div>
@@ -459,11 +443,7 @@
                             </div>
                         @else
                             <div class="user-photo">
-<<<<<<< HEAD
-                                <div class="photo-placeholder">
-=======
                                 <div class="photo-placeholder {{ detectLanguageClass('PHOTO') }}">
->>>>>>> c356163 (video call ui setup)
                                     <div>📷</div>
                                     <div>PHOTO</div>
                                 </div>
@@ -477,11 +457,7 @@
                             </div>
                         @else
                             <div class="qr-code-container" style="background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-<<<<<<< HEAD
-                                <div style="text-align: center; color: #6c757d; font-size: max(6px, {{ ($idCard->template->width ?? 85) * 0.08 }}px);">
-=======
                                 <div style="text-align: center; color: #6c757d; font-size: max(6px, {{ ($idCard->template->width ?? 85) * 0.08 }}px);" class="{{ detectLanguageClass('QR CODE') }}">
->>>>>>> c356163 (video call ui setup)
                                     <div style="margin-bottom: 1px;">📱</div>
                                     QR CODE
                                 </div>
@@ -493,29 +469,12 @@
                     <div class="info-section">
                         <div class="info-grid">
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">NAME:</span>
-                                <span class="info-value holder-name">{{ $idCard->card_holder_name }}</span>
-=======
                                 <span class="info-label {{ detectLanguageClass('NAME:') }}">NAME:</span>
                                 <span class="info-value holder-name {{ detectLanguageClass($idCard->card_holder_name) }}">{{ $idCard->card_holder_name }}</span>
->>>>>>> c356163 (video call ui setup)
                             </div>
                             
                             @if($idCard->student)
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">STUDENT ID:</span>
-                                <span class="info-value">{{ $idCard->student->student_id ?? 'N/A' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">CLASS:</span>
-                                <span class="info-value">{{ $idCard->student->class->name ?? 'N/A' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">ROLL NO:</span>
-                                <span class="info-value">{{ $idCard->student->roll_number ?? 'N/A' }}</span>
-=======
                                 <span class="info-label {{ detectLanguageClass('STUDENT ID:') }}">STUDENT ID:</span>
                                 <span class="info-value {{ detectLanguageClass($idCard->student->student_id ?? 'N/A') }}">{{ $idCard->student->student_id ?? 'N/A' }}</span>
                             </div>
@@ -526,28 +485,11 @@
                             <div class="info-row">
                                 <span class="info-label {{ detectLanguageClass('ROLL NO:') }}">ROLL NO:</span>
                                 <span class="info-value {{ detectLanguageClass($idCard->student->roll_number ?? 'N/A') }}">{{ $idCard->student->roll_number ?? 'N/A' }}</span>
->>>>>>> c356163 (video call ui setup)
                             </div>
                             @endif
                             
                             @if($idCard->user)
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">POSITION:</span>
-                                <span class="info-value">{{ ucfirst($idCard->user->role) }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">DEPT:</span>
-                                <span class="info-value">{{ $idCard->user->department ?? ($idCard->user->specialization ?? 'N/A') }}</span>
-                            </div>
-                            @endif
-
-                            <!-- Medical Information -->
-                            @if($idCard->student)
-                            <div class="info-row">
-                                <span class="info-label">BLOOD GROUP:</span>
-                                <span class="info-value" style="color: #e74c3c; font-weight: 700;">
-=======
                                 <span class="info-label {{ detectLanguageClass('POSITION:') }}">POSITION:</span>
                                 <span class="info-value {{ detectLanguageClass(ucfirst($idCard->user->role)) }}">{{ ucfirst($idCard->user->role) }}</span>
                             </div>
@@ -562,48 +504,31 @@
                             <div class="info-row">
                                 <span class="info-label {{ detectLanguageClass('BLOOD GROUP:') }}">BLOOD GROUP:</span>
                                 <span class="info-value {{ detectLanguageClass($idCard->student->blood_group ?? 'N/A') }}" style="color: #e74c3c; font-weight: 700;">
->>>>>>> c356163 (video call ui setup)
                                     {{ $idCard->student->blood_group ?? 'N/A' }}
                                 </span>
                             </div>
                             
                             @if($idCard->student->allergies && $idCard->student->allergies !== 'None')
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">ALLERGIES:</span>
-                                <span class="info-value" style="color: #e74c3c; font-weight: 600;">
-=======
                                 <span class="info-label {{ detectLanguageClass('ALLERGIES:') }}">ALLERGIES:</span>
                                 <span class="info-value {{ detectLanguageClass($idCard->student->allergies) }}" style="color: #e74c3c; font-weight: 600;">
->>>>>>> c356163 (video call ui setup)
                                     {{ $idCard->student->allergies }}
                                 </span>
                             </div>
                             @endif
                             
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">EMERGENCY:</span>
-                                <span class="info-value" style="color: #e74c3c; font-weight: 700;">
-=======
                                 <span class="info-label {{ detectLanguageClass('EMERGENCY:') }}">EMERGENCY:</span>
                                 <span class="info-value {{ detectLanguageClass($idCard->student->emergency_contact ?? 'N/A') }}" style="color: #e74c3c; font-weight: 700;">
->>>>>>> c356163 (video call ui setup)
                                     {{ $idCard->student->emergency_contact ?? 'N/A' }}
                                 </span>
                             </div>
                             @endif
                             
                             <div class="info-row">
-<<<<<<< HEAD
-                                <span class="info-label">CARD NO:</span>
-                                <span class="info-value">
-                                    <span class="card-number">{{ $idCard->card_number }}</span>
-=======
                                 <span class="info-label {{ detectLanguageClass('CARD NO:') }}">CARD NO:</span>
                                 <span class="info-value">
                                     <span class="card-number {{ detectLanguageClass($idCard->card_number) }}">{{ $idCard->card_number }}</span>
->>>>>>> c356163 (video call ui setup)
                                 </span>
                             </div>
                         </div>
@@ -612,34 +537,10 @@
                 
                 <!-- Footer -->
                 <div class="card-footer">
-<<<<<<< HEAD
-                    <!-- Barcode -->
-                    <!--<div class="barcode-section">-->
-                    <!--    @if($idCard->barcode && file_exists(public_path('storage/' . $idCard->barcode)))-->
-                    <!--        <div class="barcode">-->
-                    <!--            <img src="{{ asset('storage/' . $idCard->barcode) }}" alt="Barcode">-->
-                    <!--            <div class="code-label">{{ $idCard->card_number }}</div>-->
-                    <!--        </div>-->
-                    <!--    @else-->
-                    <!--        <div class="barcode" style="background: #f8f9fa; padding: 2px; border-radius: 2px;">-->
-                    <!--            <div style="text-align: center; color: #6c757d; font-size: max(6px, {{ ($idCard->template->width ?? 85) * 0.08 }}px);">-->
-                    <!--                <div style="letter-spacing: 1px; font-family: monospace;">{{ $idCard->card_number }}</div>-->
-                    <!--                <div class="code-label">BARCODE</div>-->
-                    <!--            </div>-->
-                    <!--        </div>-->
-                    <!--    @endif-->
-                    <!--</div>-->
-                    
-                    <!-- Signature -->
-                    <div class="signature-section">
-                        <div class="signature-line"></div>
-                        <div class="signature-text">AUTHORIZED SIGNATURE</div>
-=======
                     <!-- Signature -->
                     <div class="signature-section">
                         <div class="signature-line"></div>
                         <div class="signature-text {{ detectLanguageClass('AUTHORIZED SIGNATURE') }}">AUTHORIZED SIGNATURE</div>
->>>>>>> c356163 (video call ui setup)
                     </div>
                 </div>
             </div>

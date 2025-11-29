@@ -7,8 +7,6 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
-<<<<<<< HEAD
-=======
         './resources/js/**/*.jsx',
         './resources/js/**/*.js',
         './resources/js/**/*.tsx',
@@ -25,7 +23,6 @@ export default {
         'to-black',
         'backdrop-blur-xl',
         'backdrop-blur-2xl',
->>>>>>> c356163 (video call ui setup)
     ],
 
     theme: {
@@ -35,8 +32,6 @@ export default {
             },
             animation: {
                 fadeIn: 'fadeIn 0.5s ease-in-out',
-<<<<<<< HEAD
-=======
                 fadeInUp: 'fadeInUp 0.6s ease-out',
                 slideInDown: 'slideInDown 0.5s ease-out',
                 slideInRight: 'slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -44,15 +39,12 @@ export default {
                 ping: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
                 pulse: 'pulse 3s ease-in-out infinite',
                 ripple: 'ripple 0.6s linear',
->>>>>>> c356163 (video call ui setup)
             },
             keyframes: {
                 fadeIn: {
                     '0%': { opacity: '0', transform: 'translateY(10px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
-<<<<<<< HEAD
-=======
                 fadeInUp: {
                     from: {
                         opacity: '0',
@@ -116,15 +108,9 @@ export default {
             },
             backdropBlur: {
                 xs: '2px',
->>>>>>> c356163 (video call ui setup)
             },
         },
     },
 
     plugins: [forms],
-<<<<<<< HEAD
 };
-
-=======
-};
->>>>>>> c356163 (video call ui setup)

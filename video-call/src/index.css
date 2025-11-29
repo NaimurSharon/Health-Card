@@ -1,31 +1,9 @@
-<<<<<<< HEAD
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-=======
->>>>>>> c356163 (video call ui setup)
 body,
 html {
   height: 100%;
   width: 100%;
   margin: 0;
-<<<<<<< HEAD
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  height: 100%;
-  width: 100%;
-=======
   font-family: sans-serif;
->>>>>>> c356163 (video call ui setup)
 }
 
 .str-video {
@@ -38,8 +16,5 @@ html {
   min-width: 0;
   max-width: 100%;
 }
-<<<<<<< HEAD
-=======
 
 #root { height:100%; }
->>>>>>> c356163 (video call ui setup)

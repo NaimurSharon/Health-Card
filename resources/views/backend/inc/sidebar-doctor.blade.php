@@ -44,25 +44,18 @@
             </a>
 
             <div class="mt-8 pt-4 border-t border-gray-700 flex flex-col gap-3">
-<<<<<<< HEAD
-                <a href="{{ route('doctor.profile', auth()->user()) }}"
-=======
                 <a href="{{ route('doctor.profile.edit', auth()->user()) }}"
->>>>>>> c356163 (video call ui setup)
                    class="sidebar-item flex items-center px-3 py-2 text-lg font-medium rounded-lg {{ request()->routeIs('doctor.profile') ? 'active' : '' }}">
                     <i class="fas fa-user sidebar-icon w-6 text-center"></i>
                     <span>Profile</span>
                 </a>
                 
-<<<<<<< HEAD
-=======
                 <a href="{{ route('doctor.availability.index', auth()->user()) }}"
                    class="sidebar-item flex items-center px-3 py-2 text-lg font-medium rounded-lg {{ request()->routeIs('doctor.availability.index') ? 'active' : '' }}">
                     <i class="fas fa-user sidebar-icon w-6 text-center"></i>
                     <span>Profile</span>
                 </a>
                 
->>>>>>> c356163 (video call ui setup)
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" 

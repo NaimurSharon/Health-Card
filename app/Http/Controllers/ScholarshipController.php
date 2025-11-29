@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
-use App\Models\ScholarshipRegistration;
-=======
 use App\Http\Controllers\Controller;
 use App\Models\ScholarshipRegistration;
 use App\Models\ScholarshipApplication;
->>>>>>> c356163 (video call ui setup)
 use App\Models\ScholarshipExam;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -16,21 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ScholarshipController extends Controller
 {
-<<<<<<< HEAD
-    // Show registration form with exam information
-    public function showRegistration()
-    {
-        $user = Auth::user();
-        
-        if ($user->role === 'student') {
-            $student = $user;
-        } else {
-            return redirect()->route('admin.dashboard');
-        }
-
-        // Check if already registered
-        $existingRegistration = ScholarshipRegistration::where('student_id', $student->id)
-=======
     public function index()
     {
         $student = Auth::user();
@@ -51,7 +32,6 @@ class ScholarshipController extends Controller
     // If user is logged in and is a student, check if already registered
     if ($user && $user->role === 'student') {
         $existingRegistration = ScholarshipRegistration::where('student_id', $user->id)
->>>>>>> c356163 (video call ui setup)
             ->whereIn('status', ['pending', 'approved'])
             ->first();
 
@@ -62,17 +42,6 @@ class ScholarshipController extends Controller
                 return redirect()->route('student.scholarship.status');
             }
         }
-<<<<<<< HEAD
-
-        // Get available exams for information
-        $availableExams = ScholarshipExam::where('status', 'upcoming')
-            ->where('exam_date', '>=', now())
-            ->get();
-
-        return view('student.scholarship.register', compact('availableExams'));
-    }
-
-=======
     }
 
     // Get available exams for information
@@ -83,7 +52,6 @@ class ScholarshipController extends Controller
     return view('frontend.scholarship.register', compact('availableExams'));
 }
 
->>>>>>> c356163 (video call ui setup)
     // Submit registration
     public function submitRegistration(Request $request)
     {
@@ -97,26 +65,15 @@ class ScholarshipController extends Controller
 
         // Validate registration data
         $request->validate([
-<<<<<<< HEAD
-            'academic_background' => 'required|string|min:100|max:1000',
-            'extracurricular_activities' => 'required|string|min:50|max:500',
-            'achievements' => 'required|string|min:50|max:500',
-            'reason_for_applying' => 'required|string|min:100|max:1000',
-=======
             'academic_background' => 'required|string|min:50|max:1000',
             'extracurricular_activities' => 'required|string|min:50|max:500',
             'achievements' => 'required|string|min:50|max:500',
             'reason_for_applying' => 'required|string|min:50|max:1000',
->>>>>>> c356163 (video call ui setup)
         ]);
 
         // Check if already registered
         $existingRegistration = ScholarshipRegistration::where('student_id', $student->id)
-<<<<<<< HEAD
-            ->whereIn('status', ['pending', 'approved'])
-=======
             ->whereIn('status', ['pending', 'approved','rejected'])
->>>>>>> c356163 (video call ui setup)
             ->first();
 
         if ($existingRegistration) {
@@ -158,9 +115,6 @@ class ScholarshipController extends Controller
             return redirect()->route('student.scholarship.register');
         }
 
-<<<<<<< HEAD
-        return view('student.scholarship.status', compact('registration'));
-=======
         return view('frontend.scholarship.status', compact('registration'));
     }
 
@@ -206,6 +160,5 @@ class ScholarshipController extends Controller
         ]);
 
         return redirect()->route('student.scholarship.exams')->with('success', 'Successfully applied for the scholarship exam!');
->>>>>>> c356163 (video call ui setup)
     }
 }
