@@ -1,0 +1,32 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "build:video-call": "vite build --outDir public/build-video-call"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.2",
+        "alpinejs": "^3.4.2",
+        "autoprefixer": "^10.4.22",
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^1.2.0",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.18",
+        "vite": "^6.0.11"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@mui/icons-material": "^7.3.5",
+        "@mui/material": "^7.3.5",
+        "@stream-io/video-react-sdk": "^1.26.1",
+        "@vitejs/plugin-react": "^5.1.1",
+        "lucide-react": "^0.554.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "stream-chat-react": "^13.11.0"
+    }
+}
