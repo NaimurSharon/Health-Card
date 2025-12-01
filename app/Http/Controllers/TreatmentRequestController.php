@@ -10,25 +10,37 @@ use Illuminate\Http\Request;
 class TreatmentRequestController extends Controller
 {
     public function index(Request $request)
-    {
+    {   
         $query = TreatmentRequest::with(['student.user', 'doctor']);
 
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+        // Get the filter values from request
+        $status = $request->input('status', '');
+        $priority = $request->input('priority', '');
+        $studentId = $request->input('student_id', '');
+
+        if ($status) {
+            $query->where('status', $status);
         }
         
-        if ($request->has('priority') && $request->priority) {
-            $query->where('priority', $request->priority);
+        if ($priority) {
+            $query->where('priority', $priority);
         }
 
-        if ($request->has('student_id') && $request->student_id) {
-            $query->where('student_id', $request->student_id);
+        if ($studentId) {
+            $query->where('student_id', $studentId);
         }
 
         $treatmentRequests = $query->orderBy('created_at', 'desc')->paginate(20);
         $students = Student::with('user')->get();
 
-        return view('backend.treatment-requests.index', compact('treatmentRequests', 'students'));
+        // Pass all filter variables to the view
+        return view('backend.treatment-requests.index', compact(
+            'treatmentRequests', 
+            'students',
+            'status',
+            'priority',
+            'studentId'
+        ));
     }
 
     public function create()

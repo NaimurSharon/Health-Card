@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Student\CityNoticesController;
 use App\Http\Controllers\Student\SchoolDiaryController;
 use App\Http\Controllers\Student\HelloDoctorController;
@@ -9,6 +9,7 @@ use App\Http\Controllers\Student\ScholarshipController;
 use App\Http\Controllers\Student\SchoolNoticesController;
 use App\Http\Controllers\Student\StudentIdCardController;
 use App\Http\Controllers\Student\StudentHealthReportController;
+use App\Http\Controllers\Student\StudentConsultationController;
 use App\Http\Controllers\Student\ExamController;
 
 /*

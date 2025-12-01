@@ -6,7 +6,7 @@ use App\Models\CityCorporationNotice;
 use App\Models\School;
 use Illuminate\Http\Request;
 
-class AdminCityCorporationNoticeController extends Controller
+class CityCorporationNoticeController extends Controller
 {
     public function index()
     {
