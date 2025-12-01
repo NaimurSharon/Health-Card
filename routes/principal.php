@@ -1,7 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Principal\DashboardController;
+use App\Http\Controllers\Principal\PrincipalDashboardController;
+use App\Http\Controllers\Principal\PrincipalStudentController;
+use App\Http\Controllers\Principal\PrincipalTeacherController;
+use App\Http\Controllers\Principal\PrincipalClassController;
+use App\Http\Controllers\Principal\PrincipalSectionController;
+use App\Http\Controllers\Principal\PrincipalSubjectController;
+use App\Http\Controllers\Principal\PrincipalRoutineController;
+use App\Http\Controllers\Principal\PrincipalHomeworkController;
+use App\Http\Controllers\Principal\PrincipalNoticeController;
+use App\Http\Controllers\Principal\PrincipalHealthController;
+use App\Http\Controllers\Principal\PrincipalIdCardController;
+use App\Http\Controllers\Principal\PrincipalProfileController;
 
 /*
 |--------------------------------------------------------------------------

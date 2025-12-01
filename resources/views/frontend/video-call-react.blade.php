@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stream-io/video-react-sdk/dist/css/styles.css" />
     <script>
         window.consultationId = @json($consultation->id);
-        window.userType = 'student';
+        window.userType = '{{ Auth::user()->role === "doctor" ? "doctor" : "patient" }}';
     </script>
     <?php
     $manifestPath = public_path('build/manifest.json');
@@ -61,11 +61,12 @@
                             if(typeof window.initializeVideoCallApp === 'function'){
                                 console.log('Initializing video call app...');
                                 console.log('Config:', window.streamVideoConfig);
+                                console.log('User Type:', window.userType);
                                 window.initializeVideoCallApp(
                                     'video-call-root',
                                     window.streamVideoConfig,
                                     window.consultationData,
-                                    'student'
+                                    window.userType
                                 );
                             } else {
                                 console.error('initializeVideoCallApp function not found on window');

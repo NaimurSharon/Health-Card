@@ -1,13 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Doctor\DashboardController;
-use App\Http\Controllers\Doctor\AppointmentController;
-use App\Http\Controllers\Doctor\PatientController;
-use App\Http\Controllers\Doctor\MedicalRecordController;
-use App\Http\Controllers\Doctor\TreatmentRequestController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DoctorAppointmentController;
+use App\Http\Controllers\DoctorPatientController;
+use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\TreatmentRequestController;
 use App\Http\Controllers\Doctor\DoctorConsultationController;
-use App\Http\Controllers\Doctor\HealthCardController;
+use App\Http\Controllers\HealthCardController;
 use App\Http\Controllers\Doctor\DoctorProfileController;
 use App\Http\Controllers\Doctor\DoctorAvailabilityController;
 
@@ -27,15 +27,15 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::get('/dashboard', [DashboardController::class, 'doctorIndex'])->name('dashboard');
     
     // Appointments
-    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
-    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
-    Route::put('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
-    Route::post('/appointments/{appointment}/medical-record', [AppointmentController::class, 'createMedicalRecord'])->name('appointments.create-medical-record');
+    Route::get('/appointments', [DoctorAppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('/appointments/{appointment}', [DoctorAppointmentController::class, 'show'])->name('appointments.show');
+    Route::put('/appointments/{appointment}/status', [DoctorAppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+    Route::post('/appointments/{appointment}/medical-record', [DoctorAppointmentController::class, 'createMedicalRecord'])->name('appointments.create-medical-record');
     
     // Patients
-    Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
-    Route::get('/patients/{student}', [PatientController::class, 'show'])->name('patients.show');
-    Route::post('/patients/{student}/medical-record', [PatientController::class, 'createMedicalRecord'])->name('patients.create-medical-record');
+    Route::get('/patients', [DoctorPatientController::class, 'index'])->name('patients.index');
+    Route::get('/patients/{student}', [DoctorPatientController::class, 'show'])->name('patients.show');
+    Route::post('/patients/{student}/medical-record', [DoctorPatientController::class, 'createMedicalRecord'])->name('patients.create-medical-record');
     
     // Medical Records
     Route::get('/medical-records', [MedicalRecordController::class, 'index'])->name('medical-records.index');

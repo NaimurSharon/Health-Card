@@ -34,6 +34,7 @@ use App\Http\Controllers\OrganizationController;
 
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicConsultationController;
 
 use App\Http\Controllers\LoginController;
 

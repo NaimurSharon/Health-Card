@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Teacher\DashboardController;
+use App\Http\Controllers\Teacher\TeacherDashboardController;
+use App\Http\Controllers\Teacher\TeacherRoutineController;
+use App\Http\Controllers\Teacher\TeacherHomeworkController;
 
 /*
 |--------------------------------------------------------------------------

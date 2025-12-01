@@ -7,16 +7,59 @@
 <div class="space-y-6" id="hello-doctor-container">
     <!-- Header -->
     <div class="content-card rounded-lg overflow-hidden">
-        <div class="table-header px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-2xl font-bold text-white">Hello Doctor</h3>
-                    <p class="text-blue-100">Get medical consultation and treatment</p>
+        <div class="table-header px-4 sm:px-6 py-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center">
+                        <div class="hidden sm:block mr-3">
+                            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-white truncate">Hello, Dr. {{ Auth::user()->name ?? 'Doctor' }}</h3>
+                            <p class="text-white/80 text-sm sm:text-base mt-0.5 sm:mt-1">
+                                {{ now()->format('l, F j, Y') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-shrink-0 w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <!-- Mobile view: Smaller button -->
+                        <a href="{{ route('video-consultation.index') }}" 
+                        class="sm:hidden inline-flex items-center justify-center w-full px-4 py-2.5 bg-white hover:bg-gray-50 text-dark font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+                            <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            My Appointments
+                        </a>
+                        
+                        <!-- Desktop view: Full button -->
+                        <a href="{{ route('video-consultation.index') }}" 
+                        class="hidden sm:inline-flex items-center justify-center px-5 py-3 bg-white hover:bg-gray-50 text-dark font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white whitespace-nowrap">
+                            <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            My Appointments
+                        </a>
+                        
+                        <!-- Optional: Add a quick stats badge -->
+                        @if(isset($todayConsultations) && $todayConsultations->count() > 0)
+                        <div class="hidden sm:block">
+                            <div class="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                <span class="font-bold text-white">{{ $todayConsultations->count() }}</span> Today
+                            </div>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Doctors List Section -->
     <div class="content-card rounded-lg p-6 shadow-sm">
         <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-6 flex items-center">
