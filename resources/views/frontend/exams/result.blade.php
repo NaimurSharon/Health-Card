@@ -1,4 +1,4 @@
-@extends('layouts.student')
+@extends('layouts.global')
 
 @section('title', 'Exam Result - ' . $exam->title)
 

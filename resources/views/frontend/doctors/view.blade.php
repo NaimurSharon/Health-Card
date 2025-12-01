@@ -1,4 +1,4 @@
-@extends('layouts.student')
+@extends('layouts.global')
 
 @section('title', $doctor->name ?? 'ডাক্তারের বিস্তারিত')
 @section('subtitle', 'অভিজ্ঞ ও প্রশিক্ষিত মেডিকেল প্রফেশনাল')

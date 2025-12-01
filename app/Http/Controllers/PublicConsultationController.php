@@ -19,17 +19,17 @@ class PublicConsultationController extends Controller
     
     public function index()
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
-        $consultations = VideoConsultation::where('student_id', $student->id)
-            ->with(['doctor'])
+        $consultations = VideoConsultation::where('user_id', $user->id)
+            ->with(['doctor', 'user'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $upcomingConsultations = VideoConsultation::where('student_id', $student->id)
+        $upcomingConsultations = VideoConsultation::where('user_id', $user->id)
         ->whereIn('status', ['scheduled'])
         ->where('scheduled_for', '>=', now())
-        ->with(['doctor'])
+        ->with(['doctor', 'user'])
         ->get();
 
         return view('frontend.video-consultation.index', compact('consultations', 'upcomingConsultations'));
@@ -37,11 +37,11 @@ class PublicConsultationController extends Controller
 
     public function show($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
-            ->with(['doctor', 'payment'])
+            ->where('user_id', $user->id)
+            ->with(['doctor', 'user', 'payment'])
             ->firstOrFail();
 
         return view('frontend.video-consultation.show', compact('consultation'));
@@ -49,15 +49,15 @@ class PublicConsultationController extends Controller
     
     public function videoCall($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->where(function($query) {
                 $query->where('status', 'scheduled')
                       ->orWhere('status', 'ongoing');
             })
-            ->with(['doctor'])
+            ->with(['doctor', 'user'])
             ->firstOrFail();
 
         // Update consultation status
@@ -69,9 +69,9 @@ class PublicConsultationController extends Controller
         }
 
         $streamConfig = $this->streamService->getFrontendConfig(
-            $student->id, 
-            $student->name,
-            $student->profile_photo_url ?? null
+            $user->id, 
+            $user->name,
+            $user->profile_photo_url ?? null
         );
         
         $streamConfig['callId'] = $consultation->call_id;
@@ -82,11 +82,11 @@ class PublicConsultationController extends Controller
     // API Endpoints for React
     public function getCallConfig($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
-            ->with(['doctor'])
+            ->where('user_id', $user->id)
+            ->with(['doctor', 'user'])
             ->firstOrFail();
 
         // Prevent API access to completed calls
@@ -98,26 +98,31 @@ class PublicConsultationController extends Controller
         }
 
         $streamConfig = $this->streamService->getFrontendConfig(
-            $student->id, 
-            $student->name,
-            $student->profile_photo_url ?? null
+            $user->id, 
+            $user->name,
+            $user->profile_photo_url ?? null
         );
         
         $streamConfig['callId'] = $consultation->call_id;
 
+        // Determine user type based on role
+        $userType = in_array($user->role, ['student', 'teacher', 'principal', 'public']) 
+            ? 'patient' 
+            : 'user';
+
         return response()->json([
             'consultation' => $consultation,
             'streamConfig' => $streamConfig,
-            'userType' => 'student'
+            'userType' => $userType
         ]);
     }
 
     public function endCall(Request $request, $id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         // Get participant count before updating
@@ -131,12 +136,12 @@ class PublicConsultationController extends Controller
             'status' => 'completed',
             'ended_at' => now(),
             'duration' => $request->duration ?? (($consultation->started_at) ? now()->diffInSeconds($consultation->started_at) : 0),
-            'call_metadata' => array_merge($meta, ['ended_by' => 'student', 'ended_at_ts' => now()->timestamp])
+            'call_metadata' => array_merge($meta, ['ended_by' => 'patient', 'ended_at_ts' => now()->timestamp])
         ]);
 
         // Broadcast the call ended event for real-time update
         try {
-            event(new \App\Events\VideoCallEnded($consultation->call_id, 'student'));
+            event(new \App\Events\VideoCallEnded($consultation->call_id, 'patient'));
         } catch (\Exception $e) {
             \Log::warning("Failed to broadcast VideoCallEnded event: " . $e->getMessage());
         }
@@ -145,28 +150,28 @@ class PublicConsultationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Call ended successfully',
-            'consultation' => $consultation->load(['student.user', 'doctor', 'appointment']),
-            'redirect_url' => route('student.video-consultation.show', $id)
+            'consultation' => $consultation->load(['user', 'doctor', 'appointment']),
+            'redirect_url' => route('video-consultation.show', $id)
         ]);
     }
 
     /**
-     * Redirects student to the React join page for a consultation.
+     * Redirects user to the React join page for a consultation.
      */
     public function joinCall($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->where(function($query) {
                 $query->where('status', 'scheduled')
                       ->orWhere('status', 'ongoing');
             })
-            ->with(['doctor'])
+            ->with(['doctor', 'user'])
             ->firstOrFail();
 
-        // Update consultation status when student arrives
+        // Update consultation status when user arrives
         if ($consultation->status === 'scheduled') {
             $consultation->update([
                 'status' => 'ongoing',
@@ -175,9 +180,9 @@ class PublicConsultationController extends Controller
         }
 
         $streamConfig = $this->streamService->getFrontendConfig(
-            $student->id,
-            $student->name,
-            $student->profile_photo_url ?? null
+            $user->id,
+            $user->name,
+            $user->profile_photo_url ?? null
         );
 
         $streamConfig['callId'] = $consultation->call_id;
@@ -191,10 +196,10 @@ class PublicConsultationController extends Controller
      */
     public function participantJoined(Request $request, $id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -251,10 +256,10 @@ class PublicConsultationController extends Controller
      */
     public function getParticipants($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $meta = $consultation->call_metadata ?? [];
@@ -302,10 +307,10 @@ class PublicConsultationController extends Controller
      */
     public function participantLeft(Request $request, $id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -344,10 +349,10 @@ class PublicConsultationController extends Controller
      */
     public function heartbeat(Request $request, $id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -396,22 +401,22 @@ class PublicConsultationController extends Controller
      */
     public function checkPresence($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $meta = $consultation->call_metadata ?? [];
-        $studentReady = $meta['student_ready'] ?? false;
+        $patientReady = $meta['patient_ready'] ?? false;
         $doctorReady = $meta['doctor_ready'] ?? false;
 
         // Check timestamps to ensure they're recent (within last 10 seconds)
         $now = \Carbon\Carbon::now();
-        if (isset($meta['student_ready_at'])) {
-            $studentReadyAt = \Carbon\Carbon::parse($meta['student_ready_at']);
-            if ($now->diffInSeconds($studentReadyAt) > 10) {
-                $studentReady = false;
+        if (isset($meta['patient_ready_at'])) {
+            $patientReadyAt = \Carbon\Carbon::parse($meta['patient_ready_at']);
+            if ($now->diffInSeconds($patientReadyAt) > 10) {
+                $patientReady = false;
             }
         }
         if (isset($meta['doctor_ready_at'])) {
@@ -423,36 +428,36 @@ class PublicConsultationController extends Controller
 
         return response()->json([
             'success' => true,
-            'student_present' => $studentReady,
+            'patient_present' => $patientReady,
             'doctor_present' => $doctorReady,
-            'both_ready' => $studentReady && $doctorReady
+            'both_ready' => $patientReady && $doctorReady
         ]);
     }
 
     /**
-     * Mark student as ready in waiting room
+     * Mark patient as ready in waiting room
      */
     public function markReady($id)
     {
-        $student = Auth::user();
+        $user = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $user->id)
             ->firstOrFail();
 
         $meta = $consultation->call_metadata ?? [];
-        $meta['student_ready'] = true;
-        $meta['student_ready_at'] = now()->toISOString();
+        $meta['patient_ready'] = true;
+        $meta['patient_ready_at'] = now()->toISOString();
 
         $consultation->call_metadata = $meta;
         $consultation->save();
 
         // Check if both are ready
-        $bothReady = ($meta['student_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+        $bothReady = ($meta['patient_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
 
         return response()->json([
             'success' => true,
-            'student_ready' => true,
+            'patient_ready' => true,
             'doctor_ready' => $meta['doctor_ready'] ?? false,
             'both_ready' => $bothReady
         ]);
