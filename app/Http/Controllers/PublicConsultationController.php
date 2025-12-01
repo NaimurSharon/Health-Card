@@ -411,17 +411,17 @@ class PublicConsultationController extends Controller
         $patientReady = $meta['patient_ready'] ?? false;
         $doctorReady = $meta['doctor_ready'] ?? false;
 
-        // Check timestamps to ensure they're recent (within last 10 seconds)
+        // Check timestamps to ensure they're recent (within last 15 seconds)
         $now = \Carbon\Carbon::now();
         if (isset($meta['patient_ready_at'])) {
             $patientReadyAt = \Carbon\Carbon::parse($meta['patient_ready_at']);
-            if ($now->diffInSeconds($patientReadyAt) > 10) {
+            if ($now->diffInSeconds($patientReadyAt) > 15) {
                 $patientReady = false;
             }
         }
         if (isset($meta['doctor_ready_at'])) {
             $doctorReadyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
-            if ($now->diffInSeconds($doctorReadyAt) > 10) {
+            if ($now->diffInSeconds($doctorReadyAt) > 15) {
                 $doctorReady = false;
             }
         }
@@ -454,6 +454,14 @@ class PublicConsultationController extends Controller
 
         // Check if both are ready
         $bothReady = ($meta['patient_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+
+        // If both ready, update consultation status to ongoing
+        if ($bothReady && $consultation->status === 'scheduled') {
+            $consultation->update([
+                'status' => 'ongoing',
+                'started_at' => now()
+            ]);
+        }
 
         return response()->json([
             'success' => true,

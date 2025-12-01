@@ -389,18 +389,18 @@ class DoctorConsultationController extends Controller
         $doctor = Auth::user();
         $consultation = VideoConsultation::where('id', $id)->where('doctor_id', $doctor->id)->firstOrFail();
         $meta = $consultation->call_metadata ?? [];
-        $studentReady = $meta['student_ready'] ?? false;
+        $patientReady = $meta['patient_ready'] ?? false;
         $doctorReady = $meta['doctor_ready'] ?? false;
         $now = \Carbon\Carbon::now();
-        if (isset($meta['student_ready_at'])) {
-            $studentReadyAt = \Carbon\Carbon::parse($meta['student_ready_at']);
-            if ($now->diffInSeconds($studentReadyAt) > 10) { $studentReady = false; }
+        if (isset($meta['patient_ready_at'])) {
+            $patientReadyAt = \Carbon\Carbon::parse($meta['patient_ready_at']);
+            if ($now->diffInSeconds($patientReadyAt) > 15) { $patientReady = false; }
         }
         if (isset($meta['doctor_ready_at'])) {
             $doctorReadyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
-            if ($now->diffInSeconds($doctorReadyAt) > 10) { $doctorReady = false; }
+            if ($now->diffInSeconds($doctorReadyAt) > 15) { $doctorReady = false; }
         }
-        return response()->json(['success' => true, 'student_present' => $studentReady, 'doctor_present' => $doctorReady, 'both_ready' => $studentReady && $doctorReady]);
+        return response()->json(['success' => true, 'patient_present' => $patientReady, 'doctor_present' => $doctorReady, 'both_ready' => $patientReady && $doctorReady]);
     }
 
     /**
@@ -415,7 +415,16 @@ class DoctorConsultationController extends Controller
         $meta['doctor_ready_at'] = now()->toISOString();
         $consultation->call_metadata = $meta;
         $consultation->save();
-        $bothReady = ($meta['student_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
-        return response()->json(['success' => true, 'student_ready' => $meta['student_ready'] ?? false, 'doctor_ready' => true, 'both_ready' => $bothReady]);
+        $bothReady = ($meta['patient_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+        
+        // If both ready, update consultation status to ongoing
+        if ($bothReady && $consultation->status === 'scheduled') {
+            $consultation->update([
+                'status' => 'ongoing',
+                'started_at' => now()
+            ]);
+        }
+        
+        return response()->json(['success' => true, 'patient_ready' => $meta['patient_ready'] ?? false, 'doctor_ready' => true, 'both_ready' => $bothReady]);
     }
 }

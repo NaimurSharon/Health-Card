@@ -13,6 +13,7 @@ import ErrorDisplay from './ErrorDisplay';
 import CustomCallControls from './CustomCallControls';
 import CustomVideoLayout from './CustomVideoLayout';
 import SessionTimer, { useParticipantDisconnectionMonitor } from './SessionTimer';
+import WaitingRoom from './WaitingRoom';
 import { endCall } from '../services/api';
 
 const VideoCall = ({ streamConfig, consultation, userType }) => {
@@ -21,6 +22,8 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showWaitingRoom, setShowWaitingRoom] = useState(true);
+    const [bothReady, setBothReady] = useState(false);
 
     // Track if we've already left the call to prevent duplicate leave attempts
     const callLeftRef = useRef(false);
@@ -218,6 +221,32 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, [call, client, consultation]);
+
+    // Handle when both users are ready
+    const handleBothReady = useCallback(() => {
+        console.log('Both users ready - hiding waiting room');
+        setBothReady(true);
+        setShowWaitingRoom(false);
+    }, []);
+
+    // Handle cancel from waiting room
+    const handleCancelWaiting = () => {
+        window.location.href = userType === 'doctor'
+            ? `/doctor/consultations/${consultation.id}`
+            : `/video-consultations/${consultation.id}`;
+    };
+
+    // Show waiting room if enabled and not both ready
+    if (showWaitingRoom && !bothReady) {
+        return (
+            <WaitingRoom
+                consultationId={consultation.id}
+                userType={userType}
+                onBothReady={handleBothReady}
+                onCancel={handleCancelWaiting}
+            />
+        );
+    }
 
     if (loading) {
         return <LoadingSpinner message="Joining video call..." />;

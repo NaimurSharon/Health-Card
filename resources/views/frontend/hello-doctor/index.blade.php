@@ -184,7 +184,7 @@
             <i class="fas fa-calendar-plus me-2 text-blue-600"></i>Schedule Appointment
         </h4>
         
-        <form id="appointmentBookingForm" action="{{ route('student.hello-doctor.store-appointment') }}" method="POST" class="space-y-4">
+        <form id="appointmentBookingForm" action="{{ route('hello-doctor.store-appointment') }}" method="POST" class="space-y-4">
             @csrf
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

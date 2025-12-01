@@ -55,7 +55,7 @@ class HelloDoctorController extends Controller
     
     public function storeAppointment(Request $request)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
@@ -66,24 +66,34 @@ class HelloDoctorController extends Controller
             'consultation_type' => 'required|in:in_person,video_call',
         ]);
 
+        // Determine patient type based on user role
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
+            ? $user->role 
+            : 'public';
+
         $appointment = Appointment::create([
-            'student_id' => $student->id,
+            'user_id' => $user->id,
+            'patient_type' => $patientType,
             'doctor_id' => $request->doctor_id,
             'appointment_date' => $request->appointment_date,
             'appointment_time' => $request->appointment_time,
             'reason' => $request->reason,
             'symptoms' => $request->symptoms,
             'status' => 'scheduled',
+            'created_by' => $user->id,
         ]);
 
-            $this->createVideoConsultation($student->id, $request->doctor_id, $appointment->id, $request);
+        // Create video consultation if requested
+        if ($request->consultation_type === 'video_call') {
+            $this->createVideoConsultation($user->id, $request->doctor_id, $appointment->id, $request, $patientType);
+        }
 
         return redirect()->route('hello-doctor')->with('success', 'Appointment booked successfully!');
     }
 
     public function storeTreatmentRequest(Request $request)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $request->validate([
             'symptoms' => 'required|string|max:1000',
@@ -94,8 +104,14 @@ class HelloDoctorController extends Controller
             'consultation_type' => 'required|in:in_person,video_call',
         ]);
 
+        // Determine patient type
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
+            ? $user->role 
+            : 'public';
+
         $treatmentRequest = TreatmentRequest::create([
-            'student_id' => $student->id,
+            'user_id' => $user->id,
+            'patient_type' => $patientType,
             'symptoms' => $request->symptoms,
             'urgency' => $request->urgency,
             'priority' => $request->urgency === 'emergency' ? 'emergency' : 'medium',
@@ -105,7 +121,7 @@ class HelloDoctorController extends Controller
 
         // If it's an emergency video consultation
         if ($request->consultation_type === 'video_call' && $request->urgency === 'emergency') {
-            $this->createEmergencyVideoConsultation($student->id, $request);
+            $this->createEmergencyVideoConsultation($user->id, $request, $patientType);
         }
 
         return redirect()->route('hello-doctor')->with('success', 'Treatment request submitted successfully!');
@@ -113,7 +129,7 @@ class HelloDoctorController extends Controller
 
     public function createInstantVideoCall(Request $request)
     {
-        $student = Auth::user();
+        $user = Auth::user();
         
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
@@ -122,25 +138,32 @@ class HelloDoctorController extends Controller
             'payment_method' => 'required|in:card,bkash,nagad,rocket',
         ]);
 
+        // Determine patient type
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
+            ? $user->role 
+            : 'public';
+
         $consultation = $this->createVideoConsultation(
-            $student->id, 
+            $user->id, 
             $request->doctor_id, 
             null, 
             $request,
-            'instant'
+            'instant',
+            $patientType
         );
 
         return redirect()->route('video-consultation.join', $consultation->id)
             ->with('success', 'Video call initiated! Connecting to doctor...');
     }
 
-    private function createVideoConsultation($studentId, $doctorId, $appointmentId = null, $request, $type = 'scheduled')
+    private function createVideoConsultation($userId, $doctorId, $appointmentId = null, $request, $type = 'scheduled', $patientType = 'student')
     {
         $callId = 'vc_' . Str::random(16);
 
         $consultation = VideoConsultation::create([
             'call_id' => $callId,
-            'student_id' => $studentId,
+            'user_id' => $userId,
+            'patient_type' => $patientType,
             'doctor_id' => $doctorId,
             'appointment_id' => $appointmentId,
             'type' => $type,
@@ -155,12 +178,12 @@ class HelloDoctorController extends Controller
         // when the first participant calls call.join({ create: true })
 
         // Trigger the VideoCallIncoming event
-        $this->triggerCallNotification($consultation, $studentId, $doctorId);
+        $this->triggerCallNotification($consultation, $userId, $doctorId);
 
         return $consultation;
     }
 
-    private function createEmergencyVideoConsultation($studentId, $request)
+    private function createEmergencyVideoConsultation($userId, $request, $patientType = 'student')
     {
         // Find available emergency doctor
         $emergencyDoctor = \App\Models\User::where('role', 'doctor')
@@ -169,7 +192,7 @@ class HelloDoctorController extends Controller
             ->first();
 
         if (!$emergencyDoctor) {
-            \Log::warning('No available emergency doctor found for student: ' . $studentId);
+            \Log::warning('No available emergency doctor found for user: ' . $userId);
             return null;
         }
 
@@ -177,7 +200,8 @@ class HelloDoctorController extends Controller
 
         $consultation = VideoConsultation::create([
             'call_id' => $callId,
-            'student_id' => $studentId,
+            'user_id' => $userId,
+            'patient_type' => $patientType,
             'doctor_id' => $emergencyDoctor->id,
             'type' => 'emergency',
             'symptoms' => $request->symptoms,
@@ -189,24 +213,32 @@ class HelloDoctorController extends Controller
         ]);
 
         // Trigger emergency call notification
-        $this->triggerEmergencyCallNotification($consultation, $studentId, $emergencyDoctor->id);
+        $this->triggerEmergencyCallNotification($consultation, $userId, $emergencyDoctor->id);
 
         return $consultation;
     }
 
-    private function triggerCallNotification($consultation, $studentId, $doctorId)
+    private function triggerCallNotification($consultation, $userId, $doctorId)
     {
         try {
-            // Get student and class information
-            $student = \App\Models\Student::with(['user', 'class'])->find($studentId);
+            // Get user information
+            $user = \App\Models\User::find($userId);
+            
+            // Get additional details based on patient type
+            $patientDetails = 'N/A';
+            if ($consultation->patient_type === 'student') {
+                $student = \App\Models\Student::with('class')->where('user_id', $userId)->first();
+                $patientDetails = $student && $student->class ? $student->class->name : 'N/A';
+            }
             
             $callData = [
                 'id' => $consultation->id,
                 'call_id' => $consultation->call_id,
-                'student_id' => $studentId,
+                'user_id' => $userId,
+                'patient_type' => $consultation->patient_type,
                 'doctor_id' => $doctorId,
-                'student_name' => $student->user->name ?? 'Student',
-                'student_class' => $student->class->name ?? 'N/A',
+                'patient_name' => $user->name ?? 'Patient',
+                'patient_details' => $patientDetails,
                 'symptoms' => $consultation->symptoms,
                 'type' => $consultation->type,
                 'fee' => $consultation->consultation_fee,
@@ -224,19 +256,27 @@ class HelloDoctorController extends Controller
         }
     }
 
-    private function triggerEmergencyCallNotification($consultation, $studentId, $doctorId)
+    private function triggerEmergencyCallNotification($consultation, $userId, $doctorId)
     {
         try {
-            // Get student information
-            $student = \App\Models\Student::with(['user', 'class'])->find($studentId);
+            // Get user information
+            $user = \App\Models\User::find($userId);
+            
+            // Get additional details based on patient type
+            $patientDetails = 'N/A';
+            if ($consultation->patient_type === 'student') {
+                $student = \App\Models\Student::with('class')->where('user_id', $userId)->first();
+                $patientDetails = $student && $student->class ? $student->class->name : 'N/A';
+            }
             
             $emergencyCallData = [
                 'id' => $consultation->id,
                 'call_id' => $consultation->call_id,
-                'student_id' => $studentId,
+                'user_id' => $userId,
+                'patient_type' => $consultation->patient_type,
                 'doctor_id' => $doctorId,
-                'student_name' => $student->user->name ?? 'Student',
-                'student_class' => $student->class->name ?? 'N/A',
+                'patient_name' => $user->name ?? 'Patient',
+                'patient_details' => $patientDetails,
                 'symptoms' => $consultation->symptoms,
                 'type' => 'emergency',
                 'fee' => $consultation->consultation_fee,
