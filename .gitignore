@@ -6,6 +6,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+unload
+hc
+.gemini
 .env
 .env.backup
 .env.production
