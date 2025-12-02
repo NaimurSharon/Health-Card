@@ -79,6 +79,8 @@ class DoctorCallController extends Controller
         $metadata = $consultation->call_metadata ?? [];
         $metadata['doctor_rejected_at'] = now()->toISOString();
         $metadata['rejection_reason'] = 'Doctor declined the call';
+        $metadata['call_ended_by'] = 'doctor';
+        $metadata['end_type'] = 'rejected';
 
         $consultation->update([
             'status' => 'cancelled',
@@ -88,7 +90,13 @@ class DoctorCallController extends Controller
 
         Log::info("Doctor {$doctor->id} rejected call {$consultation->id}");
 
-        return response()->json(['success' => true]);
+        // Broadcast event to notify student
+        broadcast(new \App\Events\CallStatusChanged($consultation->id, 'rejected', $doctor->id))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Call rejected successfully'
+        ]);
     }
 
     /**
@@ -136,7 +144,7 @@ class DoctorCallController extends Controller
         // Look for calls that are waiting for doctor to accept
         $pendingCall = VideoConsultation::where('doctor_id', $doctor->id)
         ->where('type', 'instant')
-            ->whereIn('status', ['scheduled', 'ongoing'])
+            ->where('status', 'ongoing')
             ->where(function($query) {
                 // Either created recently (instant calls)
                 $query->where('created_at', '>=', now()->subMinutes(5))

@@ -83,6 +83,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/video-consultations/{id}/participants', [StudentConsultationController::class, 'getParticipants'])->name('video-consultation.participants');
     Route::get('/video-consultations/{id}/presence', [StudentConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
     Route::post('/video-consultations/{id}/ready', [StudentConsultationController::class, 'markReady'])->name('video-consultation.ready');
+    Route::get('/video-consultations/{id}/status', [StudentConsultationController::class, 'checkCallStatus'])->name('video-consultation.status');
     
     // Scholarship Registration Routes
     Route::get('/scholarship/register', [ScholarshipController::class, 'showRegistration'])->name('scholarship.register');

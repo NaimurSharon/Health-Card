@@ -53,20 +53,25 @@ class PublicConsultationController extends Controller
         
         $consultation = VideoConsultation::where('id', $id)
             ->where('user_id', $user->id)
-            ->where(function($query) {
-                $query->where('status', 'scheduled')
-                      ->orWhere('status', 'ongoing');
-            })
             ->with(['doctor', 'user'])
             ->firstOrFail();
 
-        // Update consultation status
-        if ($consultation->status === 'scheduled') {
-            $consultation->update([
-                'status' => 'ongoing',
-                'started_at' => now()
-            ]);
+        // Check consultation status - only allow scheduled or ongoing
+        if (in_array($consultation->status, ['completed', 'cancelled', 'missed'])) {
+            return redirect()
+                ->route('video-consultation.show', $id)
+                ->with('error', 'This consultation has ended. You cannot rejoin completed or cancelled sessions.');
         }
+
+        // Only allow joining if scheduled or ongoing
+        if (!in_array($consultation->status, ['scheduled', 'ongoing'])) {
+            return redirect()
+                ->route('video-consultation.show', $id)
+                ->with('error', 'This consultation is not available for joining.');
+        }
+
+        // DO NOT automatically change status to ongoing here
+        // Let the waiting room system handle status changes when both participants are ready
 
         $streamConfig = $this->streamService->getFrontendConfig(
             $user->id, 

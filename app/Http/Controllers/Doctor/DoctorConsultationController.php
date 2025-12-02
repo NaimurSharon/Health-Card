@@ -85,16 +85,25 @@ class DoctorConsultationController extends Controller
         
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
-            ->with(['student.user'])
+            ->with(['student.user', 'user'])
             ->firstOrFail();
 
-        // Update status to ongoing
-        if ($consultation->status === 'scheduled') {
-            $consultation->update([
-                'status' => 'ongoing',
-                'started_at' => now()
-            ]);
+        // Check consultation status - only allow scheduled or ongoing
+        if (in_array($consultation->status, ['completed', 'cancelled', 'missed'])) {
+            return redirect()
+                ->route('doctor.video-consultation.show', $id)
+                ->with('error', 'This consultation has ended. You cannot rejoin completed or cancelled sessions.');
         }
+
+        // Only allow joining if scheduled or ongoing
+        if (!in_array($consultation->status, ['scheduled', 'ongoing'])) {
+            return redirect()
+                ->route('doctor.video-consultation.show', $id)
+                ->with('error', 'This consultation is not available for joining.');
+        }
+
+        // DO NOT automatically change status to ongoing here
+        // Let the waiting room system handle status changes when both participants are ready
 
         $streamConfig = $this->streamService->getFrontendConfig(
             $doctor->id, 
@@ -181,11 +190,20 @@ class DoctorConsultationController extends Controller
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
 
+        // Update metadata
+        $metadata = $consultation->call_metadata ?? [];
+        $metadata['call_ended_by'] = 'doctor';
+        $metadata['ended_at'] = now()->toISOString();
+
         $consultation->update([
             'status' => 'completed',
             'ended_at' => now(),
-            'duration' => $request->duration ?? 0
+            'duration' => $request->duration ?? 0,
+            'call_metadata' => $metadata
         ]);
+
+        // Broadcast event to notify other participant
+        broadcast(new \App\Events\CallStatusChanged($consultation->id, 'ended', $doctor->id))->toOthers();
 
         return response()->json(['success' => true]);
     }
@@ -580,6 +598,33 @@ class DoctorConsultationController extends Controller
             'both_ready' => $bothReady,
             'call_active' => $consultation->status === 'ongoing',
             'can_start_call' => $bothReady
+        ]);
+    }
+
+    /**
+     * Check call status - used by doctor to detect if student ended call
+     */
+    public function checkCallStatus($id)
+    {
+        $doctor = Auth::user();
+        
+        $consultation = VideoConsultation::where('id', $id)
+            ->where('doctor_id', $doctor->id)
+            ->firstOrFail();
+
+        $metadata = $consultation->call_metadata ?? [];
+        $endedBy = $metadata['call_ended_by'] ?? null;
+        $endType = $metadata['end_type'] ?? null;
+
+        return response()->json([
+            'status' => $consultation->status,
+            'ended_by' => $endedBy,
+            'end_type' => $endType,
+            'should_redirect' => in_array($consultation->status, ['cancelled', 'completed']) && $endedBy !== 'doctor',
+            'redirect_url' => route('doctor.video-consultation.show', $id),
+            'message' => $consultation->status === 'completed' && $endedBy === 'student' 
+                ? 'Call ended by patient'
+                : null
         ]);
     }
 }

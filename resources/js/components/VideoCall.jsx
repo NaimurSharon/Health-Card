@@ -28,6 +28,7 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     // Track if we've already left the call to prevent duplicate leave attempts
     const callLeftRef = useRef(false);
     const isMountedRef = useRef(true);
+    const statusCheckIntervalRef = useRef(null);
 
     // Handle session timeout
     const handleSessionTimeout = useCallback(async () => {
@@ -84,6 +85,65 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
             }
         };
     }, [streamConfig]);
+
+    // Poll call status to detect if other participant ended call
+    useEffect(() => {
+        if (!consultation?.id) return;
+
+        const checkCallStatus = async () => {
+            try {
+                const endpoint = userType === 'doctor'
+                    ? `/doctor/consultations/${consultation.id}/status`
+                    : `/student/video-consultations/${consultation.id}/status`;
+
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // If other participant ended the call, redirect
+                    if (data.should_redirect) {
+                        console.log('Call ended by other participant, redirecting...', data);
+
+                        // Stop polling
+                        if (statusCheckIntervalRef.current) {
+                            clearInterval(statusCheckIntervalRef.current);
+                        }
+
+                        // Leave the call gracefully
+                        if (call && !callLeftRef.current) {
+                            callLeftRef.current = true;
+                            await call.leave().catch(() => { });
+                        }
+
+                        // Show message and redirect
+                        if (data.message) {
+                            alert(data.message);
+                        }
+
+                        window.location.href = data.redirect_url;
+                    }
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+            }
+        };
+
+        // Start polling every 2 seconds
+        statusCheckIntervalRef.current = setInterval(checkCallStatus, 2000);
+
+        // Cleanup
+        return () => {
+            if (statusCheckIntervalRef.current) {
+                clearInterval(statusCheckIntervalRef.current);
+            }
+        };
+    }, [consultation?.id, userType, call]);
 
     // Join call when client is ready
     useEffect(() => {

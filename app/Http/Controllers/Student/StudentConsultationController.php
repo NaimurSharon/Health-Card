@@ -130,11 +130,14 @@ class StudentConsultationController extends Controller
 
         // Always mark as completed when end call is initiated
         // This ensures no rejoin is possible, like Zoom/Google Meet
+        $meta['call_ended_by'] = 'student';
+        $meta['ended_at'] = now()->toISOString();
+        
         $consultation->update([
             'status' => 'completed',
             'ended_at' => now(),
             'duration' => $request->duration ?? (($consultation->started_at) ? now()->diffInSeconds($consultation->started_at) : 0),
-            'call_metadata' => array_merge($meta, ['ended_by' => 'student', 'ended_at_ts' => now()->timestamp])
+            'call_metadata' => $meta
         ]);
 
         // Broadcast the call ended event for real-time update
@@ -143,6 +146,9 @@ class StudentConsultationController extends Controller
         } catch (\Exception $e) {
             \Log::warning("Failed to broadcast VideoCallEnded event: " . $e->getMessage());
         }
+        
+        // Broadcast status change to notify other participant
+        broadcast(new \App\Events\CallStatusChanged($consultation->id, 'ended', Auth::id()))->toOthers();
 
         // Return full consultation data for display on show page
         return response()->json([
@@ -161,21 +167,26 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
-            ->where(function($query) {
-                $query->where('status', 'scheduled')
-                      ->orWhere('status', 'ongoing');
-            })
+            ->where('user_id', $student->id)
             ->with(['doctor'])
             ->firstOrFail();
 
-        // Update consultation status when student arrives
-        if ($consultation->status === 'scheduled') {
-            $consultation->update([
-                'status' => 'ongoing',
-                'started_at' => now()
-            ]);
+        // Check consultation status - only allow scheduled or ongoing
+        if (in_array($consultation->status, ['completed', 'cancelled', 'missed'])) {
+            return redirect()
+                ->route('video-consultation.show', $id)
+                ->with('error', 'This consultation has ended. You cannot rejoin completed or cancelled sessions.');
         }
+
+        // Only allow joining if scheduled or ongoing
+        if (!in_array($consultation->status, ['scheduled', 'ongoing'])) {
+            return redirect()
+                ->route('video-consultation.show', $id)
+                ->with('error', 'This consultation is not available for joining.');
+        }
+
+        // DO NOT automatically change status to ongoing here
+        // Let the waiting room system handle status changes when both participants are ready
 
         $streamConfig = $this->streamService->getFrontendConfig(
             $student->id,
@@ -546,6 +557,33 @@ class StudentConsultationController extends Controller
             'both_ready' => $bothReady,
             'call_active' => $consultation->status === 'ongoing',
             'can_start_call' => $bothReady
+        ]);
+    }
+
+    /**
+     * Check call status - used by student to detect if doctor ended/rejected call
+     */
+    public function checkCallStatus($id)
+    {
+        $student = Auth::user();
+        
+        $consultation = VideoConsultation::where('id', $id)
+            ->where('user_id', $student->id)
+            ->firstOrFail();
+
+        $metadata = $consultation->call_metadata ?? [];
+        $endedBy = $metadata['call_ended_by'] ?? null;
+        $endType = $metadata['end_type'] ?? null;
+
+        return response()->json([
+            'status' => $consultation->status,
+            'ended_by' => $endedBy,
+            'end_type' => $endType,
+            'should_redirect' => in_array($consultation->status, ['cancelled', 'completed']) && $endedBy !== 'student',
+            'redirect_url' => route('video-consultation.show', $id),
+            'message' => $consultation->status === 'cancelled' && $endType === 'rejected' 
+                ? 'The doctor declined your call. Please try again later.'
+                : ($consultation->status === 'completed' ? 'Call ended by doctor' : null)
         ]);
     }
 }

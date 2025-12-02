@@ -78,6 +78,7 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     // Alternative routes for React app (uses /consultations/ instead of /video-consultations/)
     Route::get('/consultations/{id}/presence', [DoctorConsultationController::class, 'checkPresence'])->name('consultations.presence');
     Route::post('/consultations/{id}/ready', [DoctorConsultationController::class, 'markReady'])->name('consultations.ready');
+    Route::get('/consultations/{id}/status', [DoctorConsultationController::class, 'checkCallStatus'])->name('consultations.status');
     Route::post('/consultations/{id}/joined', [DoctorConsultationController::class, 'participantJoined'])->name('consultations.joined');
     Route::post('/consultations/{id}/left', [DoctorConsultationController::class, 'participantLeft'])->name('consultations.left');
     Route::post('/consultations/{id}/heartbeat', [DoctorConsultationController::class, 'heartbeat'])->name('consultations.heartbeat');

@@ -82,6 +82,37 @@ const WaitingRoom = ({ consultationId, userType, onBothReady, onCancel }) => {
 
         const checkPresence = async () => {
             try {
+                // First, check if call was rejected/ended (for students only)
+                if (userType === 'student') {
+                    try {
+                        const statusResponse = await fetch(`/student/video-consultations/${consultationId}/status`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (statusResponse.ok) {
+                            const statusData = await statusResponse.json();
+
+                            // If doctor rejected or ended the call, redirect immediately
+                            if (statusData.should_redirect) {
+                                console.log('Call rejected/ended by doctor, redirecting...', statusData);
+
+                                if (statusData.message) {
+                                    alert(statusData.message);
+                                }
+
+                                window.location.href = statusData.redirect_url;
+                                return; // Stop further execution
+                            }
+                        }
+                    } catch (statusErr) {
+                        console.error('Error checking call status:', statusErr);
+                    }
+                }
+
+                // Then check presence as normal
                 const endpoint = userType === 'doctor'
                     ? `/doctor/consultations/${consultationId}/presence`
                     : `/video-consultations/${consultationId}/presence`;
