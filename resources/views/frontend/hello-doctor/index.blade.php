@@ -473,9 +473,12 @@ function showEmergencyForm() {
 // Instant Call Functionality
 async function initiateInstantCall(doctorId, doctorName, consultationFee) {
     @if(!Auth::check())
-        alert('Please log in to initiate an instant call.');
-        window.location.href = '/login';
-        return;
+        // User is not logged in, show auth modal with appointment data
+        const appointmentData = {
+            doctor_id: doctorId,
+            action: 'book_appointment'
+        };
+        showAuthModal(appointmentData);
     @endif
 
     const button = document.getElementById(`instant-call-btn-${doctorId}`);
@@ -562,7 +565,7 @@ function showSymptomsModal(doctorName, fee) {
             <div id="symptoms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-bold text-gray-900">Instant Call with Dr. ${doctorName}</h3>
+                        <h3 class="text-xl font-bold text-gray-900">Instant Call with ${doctorName}</h3>
                         <button onclick="closeSymptomsModal()" class="text-gray-400 hover:text-gray-600">
                             <i class="fas fa-times text-xl"></i>
                         </button>

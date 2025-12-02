@@ -428,12 +428,12 @@ class HelloDoctorController extends Controller
             ->whereIn('status', ['ongoing', 'pending'])
             ->exists();
 
-        if ($studentOngoingCall) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You already have an ongoing consultation. Please complete it before starting a new one.'
-            ], 400);
-        }
+        // if ($studentOngoingCall) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'You already have an ongoing consultation. Please complete it before starting a new one.'
+        //     ], 400);
+        // }
 
         // Create instant video consultation
         try {
@@ -448,7 +448,7 @@ class HelloDoctorController extends Controller
                 'symptoms' => $request->symptoms,
                 'scheduled_for' => now(),
                 'consultation_fee' => $doctor->doctorDetail->consultation_fee ?? 500,
-                'status' => 'pending',
+                'status' => 'scheduled', // Use 'scheduled' so it appears in pending calls
                 'payment_status' => 'pending',
                 'call_metadata' => [
                     'instant_call' => true,
@@ -456,18 +456,20 @@ class HelloDoctorController extends Controller
                 ]
             ]);
 
-            // Trigger notification to doctor
+            // Trigger notification to doctor (this will show in the notification panel)
             $this->triggerCallNotification($consultation, $student->id, $doctor->id);
 
+            // Return success with redirect to the join page
+            // The join page will handle the waiting room and call setup
             return response()->json([
                 'success' => true,
-                'message' => 'Call initiated successfully! Waiting for doctor to accept...',
+                'message' => 'Connecting to doctor...',
                 'consultation_id' => $consultation->id,
-                'redirect_url' => route('student.video-consultation.join', $consultation->id)
+                'redirect_url' => route('video-consultation.join', $consultation->id)
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Instant call creation failed: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to initiate call. Please try again.'
@@ -490,9 +492,7 @@ class HelloDoctorController extends Controller
         }
 
         // Check if doctor has ongoing calls
-        $hasOngoingCall = VideoConsultation::where('doctor_id', $doctor->id)
-            ->whereIn('status', ['ongoing', 'pending'])
-            ->exists();
+        $hasOngoingCall = null;
 
         return response()->json([
             'available' => !$hasOngoingCall,

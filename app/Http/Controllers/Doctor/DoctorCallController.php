@@ -135,7 +135,8 @@ class DoctorCallController extends Controller
         
         // Look for calls that are waiting for doctor to accept
         $pendingCall = VideoConsultation::where('doctor_id', $doctor->id)
-            ->whereIn('status', ['scheduled', 'pending'])
+        ->where('type', 'instant')
+            ->whereIn('status', ['scheduled', 'ongoing'])
             ->where(function($query) {
                 // Either created recently (instant calls)
                 $query->where('created_at', '>=', now()->subMinutes(5))
