@@ -10,7 +10,8 @@ class MedicalRecord extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_id',
+        'user_id',
+        'patient_type',
         'record_date',
         'record_type',
         'symptoms',
@@ -35,9 +36,14 @@ class MedicalRecord extends Model
     ];
 
     // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function student()
     {
-        return $this->belongsTo(Student::class, 'student_id');
+        return $this->belongsTo(Student::class, 'user_id', 'user_id');
     }
 
     public function recordedBy()
@@ -56,14 +62,28 @@ class MedicalRecord extends Model
         return $query->where('record_date', '>=', now()->subDays($days));
     }
 
-    public function scopeForStudent($query, $studentId)
+    public function scopeForUser($query, $userId)
     {
-        return $query->where('student_id', $studentId);
+        return $query->where('user_id', $userId);
     }
 
     public function scopeRecordedByDoctor($query, $doctorId)
     {
         return $query->where('recorded_by', $doctorId);
     }
-    
+
+    public function scopeForStudents($query)
+    {
+        return $query->where('patient_type', 'student');
+    }
+
+    public function scopeForTeachers($query)
+    {
+        return $query->where('patient_type', 'teacher');
+    }
+
+    public function scopeForStaff($query)
+    {
+        return $query->where('patient_type', 'staff');
+    }
 }

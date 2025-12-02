@@ -191,7 +191,7 @@
     
                     {{-- Recent Uploads --}}
                     @php
-                        $recentPrescriptions = \App\Models\MedicalRecord::where('student_id', $studentDetails->id)
+                        $recentPrescriptions = \App\Models\MedicalRecord::where('user_id', $student->id)
                             ->whereNotNull('prescription')
                             ->orderBy('record_date', 'desc')
                             ->take(2)

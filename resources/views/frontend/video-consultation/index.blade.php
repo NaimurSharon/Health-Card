@@ -111,9 +111,10 @@
                             </div>
                         </div>
                         
-                        @if($consultation->isActive())
-                            <a href="{{ route('video-consultation.join', $consultation->id) }}" class="bg-white text-gray-900 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors">
-                                Join
+                        @if($consultation->isAvailable())
+                            <a href="{{ route('video-consultation.join', $consultation->id) }}" class="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-800 transition-colors flex items-center gap-2">
+                                <i class="fas fa-video text-xs"></i>
+                                Join Now
                             </a>
                         @else
                             <a href="{{ route('video-consultation.show', $consultation->id) }}" class="bg-white/50 text-gray-900 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white transition-colors">

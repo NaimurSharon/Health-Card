@@ -21,12 +21,12 @@ class StudentConsultationController extends Controller
     {
         $student = Auth::user();
         
-        $consultations = VideoConsultation::where('student_id', $student->id)
+        $consultations = VideoConsultation::where('user_id', $student->id)
             ->with(['doctor'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $upcomingConsultations = VideoConsultation::where('student_id', $student->id)
+        $upcomingConsultations = VideoConsultation::where('user_id', $student->id)
         ->whereIn('status', ['scheduled'])
         ->where('scheduled_for', '>=', now())
         ->with(['doctor'])
@@ -40,7 +40,7 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->with(['doctor', 'payment'])
             ->firstOrFail();
 
@@ -52,7 +52,7 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->where(function($query) {
                 $query->where('status', 'scheduled')
                       ->orWhere('status', 'ongoing');
@@ -85,7 +85,7 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->with(['doctor'])
             ->firstOrFail();
 
@@ -117,7 +117,7 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
         
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->firstOrFail();
 
         // Get participant count before updating
@@ -350,7 +350,7 @@ class StudentConsultationController extends Controller
         $student = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -361,6 +361,16 @@ class StudentConsultationController extends Controller
         $sessionId = $data['participant']['sessionId'];
 
         $meta = $consultation->call_metadata ?? [];
+        
+        // Update patient heartbeat
+        $meta['patient_last_heartbeat'] = now()->toISOString();
+        
+        // If call is active and patient was marked as disconnected, clear it
+        if ($consultation->status === 'ongoing' && isset($meta['patient_disconnect_at'])) {
+            unset($meta['patient_disconnect_at']);
+        }
+        
+        // Track participants for session management
         if (!isset($meta['participants']) || !is_array($meta['participants'])) {
             $meta['participants'] = [];
         }
@@ -375,10 +385,10 @@ class StudentConsultationController extends Controller
         }
 
         if (!$found) {
-            // Add a minimal participant record so cleanup/participants see it
             $meta['participants'][] = [
                 'sessionId' => $sessionId,
                 'user' => $data['participant']['user'] ?? null,
+                'role' => 'patient',
                 'joined_at' => now()->toISOString(),
                 'last_seen' => now()->toISOString(),
             ];
@@ -390,74 +400,152 @@ class StudentConsultationController extends Controller
         return response()->json([
             'success' => true,
             'participants' => $meta['participants'],
-            'count' => count($meta['participants'])
+            'count' => count($meta['participants']),
+            'call_status' => $consultation->status
         ]);
     }
 
     /**
      * Check presence of both participants in waiting room
+     * Returns current status of both participants and call state
      */
     public function checkPresence($id)
     {
         $student = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->firstOrFail();
 
         $meta = $consultation->call_metadata ?? [];
-        $studentReady = $meta['student_ready'] ?? false;
-        $doctorReady = $meta['doctor_ready'] ?? false;
-
-        // Check timestamps to ensure they're recent (within last 10 seconds)
+        
         $now = \Carbon\Carbon::now();
-        if (isset($meta['student_ready_at'])) {
-            $studentReadyAt = \Carbon\Carbon::parse($meta['student_ready_at']);
-            if ($now->diffInSeconds($studentReadyAt) > 10) {
-                $studentReady = false;
+        $patientReady = false;
+        $doctorReady = false;
+        $callActive = $consultation->status === 'ongoing';
+        
+        // Check patient presence (heartbeat within last 10 seconds)
+        if (isset($meta['patient_ready']) && $meta['patient_ready']) {
+            if (isset($meta['patient_last_heartbeat'])) {
+                $lastHeartbeat = \Carbon\Carbon::parse($meta['patient_last_heartbeat']);
+                $patientReady = $now->diffInSeconds($lastHeartbeat) <= 10;
+            } else if (isset($meta['patient_ready_at'])) {
+                $readyAt = \Carbon\Carbon::parse($meta['patient_ready_at']);
+                $patientReady = $now->diffInSeconds($readyAt) <= 10;
             }
         }
-        if (isset($meta['doctor_ready_at'])) {
-            $doctorReadyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
-            if ($now->diffInSeconds($doctorReadyAt) > 10) {
-                $doctorReady = false;
+        
+        // Check doctor presence (heartbeat within last 10 seconds)
+        if (isset($meta['doctor_ready']) && $meta['doctor_ready']) {
+            if (isset($meta['doctor_last_heartbeat'])) {
+                $lastHeartbeat = \Carbon\Carbon::parse($meta['doctor_last_heartbeat']);
+                $doctorReady = $now->diffInSeconds($lastHeartbeat) <= 10;
+            } else if (isset($meta['doctor_ready_at'])) {
+                $readyAt = \Carbon\Carbon::parse($meta['doctor_ready_at']);
+                $doctorReady = $now->diffInSeconds($readyAt) <= 10;
             }
         }
-
+        
+        // Check if someone disconnected during active call
+        $disconnectInfo = null;
+        if ($callActive && isset($meta['call_started_at'])) {
+            if (!$patientReady && isset($meta['patient_disconnect_at'])) {
+                $disconnectAt = \Carbon\Carbon::parse($meta['patient_disconnect_at']);
+                $secondsDisconnected = $now->diffInSeconds($disconnectAt);
+                if ($secondsDisconnected >= 300) { // 5 minutes
+                    // Auto-end call
+                    $consultation->update([
+                        'status' => 'completed',
+                        'ended_at' => now(),
+                        'end_reason' => 'Patient disconnected for 5 minutes'
+                    ]);
+                    $callActive = false;
+                } else {
+                    $disconnectInfo = [
+                        'who' => 'patient',
+                        'seconds_remaining' => 300 - $secondsDisconnected
+                    ];
+                }
+            } else if (!$doctorReady && isset($meta['doctor_disconnect_at'])) {
+                $disconnectAt = \Carbon\Carbon::parse($meta['doctor_disconnect_at']);
+                $secondsDisconnected = $now->diffInSeconds($disconnectAt);
+                if ($secondsDisconnected >= 300) { // 5 minutes
+                    // Auto-end call
+                    $consultation->update([
+                        'status' => 'completed',
+                        'ended_at' => now(),
+                        'end_reason' => 'Doctor disconnected for 5 minutes'
+                    ]);
+                    $callActive = false;
+                } else {
+                    $disconnectInfo = [
+                        'who' => 'doctor',
+                        'seconds_remaining' => 300 - $secondsDisconnected
+                    ];
+                }
+            }
+        }
+        
+        $bothReady = $patientReady && $doctorReady;
+        
         return response()->json([
             'success' => true,
-            'student_present' => $studentReady,
+            'patient_present' => $patientReady,
             'doctor_present' => $doctorReady,
-            'both_ready' => $studentReady && $doctorReady
+            'both_ready' => $bothReady,
+            'call_active' => $callActive,
+            'call_status' => $consultation->status,
+            'disconnect_info' => $disconnectInfo,
+            'can_start_call' => $bothReady && !$callActive
         ]);
     }
 
     /**
-     * Mark student as ready in waiting room
+     * Mark patient as ready in waiting room
      */
     public function markReady($id)
     {
         $student = Auth::user();
 
         $consultation = VideoConsultation::where('id', $id)
-            ->where('student_id', $student->id)
+            ->where('user_id', $student->id)
             ->firstOrFail();
 
         $meta = $consultation->call_metadata ?? [];
-        $meta['student_ready'] = true;
-        $meta['student_ready_at'] = now()->toISOString();
+        
+        // Mark patient as ready
+        $meta['patient_ready'] = true;
+        $meta['patient_ready_at'] = now()->toISOString();
+        $meta['patient_last_heartbeat'] = now()->toISOString();
+        
+        // Clear disconnect timestamp if reconnecting
+        if (isset($meta['patient_disconnect_at'])) {
+            unset($meta['patient_disconnect_at']);
+        }
 
         $consultation->call_metadata = $meta;
         $consultation->save();
 
-        // Check if both are ready
-        $bothReady = ($meta['student_ready'] ?? false) && ($meta['doctor_ready'] ?? false);
+        $doctorReady = $meta['doctor_ready'] ?? false;
+        $bothReady = $meta['patient_ready'] && $doctorReady;
+        
+        // Only start call if both are ready AND call hasn't started yet
+        if ($bothReady && $consultation->status === 'scheduled') {
+            $meta['call_started_at'] = now()->toISOString();
+            $consultation->call_metadata = $meta;
+            $consultation->update([
+                'status' => 'ongoing',
+                'started_at' => now()
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'student_ready' => true,
-            'doctor_ready' => $meta['doctor_ready'] ?? false,
-            'both_ready' => $bothReady
+            'patient_ready' => true,
+            'doctor_ready' => $doctorReady,
+            'both_ready' => $bothReady,
+            'call_active' => $consultation->status === 'ongoing',
+            'can_start_call' => $bothReady
         ]);
     }
 }

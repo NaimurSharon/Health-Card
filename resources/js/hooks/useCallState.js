@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 
 /**
  * Call States:
- * - 'initializing': Loading call configuration
  * - 'waiting': In waiting room, checking for other participant
  * - 'ready': Both participants present, about to start call
  * - 'connecting': Creating Stream call
@@ -13,7 +12,7 @@ import { useState, useEffect, useRef } from 'react';
  */
 
 export const useCallState = (consultation, userType) => {
-    const [callState, setCallState] = useState('initializing');
+    const [callState, setCallState] = useState('waiting');
     const [otherParticipantPresent, setOtherParticipantPresent] = useState(false);
     const [reconnectionTimer, setReconnectionTimer] = useState(null);
     const [disconnectedParticipant, setDisconnectedParticipant] = useState(null);

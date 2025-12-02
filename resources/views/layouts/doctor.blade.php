@@ -299,85 +299,156 @@
 
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto scrollbar p-6">
+                <!-- Notifications -->
+                @if(session('success'))
+                    <div class="mb-6 p-4 bg-green-50 border border-green-600 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 me-3"></i>
+                            <span class="text-green-700">{{ session('success') }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle text-red-500 me-3"></i>
+                            <span class="text-red-700">{{ session('error') }}</span>
+                        </div>
+                    </div>
+                @endif
                 @yield('content')
             </main>
         </div>
     </div>
 
-    <!-- Incoming Call Notification Modal -->
-    <div x-show="incomingCall" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="fixed inset-0 z-50 flex items-center justify-center call-notification">
+    <!-- Modern Notification Panel - Top Right -->
+    <div x-show="incomingCall || upcomingConsultations.length > 0" 
+         x-transition:enter="transition ease-out duration-300 transform"
+         x-transition:enter-start="translate-x-full opacity-0"
+         x-transition:enter-end="translate-x-0 opacity-100"
+         x-transition:leave="transition ease-in duration-200 transform"
+         x-transition:leave-start="translate-x-0 opacity-100"
+         x-transition:leave-end="translate-x-full opacity-0"
+         class="fixed top-24 right-8 z-50 w-[24rem] max-w-full space-y-4 font-sans">
         
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
-        
-        <!-- Call Modal -->
-        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden pulse-glow">
-            <!-- Call Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white text-center">
-                <div class="ringing mb-4">
-                    <i class="fas fa-phone-volume text-3xl"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Incoming Video Call</h3>
-                <p class="text-blue-100">Student is calling for consultation</p>
-            </div>
+        <!-- Incoming Call Card -->
+        <div x-show="incomingCall" 
+             class="bg-white rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] overflow-hidden border border-blue-100 relative">
+            
+            <!-- Decorative blur -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
 
-            <!-- Caller Information -->
-            <div class="p-6 text-center">
-                <div class="call-avatar bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-user text-blue-600 text-3xl"></i>
-                </div>
-                
-                <h4 class="text-lg font-semibold text-gray-900 mb-1" x-text="currentCall?.student_name || 'Student'"></h4>
-                <p class="text-gray-600 mb-2" x-text="currentCall?.student_class || 'School Student'"></p>
-                
-                <div class="bg-gray-50 rounded-lg p-3 mb-4">
-                    <p class="text-sm text-gray-700" x-text="currentCall?.symptoms || 'Medical Consultation'"></p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
-                    <div class="text-center">
-                        <i class="fas fa-clock mb-1"></i>
-                        <p x-text="currentCall?.type || 'Consultation'"></p>
+            <!-- Header -->
+            <div class="px-6 pt-6 pb-2 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <span class="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                        <div class="relative bg-blue-50 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-phone animate-bounce"></i>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <i class="fas fa-money-bill-wave mb-1"></i>
-                        <p>৳ <span x-text="currentCall?.fee || '0'"></span></p>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-lg leading-tight">Incoming Call</h3>
+                        <p class="text-blue-500 text-xs font-medium tracking-wide uppercase">Video Consultation</p>
                     </div>
+                </div>
+                <div class="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-100 flex items-center gap-1">
+                    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    LIVE
                 </div>
             </div>
 
-            <!-- Call Actions -->
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                <div class="flex justify-between space-x-3">
-                    <!-- Reject Button -->
+            <!-- Caller Info -->
+            <div class="px-6 py-4">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center flex-shrink-0 border border-gray-100 shadow-sm">
+                        <i class="fas fa-user text-gray-400 text-3xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xl font-bold text-gray-900 truncate" x-text="currentCall?.student_name || 'Student'"></h4>
+                        <p class="text-gray-500 text-sm" x-text="currentCall?.student_class || 'School Student'"></p>
+                    </div>
+                </div>
+
+                <!-- Details Grid -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Symptoms</p>
+                        <p class="text-gray-700 text-sm font-medium truncate" x-text="currentCall?.symptoms || 'General'"></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Fee</p>
+                        <p class="text-gray-700 text-sm font-medium">৳ <span x-text="currentCall?.fee || '0'"></span></p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-4">
                     <button @click="rejectCall()" 
-                            class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center space-x-2">
-                        <i class="fas fa-phone-slash"></i>
-                        <span>Reject</span>
+                            class="group bg-white border border-gray-200 text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 py-3.5 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-times text-lg group-hover:rotate-90 transition-transform"></i>
+                        <span>Decline</span>
                     </button>
-
-                    <!-- Join Button -->
                     <button @click="acceptCall()" 
-                            class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center space-x-2">
+                            class="bg-gray-900 text-white hover:bg-black py-3.5 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-gray-200 transform hover:-translate-y-0.5">
                         <i class="fas fa-video"></i>
-                        <span>Join Call</span>
+                        <span>Accept</span>
                     </button>
                 </div>
+
+                <!-- Timer -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-400 text-xs font-medium">
+                        Auto-reject in <span x-text="callTimer" class="text-gray-600 w-4 inline-block text-center"></span>s
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Consultations Card -->
+        <div x-show="upcomingConsultations.length > 0 && !incomingCall" 
+             class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-white">
+                <div>
+                    <h3 class="font-bold text-gray-900 text-base">Up Next</h3>
+                    <p class="text-gray-400 text-xs mt-0.5">Today's Schedule</p>
+                </div>
+                <button @click="upcomingConsultations = []" class="w-8 h-8 rounded-full hover:bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-            <!-- Call Timer -->
-            <div class="bg-blue-50 px-6 py-2 border-t border-blue-200">
-                <p class="text-center text-sm text-blue-700">
-                    <i class="fas fa-clock me-2"></i>
-                    <span x-text="callTimerText"></span>
-                </p>
+            <!-- Consultation List -->
+            <div class="max-h-[20rem] overflow-y-auto scrollbar-thin">
+                <template x-for="consultation in upcomingConsultations" :key="consultation.id">
+                    <div class="p-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors group cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 text-gray-400 border border-gray-100 group-hover:border-blue-100 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all">
+                                <i class="fas fa-user text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-gray-900 text-sm truncate" x-text="consultation.student_name"></h4>
+                                    <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full" x-text="consultation.time"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 truncate mb-2" x-text="consultation.symptoms"></p>
+                                <a :href="`/doctor/video-consultations/${consultation.id}`" 
+                                   class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                    View Details <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50/50 px-6 py-3 border-t border-gray-50">
+                <a href="/doctor/video-consultations" class="text-gray-500 hover:text-gray-900 text-xs font-semibold flex items-center justify-center transition-colors">
+                    View Full Schedule
+                </a>
             </div>
         </div>
     </div>
@@ -401,6 +472,7 @@
                 ringtoneInterval: null,
                 ringtoneAudio: null,
                 pollingInterval: null,
+                upcomingConsultations: [],
                 isOnCallPage: window.location.pathname.includes('/video-consultations/') && window.location.pathname.includes('/join'),
     
                 init() {
@@ -414,6 +486,7 @@
                     // Only start polling if not on a call page
                     if (!this.isOnCallPage) {
                         this.startPolling();
+                        this.fetchUpcomingConsultations();
                         setTimeout(() => this.checkForCalls(), 1000);
                     } else {
                         console.log('🛑 Skipping polling - already on call page');
@@ -425,6 +498,43 @@
                         this.sidebarOpen = true;
                     } else {
                         this.sidebarOpen = false;
+                    }
+                },
+
+                async fetchUpcomingConsultations() {
+                    try {
+                        console.log('📅 Fetching upcoming consultations...');
+                        const response = await fetch('/doctor/video-consultations', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Filter for scheduled consultations in the next 24 hours
+                            const now = new Date();
+                            const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                            
+                            this.upcomingConsultations = (data.consultations || [])
+                                .filter(c => {
+                                    const scheduledTime = new Date(c.scheduled_for);
+                                    return c.status === 'scheduled' && scheduledTime > now && scheduledTime < tomorrow;
+                                })
+                                .slice(0, 5) // Show max 5
+                                .map(c => ({
+                                    id: c.id,
+                                    student_name: c.student?.user?.name || 'Student',
+                                    symptoms: c.symptoms || 'Consultation',
+                                    time: new Date(c.scheduled_for).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                                    type: c.type || 'Video Call'
+                                }));
+                            
+                            console.log('📅 Upcoming consultations:', this.upcomingConsultations);
+                        }
+                    } catch (error) {
+                        console.error('❌ Error fetching upcoming consultations:', error);
                     }
                 },
     
@@ -502,7 +612,7 @@
                     console.log('📞 Handling incoming call:', callData);
                     this.currentCall = callData;
                     this.incomingCall = true;
-                    this.callTimer = 30;
+                    this.callTimer = 60;
                     
                     // Stop polling when we have an incoming call
                     this.stopPolling();

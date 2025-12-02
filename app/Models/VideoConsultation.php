@@ -117,13 +117,70 @@ class VideoConsultation extends Model
 
     public function canStartCall()
     {
-        return in_array($this->status, ['scheduled']) && 
-               $this->scheduled_for <= now()->addMinutes(10);
+        // Can start if scheduled and within time window (15 min before to 2 hours after)
+        if ($this->status === 'scheduled') {
+            $now = now();
+            $scheduledTime = $this->scheduled_for;
+            $startWindow = $scheduledTime->copy()->subMinutes(15); // 15 min before
+            $endWindow = $scheduledTime->copy()->addHours(2);      // 2 hours after
+            
+            return $now->between($startWindow, $endWindow);
+        }
+        
+        // Can also join if already ongoing
+        return $this->status === 'ongoing';
     }
 
     public function isActive()
     {
         return $this->status === 'ongoing';
+    }
+    
+    /**
+     * Check if consultation is available to join (scheduled time has arrived)
+     */
+    public function isAvailable()
+    {
+        return $this->canStartCall();
+    }
+    
+    /**
+     * Get status display text
+     */
+    public function getStatusDisplayAttribute()
+    {
+        if ($this->status === 'completed') {
+            return 'Completed';
+        }
+        
+        if ($this->status === 'cancelled') {
+            return 'Cancelled';
+        }
+        
+        if ($this->status === 'ongoing') {
+            return 'Ongoing';
+        }
+        
+        // For scheduled consultations
+        if ($this->canStartCall()) {
+            return 'Ready to Join';
+        }
+        
+        // Not yet time
+        $now = now();
+        if ($this->scheduled_for->isFuture()) {
+            $diff = $now->diffInMinutes($this->scheduled_for);
+            if ($diff < 60) {
+                return "Starts in {$diff} minutes";
+            } elseif ($diff < 1440) { // Less than 24 hours
+                $hours = floor($diff / 60);
+                return "Starts in {$hours} hour" . ($hours > 1 ? 's' : '');
+            } else {
+                return 'Scheduled';
+            }
+        }
+        
+        return 'Not Started';
     }
 
     public function calculateDuration()

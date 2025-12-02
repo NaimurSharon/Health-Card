@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\ScholarshipRegistration;
@@ -24,9 +24,11 @@ class ScholarshipController extends Controller
         return view('frontend.scholarship.index', compact('applications'));
     }
     
+    
         // Show registration form with exam information
     public function showRegistration()
     {
+        $student = Auth::user();
 
         // Check if already registered
         $existingRegistration = ScholarshipRegistration::where('student_id', $student->id)

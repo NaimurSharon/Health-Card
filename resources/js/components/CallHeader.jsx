@@ -58,7 +58,7 @@ const CallHeader = ({ consultation, userType, onEndCall, onToggleSidebar, sideba
                     >
                         <VideoIcon sx={{ color: theme.palette.primary.main }} />
                         <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>
-                            HealthCare
+                            HealthCard BD
                         </Typography>
                     </Box>
 

@@ -53,17 +53,20 @@ class HelloDoctorController extends Controller
         ));
     }
     
-    public function storeAppointment(Request $request)
+    
+    /**
+     * Store video consultation directly (replaces appointment booking)
+     */
+    public function storeVideoConsultation(Request $request)
     {
         $user = Auth::user();
         
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
-            'appointment_date' => 'required|date|after:today',
-            'appointment_time' => 'required',
+            'scheduled_date' => 'required|date|after:today',
+            'scheduled_time' => 'required',
             'reason' => 'required|string|max:500',
             'symptoms' => 'nullable|string',
-            'consultation_type' => 'required|in:in_person,video_call',
         ]);
 
         // Determine patient type based on user role
@@ -71,24 +74,31 @@ class HelloDoctorController extends Controller
             ? $user->role 
             : 'public';
 
-        $appointment = Appointment::create([
+        // Combine date and time for scheduled_for
+        $scheduledFor = $request->scheduled_date . ' ' . $request->scheduled_time;
+
+        // Generate unique call ID
+        $callId = 'vc_' . Str::random(16);
+
+        // Create video consultation directly
+        $consultation = VideoConsultation::create([
+            'call_id' => $callId,
             'user_id' => $user->id,
             'patient_type' => $patientType,
             'doctor_id' => $request->doctor_id,
-            'appointment_date' => $request->appointment_date,
-            'appointment_time' => $request->appointment_time,
-            'reason' => $request->reason,
-            'symptoms' => $request->symptoms,
+            'type' => 'scheduled',
+            'symptoms' => $request->symptoms ?? $request->reason,
+            'scheduled_for' => $scheduledFor,
+            'consultation_fee' => 0, // Free for scheduled consultations
             'status' => 'scheduled',
-            'created_by' => $user->id,
+            'payment_status' => 'free',
         ]);
 
-        // Create video consultation if requested
-        if ($request->consultation_type === 'video_call') {
-            $this->createVideoConsultation($user->id, $request->doctor_id, $appointment->id, $request, $patientType);
-        }
+        // Trigger notification to doctor
+        $this->triggerCallNotification($consultation, $user->id, $request->doctor_id);
 
-        return redirect()->route('hello-doctor')->with('success', 'Appointment booked successfully!');
+        return redirect()->route('video-consultation.index')
+            ->with('success', 'Video consultation scheduled successfully! You can join the call from your consultations page.');
     }
 
     public function storeTreatmentRequest(Request $request)

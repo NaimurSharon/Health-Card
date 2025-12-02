@@ -25,16 +25,16 @@ class HelloDoctorController extends Controller
     {
         $student = Auth::user();
         
-        $appointments = Appointment::where('student_id', $student->id)
+        $appointments = Appointment::where('user_id', $student->id)
             ->with('doctor')
             ->orderBy('appointment_date', 'desc')
             ->paginate(5);
 
-        $treatmentRequests = TreatmentRequest::where('student_id', $student->id)
+        $treatmentRequests = TreatmentRequest::where('user_id', $student->id)
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-        $videoConsultations = VideoConsultation::where('student_id', $student->id)
+        $videoConsultations = VideoConsultation::where('user_id', $student->id)
             ->with('doctor')
             ->orderBy('created_at', 'desc')
             ->paginate(5);
@@ -376,6 +376,129 @@ class HelloDoctorController extends Controller
             'started_at' => $consultation->started_at,
             'ended_at' => $consultation->ended_at,
             'duration' => $consultation->duration
+        ]);
+    }
+
+    /**
+     * Initiate an instant video call with a doctor
+     * Checks if doctor is available before creating the call
+     */
+    public function initiateInstantCall(Request $request)
+    {
+        $student = Auth::user();
+        
+        $request->validate([
+            'doctor_id' => 'required|exists:users,id',
+            'symptoms' => 'required|string|max:500',
+        ]);
+
+        $doctor = \App\Models\User::findOrFail($request->doctor_id);
+
+        // Check if doctor is available
+        if ($doctor->role !== 'doctor' || $doctor->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This doctor is not available at the moment.'
+            ], 400);
+        }
+
+        // Check if doctor is already in a call
+        $ongoingCall = VideoConsultation::where('doctor_id', $doctor->id)
+            ->whereIn('status', ['ongoing', 'scheduled', 'pending'])
+            ->where(function($query) {
+                // Check for ongoing calls
+                $query->where('status', 'ongoing')
+                    // Or calls scheduled/pending within last 5 minutes
+                    ->orWhere(function($q) {
+                        $q->whereIn('status', ['scheduled', 'pending'])
+                          ->where('created_at', '>=', now()->subMinutes(5));
+                    });
+            })
+            ->exists();
+
+        if ($ongoingCall) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This doctor is currently busy with another patient. Please try again later or choose another doctor.'
+            ], 400);
+        }
+
+        // Check if student already has an ongoing call
+        $studentOngoingCall = VideoConsultation::where('user_id', $student->id)
+            ->whereIn('status', ['ongoing', 'pending'])
+            ->exists();
+
+        if ($studentOngoingCall) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already have an ongoing consultation. Please complete it before starting a new one.'
+            ], 400);
+        }
+
+        // Create instant video consultation
+        try {
+            $callId = 'instant_vc_' . Str::random(12);
+
+            $consultation = VideoConsultation::create([
+                'call_id' => $callId,
+                'user_id' => $student->id,
+                'patient_type' => 'student',
+                'doctor_id' => $doctor->id,
+                'type' => 'instant',
+                'symptoms' => $request->symptoms,
+                'scheduled_for' => now(),
+                'consultation_fee' => $doctor->doctorDetail->consultation_fee ?? 500,
+                'status' => 'pending',
+                'payment_status' => 'pending',
+                'call_metadata' => [
+                    'instant_call' => true,
+                    'initiated_at' => now()->toISOString(),
+                ]
+            ]);
+
+            // Trigger notification to doctor
+            $this->triggerCallNotification($consultation, $student->id, $doctor->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Call initiated successfully! Waiting for doctor to accept...',
+                'consultation_id' => $consultation->id,
+                'redirect_url' => route('student.video-consultation.join', $consultation->id)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Instant call creation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to initiate call. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if a doctor is available for instant call
+     */
+    public function checkDoctorAvailability($doctorId)
+    {
+        $doctor = \App\Models\User::find($doctorId);
+
+        if (!$doctor || $doctor->role !== 'doctor' || $doctor->status !== 'active') {
+            return response()->json([
+                'available' => false,
+                'message' => 'Doctor not available'
+            ]);
+        }
+
+        // Check if doctor has ongoing calls
+        $hasOngoingCall = VideoConsultation::where('doctor_id', $doctor->id)
+            ->whereIn('status', ['ongoing', 'pending'])
+            ->exists();
+
+        return response()->json([
+            'available' => !$hasOngoingCall,
+            'message' => $hasOngoingCall ? 'Doctor is currently busy' : 'Doctor is available',
+            'doctor_name' => $doctor->name,
+            'consultation_fee' => $doctor->doctorDetail->consultation_fee ?? 500
         ]);
     }
 }

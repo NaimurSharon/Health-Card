@@ -77,8 +77,12 @@ class MedicalRecordController extends Controller
             'follow_up_date' => 'nullable|date'
         ]);
 
+        // Get student and convert to user_id
+        $student = Student::findOrFail($request->student_id);
+
         MedicalRecord::create([
-            'student_id' => $request->student_id,
+            'user_id' => $student->user_id,
+            'patient_type' => 'student',
             'record_date' => $request->record_date,
             'record_type' => $request->record_type,
             'symptoms' => $request->symptoms,

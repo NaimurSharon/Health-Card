@@ -54,7 +54,8 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     // Doctor 
     Route::get('/video-consultations', [DoctorConsultationController::class, 'index'])->name('video-consultation.index');
     Route::get('/video-consultations/{id}', [DoctorConsultationController::class, 'show'])->name('video-consultation.show');
-    Route::get('/video-consultations/{id}/join', [DoctorConsultationController::class, 'joinCall'])->name('video-consultation.join');
+    Route::get('/consultations/{id}', [DoctorConsultationController::class, 'show'])->name('video-consultation.show');
+    Route::get('/video-consultations/{id}/join', [DoctorConsultationController::class, 'videoCall'])->name('video-consultation.join');
     Route::post('/video-consultations/{id}/end', [DoctorConsultationController::class, 'endCall'])->name('video-consultation.end');
     Route::post('/video-consultations/{id}/prescription', [DoctorConsultationController::class, 'updatePrescription'])->name('video-consultation.prescription');
     
@@ -73,6 +74,14 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     // Waiting room endpoints
     Route::get('/video-consultations/{id}/presence', [DoctorConsultationController::class, 'checkPresence'])->name('video-consultation.presence');
     Route::post('/video-consultations/{id}/ready', [DoctorConsultationController::class, 'markReady'])->name('video-consultation.ready');
+    
+    // Alternative routes for React app (uses /consultations/ instead of /video-consultations/)
+    Route::get('/consultations/{id}/presence', [DoctorConsultationController::class, 'checkPresence'])->name('consultations.presence');
+    Route::post('/consultations/{id}/ready', [DoctorConsultationController::class, 'markReady'])->name('consultations.ready');
+    Route::post('/consultations/{id}/joined', [DoctorConsultationController::class, 'participantJoined'])->name('consultations.joined');
+    Route::post('/consultations/{id}/left', [DoctorConsultationController::class, 'participantLeft'])->name('consultations.left');
+    Route::post('/consultations/{id}/heartbeat', [DoctorConsultationController::class, 'heartbeat'])->name('consultations.heartbeat');
+    Route::get('/consultations/{id}/participants', [DoctorConsultationController::class, 'getParticipants'])->name('consultations.participants');
     
     
     // Health Cards

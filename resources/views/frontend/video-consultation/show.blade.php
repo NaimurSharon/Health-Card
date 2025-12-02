@@ -20,7 +20,7 @@
         <div class="relative z-10">
             <div class="flex justify-between items-start mb-6">
                 <span class="px-4 py-1.5 bg-white/60 backdrop-blur-sm rounded-full text-sm font-semibold text-purple-900">
-                    {{ ucfirst($consultation->status) }}
+                    {{ $consultation->status_display }}
                 </span>
                 <span class="text-purple-900 font-medium">
                     {{ $consultation->scheduled_for->format('M d, Y') }}
@@ -47,13 +47,25 @@
                     </div>
                 </div>
                 
-                @if($consultation->isActive())
-                    <a href="{{ route('video-consultation.join', $consultation->id) }}" class="bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg transform hover:scale-105 transition-transform">
+                @if($consultation->isAvailable())
+                    <a href="{{ route('video-consultation.join', $consultation->id) }}" class="bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg transform hover:scale-105 transition-transform flex items-center gap-2">
+                        <i class="fas fa-video"></i>
                         Join Call
                     </a>
+                @elseif($consultation->status == 'completed')
+                    <button disabled class="bg-green-100 text-green-700 px-6 py-3 rounded-xl font-bold cursor-not-allowed flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        Completed
+                    </button>
+                @elseif($consultation->status == 'cancelled')
+                    <button disabled class="bg-red-100 text-red-700 px-6 py-3 rounded-xl font-bold cursor-not-allowed flex items-center gap-2">
+                        <i class="fas fa-times-circle"></i>
+                        Cancelled
+                    </button>
                 @else
-                    <button disabled class="bg-white/50 text-gray-500 px-6 py-3 rounded-xl font-bold cursor-not-allowed">
-                        {{ $consultation->status == 'completed' ? 'Completed' : 'Not Started' }}
+                    <button disabled class="bg-white/50 text-gray-500 px-6 py-3 rounded-xl font-bold cursor-not-allowed flex items-center gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="countdown-text">{{ $consultation->status_display }}</span>
                     </button>
                 @endif
             </div>
@@ -141,4 +153,60 @@
     @endif
 
 </div>
+
+@push('scripts')
+<script>
+// Auto-refresh page every 30 seconds if consultation is scheduled (not yet available)
+@if($consultation->status === 'scheduled' && !$consultation->isAvailable())
+    let refreshInterval = setInterval(function() {
+        // Reload the page to check if consultation is now available
+        window.location.reload();
+    }, 30000); // 30 seconds
+
+    // Update countdown every second
+    let countdownElement = document.getElementById('countdown-text');
+    if (countdownElement) {
+        let scheduledTime = new Date('{{ $consultation->scheduled_for->toIso8601String() }}');
+        
+        setInterval(function() {
+            let now = new Date();
+            let diff = scheduledTime - now;
+            
+            // If time has passed or within 15 minutes before, reload page
+            if (diff <= 15 * 60 * 1000) {
+                window.location.reload();
+                return;
+            }
+            
+            // Calculate time remaining
+            let minutes = Math.floor(diff / 60000);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+            
+            if (days > 0) {
+                countdownElement.textContent = `Starts in ${days} day${days > 1 ? 's' : ''}`;
+            } else if (hours > 0) {
+                countdownElement.textContent = `Starts in ${hours} hour${hours > 1 ? 's' : ''}`;
+            } else if (minutes > 0) {
+                countdownElement.textContent = `Starts in ${minutes} minute${minutes > 1 ? 's' : ''}`;
+            } else {
+                countdownElement.textContent = 'Starting soon...';
+            }
+        }, 1000);
+    }
+@endif
+
+// Show notification when consultation is available
+@if($consultation->isAvailable() && $consultation->status === 'scheduled')
+    // Show browser notification if supported
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Video Consultation Ready', {
+            body: 'Your consultation with Dr. {{ $consultation->doctor->name }} is ready to join!',
+            icon: '/images/logo.png',
+            tag: 'consultation-{{ $consultation->id }}'
+        });
+    }
+@endif
+</script>
+@endpush
 @endsection

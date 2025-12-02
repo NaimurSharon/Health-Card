@@ -152,17 +152,37 @@
                     </div>
                     
                     <!-- Action Buttons -->
-                    <div class="flex gap-2">
-                        <button onclick="bookAppointment({{ $doctor->id }})" 
-                                class="flex-1 bg-green-600 text-white py-2 px-3 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center gap-1">
-                            <i class="fas fa-calendar-plus text-xs"></i>
-                            Get Appointment
+                    <div class="space-y-2">
+                        <!-- Instant Call Button (Primary) -->
+                        @if($doctor->today_availability)
+                        <button onclick="initiateInstantCall({{ $doctor->id }}, '{{ $doctor->name }}', {{ $doctor->doctorDetail->consultation_fee ?? 500 }})" 
+                                class="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                id="instant-call-btn-{{ $doctor->id }}">
+                            <i class="fas fa-phone-alt text-sm"></i>
+                            <span>Instant Call Now</span>
+                            <span class="ml-auto bg-white/20 px-2 py-0.5 rounded text-xs">৳{{ $doctor->doctorDetail->consultation_fee ?? 500 }}</span>
                         </button>
+                        @else
+                        <button disabled
+                                class="w-full bg-gray-300 text-gray-500 py-2.5 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 cursor-not-allowed">
+                            <i class="fas fa-phone-slash text-sm"></i>
+                            <span>Currently Offline</span>
+                        </button>
+                        @endif
                         
-                        <button onclick="showDoctorDetails({{ $doctor->id }})" 
-                                class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-600 flex items-center justify-center">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
+                        <!-- Schedule Call Button (Secondary) -->
+                        <div class="flex gap-2">
+                            <button onclick="bookAppointment({{ $doctor->id }})" 
+                                    class="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-1">
+                                <i class="fas fa-calendar text-xs"></i>
+                                Schedule Later
+                            </button>
+                            
+                            <button onclick="showDoctorDetails({{ $doctor->id }})" 
+                                    class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-600 flex items-center justify-center">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,13 +198,26 @@
         @endif
     </div>
 
-    <!-- Appointment Form Section -->
+    <!-- Video Consultation Booking Form Section -->
     <div id="appointment-form" class="content-card rounded-lg p-6 shadow-sm hidden">
         <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-6 flex items-center">
-            <i class="fas fa-calendar-plus me-2 text-blue-600"></i>Schedule Appointment
+            <i class="fas fa-video me-2 text-blue-600"></i>Schedule Video Consultation
         </h4>
         
-        <form id="appointmentBookingForm" action="{{ route('hello-doctor.store-appointment') }}" method="POST" class="space-y-4">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        <strong>Note:</strong> All consultations are conducted via video call. You'll be able to join the call from your consultations page at the scheduled time.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <form id="appointmentBookingForm" action="{{ route('hello-doctor.store-video-consultation') }}" method="POST" class="space-y-4">
             @csrf
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,8 +233,8 @@
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Date *</label>
-                    <input type="date" name="appointment_date" id="form_appointment_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required 
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Consultation Date *</label>
+                    <input type="date" name="scheduled_date" id="form_appointment_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required 
                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                 </div>
             </div>
@@ -209,17 +242,25 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
-                    <select name="appointment_time" id="form_appointment_time" required 
+                    <select name="scheduled_time" id="form_appointment_time" required 
                             class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                         <option value="">Select Time Slot</option>
                     </select>
                 </div>
                 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Consultation Fee</label>
+                    <div class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600 flex items-center">
+                        <i class="fas fa-tag text-green-600 mr-2"></i>
+                        <span class="font-semibold text-green-600">FREE</span>
+                        <span class="ml-2 text-xs text-gray-500">(Scheduled Consultations)</span>
+                    </div>
+                </div>
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Visit *</label>
-                <textarea name="reason" rows="3" required placeholder="Briefly describe the reason for your appointment"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Consultation *</label>
+                <textarea name="reason" rows="3" required placeholder="Briefly describe the reason for your video consultation"
                           class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"></textarea>
             </div>
             
@@ -229,9 +270,14 @@
                           class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"></textarea>
             </div>
             
-            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg">
-                <i class="fas fa-calendar-check me-2"></i>Book Appointment
-            </button>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
+                    <i class="fas fa-video me-2"></i>Schedule Video Consultation
+                </button>
+                <button type="button" onclick="closeForm()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                    Cancel
+                </button>
+            </div>
         </form>
     </div>
 
@@ -326,6 +372,11 @@ function openAppointmentForm(doctorId) {
     }, 100);
 }
 
+function closeForm() {
+    document.getElementById('appointment-form').classList.add('hidden');
+    document.getElementById('emergency-form').classList.add('hidden');
+}
+
 function generateTimeSlots(doctorId, selectedDate) {
     const doctor = doctors[doctorId];
     const timeSelect = document.getElementById('form_appointment_time');
@@ -394,7 +445,7 @@ document.getElementById('appointmentBookingForm').addEventListener('submit', fun
     // Form will submit normally if user is logged in
     @if(!Auth::check())
     e.preventDefault();
-    alert('Please log in to book an appointment.');
+    alert('Please log in to schedule a video consultation.');
     @endif
 });
 
@@ -418,6 +469,212 @@ function showEmergencyForm() {
         });
     }, 100);
 }
+
+// Instant Call Functionality
+async function initiateInstantCall(doctorId, doctorName, consultationFee) {
+    @if(!Auth::check())
+        alert('Please log in to initiate an instant call.');
+        window.location.href = '/login';
+        return;
+    @endif
+
+    const button = document.getElementById(`instant-call-btn-${doctorId}`);
+    const originalHTML = button.innerHTML;
+    
+    try {
+        // Disable button and show loading
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Checking availability...';
+        
+        // Check doctor availability first
+        const availabilityResponse = await fetch(`/student/hello-doctor/check-availability/${doctorId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const availability = await availabilityResponse.json();
+        
+        if (!availability.available) {
+            alert(availability.message);
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+            return;
+        }
+        
+        // Show symptoms input modal
+        const symptoms = await showSymptomsModal(doctorName, consultationFee);
+        
+        if (!symptoms) {
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+            return;
+        }
+        
+        // Update button to show initiating
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Initiating call...';
+        
+        // Initiate the call
+        const response = await fetch('/student/hello-doctor/instant-call', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                symptoms: symptoms
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            showNotification('success', result.message);
+            
+            // Redirect to video call page after a short delay
+            setTimeout(() => {
+                window.location.href = result.redirect_url;
+            }, 1000);
+        } else {
+            alert(result.message || 'Failed to initiate call. Please try again.');
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+        
+    } catch (error) {
+        console.error('Instant call error:', error);
+        alert('An error occurred. Please try again.');
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    }
+}
+
+// Show symptoms modal
+function showSymptomsModal(doctorName, fee) {
+    return new Promise((resolve) => {
+        // Create modal HTML
+        const modalHTML = `
+            <div id="symptoms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">Instant Call with Dr. ${doctorName}</h3>
+                        <button onclick="closeSymptomsModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                        <p class="text-sm text-blue-700">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Consultation Fee: <strong>৳${fee}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Please describe your symptoms: <span class="text-red-500">*</span>
+                        </label>
+                        <textarea 
+                            id="symptoms-input" 
+                            rows="4" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                            placeholder="E.g., Fever, headache, cough..."
+                            maxlength="500"
+                        ></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button 
+                            onclick="closeSymptomsModal()" 
+                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors">
+                            Cancel
+                        </button>
+                        <button 
+                            onclick="submitSymptoms()" 
+                            class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors">
+                            Start Call
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Focus on textarea
+        setTimeout(() => {
+            document.getElementById('symptoms-input').focus();
+        }, 100);
+        
+        // Store resolve function
+        window.symptomsModalResolve = resolve;
+    });
+}
+
+// Close symptoms modal
+function closeSymptomsModal() {
+    const modal = document.getElementById('symptoms-modal');
+    if (modal) {
+        modal.remove();
+    }
+    if (window.symptomsModalResolve) {
+        window.symptomsModalResolve(null);
+    }
+}
+
+// Submit symptoms
+function submitSymptoms() {
+    const symptoms = document.getElementById('symptoms-input').value.trim();
+    
+    if (!symptoms) {
+        alert('Please describe your symptoms before starting the call.');
+        return;
+    }
+    
+    if (symptoms.length < 10) {
+        alert('Please provide more details about your symptoms (at least 10 characters).');
+        return;
+    }
+    
+    const modal = document.getElementById('symptoms-modal');
+    if (modal) {
+        modal.remove();
+    }
+    
+    if (window.symptomsModalResolve) {
+        window.symptomsModalResolve(symptoms);
+    }
+}
+
+// Show notification
+function showNotification(type, message) {
+    const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    const notificationHTML = `
+        <div id="notification" class="fixed top-4 right-4 z-50 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all">
+            <i class="fas ${icon} text-xl"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', notificationHTML);
+    
+    setTimeout(() => {
+        const notification = document.getElementById('notification');
+        if (notification) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
 </script>
 
 <style>

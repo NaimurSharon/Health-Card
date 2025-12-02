@@ -262,7 +262,7 @@
         <main class="flex-1 overflow-y-auto scrollbar p-6">
             <!-- Notifications -->
             @if(session('success'))
-                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="mb-6 p-4 bg-green-50 border border-green-600 rounded-lg">
                     <div class="flex items-center">
                         <i class="fas fa-check-circle text-green-500 me-3"></i>
                         <span class="text-green-700">{{ session('success') }}</span>

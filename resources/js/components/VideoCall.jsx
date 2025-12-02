@@ -126,7 +126,7 @@ const VideoCall = ({ streamConfig, consultation, userType }) => {
     const handleEndCall = async () => {
         try {
             console.log('End call initiated');
-            setLoading(true);
+            // DON'T set loading here - it shows "Joining video call..." which is confusing
 
             // Leave Stream Video call
             if (call && !callLeftRef.current) {

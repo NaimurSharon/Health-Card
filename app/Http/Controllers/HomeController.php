@@ -15,25 +15,24 @@ use App\Models\MedicalRecord;
 use App\Models\OnlineExam;
 use App\Models\Hospital;
 use App\Models\CityCorporationNotice;
-use App\Models\Appointment;
+use App\Models\VideoConsultation; // Changed from Appointment
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $student = Auth::user();
-        $studentDetails = $student?->student; // null if not logged in
+        $user = Auth::user();
+        $student = $user?->student; // null if not logged in
     
         // School Information
-        if ($studentDetails) {
-            $school = $student->school;
-            $schoolId = $student->school_id;
+        if ($student) {
+            $school = $user->school;
+            $schoolId = $user->school_id;
         } else {
             // For guests, show a default school (first active school or the one you want)
             $school = School::inRandomOrder()->first();
             $schoolId = $school?->id;
-
         }
     
         // Notices
@@ -68,11 +67,21 @@ class HomeController extends Controller
             ->get();
     
         // Student-specific data only if logged in
-        $class = $section = $todaysSchedule = $todaysClassesCount = $currentPeriod = $upcomingAppointments = $recentHealthRecords = $diaryEntriesCount = $pendingTreatmentRequests = $activeHealthCard = $todaysDiaryEntry = $upcomingExams = null;
+        $class = $section = $todaysSchedule = $todaysClassesCount = $currentPeriod = 
+                 $todayConsultations = $upcomingConsultations = $recentHealthRecords = 
+                 $diaryEntriesCount = $pendingTreatmentRequests = $activeHealthCard = 
+                 $todaysDiaryEntry = $upcomingExams = null;
     
-        if ($studentDetails) {
-            $class = $studentDetails->class;
-            $section = $studentDetails->section;
+        $consultationStats = [
+            'today_count' => 0,
+            'upcoming_count' => 0,
+            'completed_count' => 0,
+            'pending_payment' => 0,
+        ];
+    
+        if ($student) {
+            $class = $student->class;
+            $section = $student->section;
     
             // Class-specific announcements
             $classAnnouncements = Notice::where('status', 'published')
@@ -92,8 +101,8 @@ class HomeController extends Controller
     
             // Today's schedule
             $dayOfWeek = strtolower(now()->format('l'));
-            $todaysSchedule = Routine::where('class_id', $studentDetails->class_id)
-                ->where('section_id', $studentDetails->section_id)
+            $todaysSchedule = Routine::where('class_id', $student->class_id)
+                ->where('section_id', $student->section_id)
                 ->where('day_of_week', $dayOfWeek)
                 ->with(['subject', 'teacher'])
                 ->orderBy('period')
@@ -104,44 +113,66 @@ class HomeController extends Controller
             $currentTime = now()->format('H:i:s');
             $currentPeriod = $todaysSchedule->first(fn($period) => $currentTime >= $period->start_time && $currentTime <= $period->end_time);
     
-            $upcomingAppointments = Appointment::where('student_id', $studentDetails->id)
-                ->where('status', 'scheduled')
-                ->where('appointment_date', '>=', now()->format('Y-m-d'))
+            // Today's video consultations
+            $todayConsultations = VideoConsultation::where('user_id', $user->id)
+                ->whereDate('scheduled_for', now()->format('Y-m-d'))
+                ->whereIn('status', ['scheduled', 'ongoing'])
                 ->with('doctor')
-                ->orderBy('appointment_date')
-                ->orderBy('appointment_time')
+                ->orderBy('scheduled_for')
+                ->get();
+    
+            // Upcoming video consultations
+            $upcomingConsultations = VideoConsultation::where('user_id', $user->id)
+                ->where('status', 'scheduled')
+                ->where('scheduled_for', '>=', now())
+                ->with('doctor')
+                ->orderBy('scheduled_for')
                 ->take(3)
                 ->get();
     
-            $recentHealthRecords = MedicalRecord::where('student_id', $studentDetails->id)
+            // Recent health records - using student_id instead of user_id
+            $recentHealthRecords = MedicalRecord::where('user_id', $user->id)
                 ->orderBy('record_date', 'desc')
                 ->take(3)
                 ->get();
     
-            $diaryEntriesCount = DiaryUpdate::where('student_id', $studentDetails->id)
+            $diaryEntriesCount = DiaryUpdate::where('student_id', $student->id)
                 ->where('entry_date', '>=', now()->startOfWeek())
                 ->count();
     
-            $pendingTreatmentRequests = TreatmentRequest::where('student_id', $studentDetails->id)
+            // Treatment requests - using student_id instead of user_id
+            $pendingTreatmentRequests = TreatmentRequest::where('student_id', $student->id)
                 ->where('status', 'pending')
                 ->count();
     
-            $activeHealthCard = HealthCard::where('student_id', $studentDetails->id)
+            $activeHealthCard = HealthCard::where('student_id', $student->id)
                 ->where('status', 'active')
                 ->where('expiry_date', '>=', now())
                 ->first();
                 
-            $todaysDiaryEntry = DiaryUpdate::where('student_id', $studentDetails->id)
+            $todaysDiaryEntry = DiaryUpdate::where('student_id', $student->id)
                 ->where('entry_date', now()->format('Y-m-d'))
                 ->first();
     
-            $upcomingExams = OnlineExam::where('class_id', $studentDetails->class_id)
+            $upcomingExams = OnlineExam::where('class_id', $student->class_id)
                 ->where('exam_date', '>=', now()->format('Y-m-d'))
                 ->where('status', 'scheduled')
                 ->with('subject')
                 ->orderBy('exam_date')
                 ->take(3)
                 ->get();
+    
+            // Video consultation statistics
+            $consultationStats = [
+                'today_count' => $todayConsultations->count(),
+                'upcoming_count' => $upcomingConsultations->count(),
+                'completed_count' => VideoConsultation::where('user_id', $user->id)
+                    ->where('status', 'completed')
+                    ->count(),
+                'pending_payment' => VideoConsultation::where('user_id', $user->id)
+                    ->where('payment_status', 'pending')
+                    ->count(),
+            ];
         }
     
         return view('frontend.home', compact(
@@ -154,15 +185,16 @@ class HomeController extends Controller
             'todaysClassesCount',
             'hospitals',
             'currentPeriod',
-            'upcomingAppointments',
+            'todayConsultations',
+            'upcomingConsultations',
             'recentHealthRecords',
             'diaryEntriesCount',
             'pendingTreatmentRequests',
             'activeHealthCard',
             'todaysDiaryEntry',
             'upcomingExams',
-            'studentDetails'
+            'student',
+            'consultationStats'
         ));
     }
-
 }

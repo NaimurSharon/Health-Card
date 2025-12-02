@@ -50,7 +50,7 @@ Route::get('/hospitals/{hospital}', [HospitalController::class, 'view'])->name('
 
 // Hello Doctor
 Route::get('/hello-doctor', [HelloDoctorController::class, 'index'])->name('hello-doctor');
-Route::post('/hello-doctor/appointments', [HelloDoctorController::class, 'storeAppointment'])->name('hello-doctor.store-appointment');
+Route::post('/hello-doctor/video-consultations', [HelloDoctorController::class, 'storeVideoConsultation'])->name('hello-doctor.store-video-consultation');
 Route::post('/hello-doctor/treatment-requests', [HelloDoctorController::class, 'storeTreatmentRequest'])->name('hello-doctor.store-treatment-request');
 Route::post('/hello-doctor/instant-video-call', [HelloDoctorController::class, 'createInstantVideoCall'])->name('hello-doctor.instant-video-call');
 

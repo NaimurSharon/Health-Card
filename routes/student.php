@@ -61,9 +61,13 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     // Route::post('/hello-doctor/appointment', [HelloDoctorController::class, 'storeAppointment'])->name('hello-doctor.appointment.store');
     // Route::post('/hello-doctor/treatment-request', [HelloDoctorController::class, 'storeTreatmentRequest'])->name('hello-doctor.treatment-request.store');
     
-    Route::post('/hello-doctor/appointments', [HelloDoctorController::class, 'storeAppointment'])->name('hello-doctor.store-appointment');
+    Route::post('/hello-doctor/video-consultations', [HelloDoctorController::class, 'storeVideoConsultation'])->name('hello-doctor.store-video-consultation');
     Route::post('/hello-doctor/treatment-requests', [HelloDoctorController::class, 'storeTreatmentRequest'])->name('hello-doctor.store-treatment-request');
     Route::post('/hello-doctor/instant-video-call', [HelloDoctorController::class, 'createInstantVideoCall'])->name('hello-doctor.instant-video-call');
+    
+    // New instant call routes
+    Route::post('/hello-doctor/instant-call', [HelloDoctorController::class, 'initiateInstantCall'])->name('hello-doctor.instant-call');
+    Route::get('/hello-doctor/check-availability/{doctorId}', [HelloDoctorController::class, 'checkDoctorAvailability'])->name('hello-doctor.check-availability');
     
     Route::get('/video-consultations', [StudentConsultationController::class, 'index'])->name('video-consultation.index');
     

@@ -91,12 +91,12 @@
             </div>
         </a>
         
-        <!-- Appointments -->
+        <!-- Video Consultations -->
         <a href="{{ route('student.hello-doctor') }}" class="content-card rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-purple-600">Appointments</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $upcomingAppointments->count() }}</p>
+                    <p class="text-sm font-medium text-purple-600">Video Consultations</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $todaysConsultations->count() + $upcomingConsultations->count() }}</p>
                     <p class="text-sm text-gray-600 mt-1">
                         @if($pendingTreatmentRequests > 0)
                             {{ $pendingTreatmentRequests }} pending requests
@@ -106,7 +106,7 @@
                     </p>
                 </div>
                 <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
+                    <i class="fas fa-video text-purple-600 text-xl"></i>
                 </div>
             </div>
         </a>
@@ -160,7 +160,7 @@
                         </div>
                         <div class="flex justify-between py-2 border-b border-gray-100">
                             <span class="text-gray-600">Roll Number:</span>
-                            <span class="font-medium text-gray-900">{{ $studentDetails->roll_number ?? 'N/A' }}</span>
+                            <span class="font-medium text-gray-900">{{ $student->roll_number ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between py-2">
                             <span class="text-gray-600">Shift:</span>
@@ -304,14 +304,14 @@
                     @endif
                 </div>
 
-                <!-- Health Overview -->
+                <!-- Health & Consultations Overview -->
                 <div class="content-card rounded-lg p-6 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <i class="fas fa-heartbeat me-2"></i>Health Overview
+                            <i class="fas fa-heartbeat me-2"></i>Health & Consultations
                         </h4>
-                        <a href="{{ route('student.health-report') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                            Details
+                        <a href="{{ route('student.hello-doctor') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Book Now
                         </a>
                     </div>
                     
@@ -328,51 +328,56 @@
                     </div>
                     @endif
                     
-                    <!-- Recent Health Records -->
+                    <!-- Today's Consultations -->
                     <div class="mb-4">
-                        <h5 class="text-sm font-medium text-gray-700 mb-2">Recent Health Records</h5>
-                        @if($recentHealthRecords->count() > 0)
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">Today's Video Calls</h5>
+                        @if($todaysConsultations->count() > 0)
                             <div class="space-y-2">
-                                @foreach($recentHealthRecords->take(2) as $record)
+                                @foreach($todaysConsultations->take(2) as $consultation)
                                 <div class="flex items-center justify-between p-2 bg-white border border-gray-100 rounded">
                                     <div>
-                                        <p class="text-xs font-medium text-gray-900 capitalize">{{ $record->record_type }}</p>
-                                        <p class="text-xs text-gray-600">{{ $record->record_date->format('M j') }}</p>
+                                        <p class="text-xs font-medium text-gray-900">
+                                            Dr. {{ $consultation->doctor->name ?? 'Medical Staff' }}
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            {{ $consultation->scheduled_for->format('g:i A') }}
+                                        </p>
                                     </div>
-                                    <span class="text-xs text-gray-500">
-                                        @if($record->diagnosis)
-                                            {{ Str::limit($record->diagnosis, 20) }}
-                                        @else
-                                            Checkup
-                                        @endif
+                                    <span class="text-xs px-2 py-1 rounded-full 
+                                        {{ $consultation->status == 'ongoing' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ ucfirst($consultation->status) }}
                                     </span>
                                 </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-xs text-gray-500 text-center py-2">No recent health records</p>
+                            <p class="text-xs text-gray-500 text-center py-2">No consultations today</p>
                         @endif
                     </div>
                     
-                    <!-- Upcoming Appointments -->
+                    <!-- Upcoming Consultations -->
                     <div>
-                        <h5 class="text-sm font-medium text-gray-700 mb-2">Upcoming Appointments</h5>
-                        @if($upcomingAppointments->count() > 0)
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">Upcoming Consultations</h5>
+                        @if($upcomingConsultations->count() > 0)
                             <div class="space-y-2">
-                                @foreach($upcomingAppointments->take(2) as $appointment)
+                                @foreach($upcomingConsultations->take(2) as $consultation)
                                 <div class="flex items-center justify-between p-2 bg-white border border-gray-100 rounded">
                                     <div>
-                                        <p class="text-xs font-medium text-gray-900">Dr. {{ $appointment->doctor->name ?? 'Medical Staff' }}</p>
-                                        <p class="text-xs text-gray-600">{{ $appointment->appointment_date->format('M j') }}</p>
+                                        <p class="text-xs font-medium text-gray-900">
+                                            Dr. {{ $consultation->doctor->name ?? 'Medical Staff' }}
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            {{ $consultation->scheduled_for->format('M j, g:i A') }}
+                                        </p>
                                     </div>
                                     <span class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('g:i A') }}
+                                        {{ $consultation->type }}
                                     </span>
                                 </div>
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-xs text-gray-500 text-center py-2">No upcoming appointments</p>
+                            <p class="text-xs text-gray-500 text-center py-2">No upcoming consultations</p>
                         @endif
                     </div>
                 </div>
@@ -392,7 +397,7 @@
                     </a>
                 </div>
                 
-                @if($schoolNotices->count() > 0 || $classAnnouncements->count() > 0)
+                @if($schoolNotices->count() > 0 || isset($classAnnouncements) && $classAnnouncements->count() > 0)
                     <div class="space-y-4">
                         @foreach($schoolNotices->take(3) as $notice)
                         <div class="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
@@ -414,23 +419,25 @@
                         </div>
                         @endforeach
                         
-                        @foreach($classAnnouncements->take(2) as $announcement)
-                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div class="flex items-start justify-between mb-2">
-                                <h4 class="font-semibold text-gray-900">{{ Str::limit($announcement->title, 50) }}</h4>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                                    Class Specific
-                                </span>
+                        @if(isset($classAnnouncements) && $classAnnouncements->count() > 0)
+                            @foreach($classAnnouncements->take(2) as $announcement)
+                            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-900">{{ Str::limit($announcement->title, 50) }}</h4>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                        Class Specific
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ Str::limit($announcement->content, 100) }}</p>
+                                <div class="flex items-center justify-between text-xs text-gray-500">
+                                    <span>{{ $announcement->created_at->format('M j, Y') }}</span>
+                                    @if($announcement->expiry_date)
+                                        <span>Expires: {{ $announcement->expiry_date->format('M j') }}</span>
+                                    @endif
+                                </div>
                             </div>
-                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ Str::limit($announcement->content, 100) }}</p>
-                            <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span>{{ $announcement->created_at->format('M j, Y') }}</span>
-                                @if($announcement->expiry_date)
-                                    <span>Expires: {{ $announcement->expiry_date->format('M j') }}</span>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
+                            @endforeach
+                        @endif
                     </div>
                 @else
                     <div class="text-center py-8">
@@ -472,7 +479,7 @@
             @endif
     
     <!-- Upcoming Exams -->
-    @if($upcomingExams->count() > 0)
+    @if($upcomingExams && $upcomingExams->count() > 0)
     <div class="content-card rounded-lg p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-semibold text-gray-900 flex items-center">

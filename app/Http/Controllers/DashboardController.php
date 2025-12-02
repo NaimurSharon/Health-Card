@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Models\Notice;
 use App\Models\Attendance;
 use App\Models\FeePayment;
-use App\Models\Appointment;
+use App\Models\VideoConsultation;
 use App\Models\TreatmentRequest;
 use App\Models\HealthCard;
 use App\Models\Routine;
@@ -55,6 +55,17 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
+        // Video Consultation Statistics
+        $consultationStats = [
+            'today_consultations' => VideoConsultation::whereDate('scheduled_for', $today)
+                ->where('status', 'scheduled')
+                ->count(),
+            'ongoing_consultations' => VideoConsultation::where('status', 'ongoing')->count(),
+            'completed_this_week' => VideoConsultation::completed()
+                ->where('scheduled_for', '>=', $startOfWeek)
+                ->count(),
+        ];
+
         // Recent Activities
         $recentActivities = [
             'medical_records' => MedicalRecord::with('student.user')
@@ -62,8 +73,12 @@ class DashboardController extends Controller
                 ->orderBy('record_date', 'desc')
                 ->limit(6)
                 ->get(),
+            'recent_consultations' => VideoConsultation::with(['user', 'doctor'])
+                ->recent(7)
+                ->orderBy('scheduled_for', 'desc')
+                ->limit(5)
+                ->get(),
         ];
-
 
         // Monthly student growth (last 6 months)
         $monthlyGrowth = [];
@@ -82,6 +97,7 @@ class DashboardController extends Controller
             'stats',
             'todayOverview',
             'medicalStats',
+            'consultationStats',
             'recentActivities',
             'monthlyGrowth'
         ));
@@ -93,25 +109,32 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $startOfWeek = $today->copy()->startOfWeek();
 
-        // Today's appointments
-        $todaysAppointments = Appointment::with('student.user')
+        // Today's video consultations
+        $todaysConsultations = VideoConsultation::with(['user', 'user.student'])
             ->forDoctor($doctorId)
-            ->today()
-            ->scheduled()
-            ->orderBy('appointment_time')
+            ->whereDate('scheduled_for', $today)
+            ->where('status', 'scheduled')
+            ->orderBy('scheduled_for')
             ->get();
 
-        // Upcoming appointments
-        $upcomingAppointments = Appointment::with('student.user')
+        // Upcoming video consultations
+        $upcomingConsultations = VideoConsultation::with(['user', 'user.student'])
             ->forDoctor($doctorId)
-            ->upcoming()
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+            ->where('status', 'scheduled')
+            ->where('scheduled_for', '>', now())
+            ->orderBy('scheduled_for')
             ->limit(5)
             ->get();
 
-        // Pending treatment requests
-        $pendingRequests = TreatmentRequest::with('student.user')
+        // Ongoing video consultations
+        $ongoingConsultations = VideoConsultation::with(['user', 'user.student'])
+            ->forDoctor($doctorId)
+            ->where('status', 'ongoing')
+            ->orderBy('started_at')
+            ->get();
+
+        // Pending treatment requests - FIXED: using student_id
+        $pendingRequests = TreatmentRequest::with(['student.user'])
             ->forDoctor($doctorId)
             ->pending()
             ->orderBy('created_at', 'desc')
@@ -120,19 +143,25 @@ class DashboardController extends Controller
 
         // Statistics
         $stats = [
-            'today_appointments' => $todaysAppointments->count(),
-            'weekly_appointments' => Appointment::forDoctor($doctorId)
-                ->whereBetween('appointment_date', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
-                ->scheduled()
+            'today_consultations' => $todaysConsultations->count(),
+            'weekly_consultations' => VideoConsultation::forDoctor($doctorId)
+                ->whereBetween('scheduled_for', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
+                ->where('status', 'scheduled')
                 ->count(),
+            'ongoing_consultations' => $ongoingConsultations->count(),
             'pending_requests' => TreatmentRequest::forDoctor($doctorId)->pending()->count(),
-            'total_patients' => Student::whereHas('medicalRecords', function($query) use ($doctorId) {
-                $query->recordedByDoctor($doctorId);
-            })->count(),
+            'total_patients' => VideoConsultation::forDoctor($doctorId)
+                ->select('user_id')
+                ->distinct()
+                ->count(),
+            'completed_consultations' => VideoConsultation::forDoctor($doctorId)
+                ->completed()
+                ->whereBetween('scheduled_for', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
+                ->count(),
         ];
 
-        // Recent medical records
-        $recentRecords = MedicalRecord::with('student.user')
+        // Recent medical records - FIXED: using student_id
+        $recentRecords = MedicalRecord::with(['student.user'])
             ->recordedByDoctor($doctorId)
             ->recent(7)
             ->orderBy('record_date', 'desc')
@@ -141,8 +170,9 @@ class DashboardController extends Controller
 
         return view('doctor.dashboard', compact(
             'stats',
-            'todaysAppointments',
-            'upcomingAppointments',
+            'todaysConsultations',
+            'upcomingConsultations',
+            'ongoingConsultations',
             'pendingRequests',
             'recentRecords'
         ));
@@ -150,14 +180,12 @@ class DashboardController extends Controller
     
     public function studentIndex()
     {
-        $student = Auth::user();
-        $studentDetails = $student->student;
-    
+        $user = Auth::user();
+        $student = $user->student;
     
         // School Information
-        $school = $student->school;
-    
-        $schoolId = $student->school_id;
+        $school = $user->school;
+        $schoolId = $user->school_id;
     
         $cityCorporationNotices = CityCorporationNotice::active()
             ->forSchool($schoolId)
@@ -167,8 +195,8 @@ class DashboardController extends Controller
             ->get();
     
         // Class Information
-        $class = $studentDetails->class;
-        $section = $studentDetails->section;
+        $class = $student->class;
+        $section = $student->section;
     
         // School Notices
         $schoolNotices = Notice::where('status', 'published')
@@ -202,8 +230,8 @@ class DashboardController extends Controller
     
         // Today's schedule
         $dayOfWeek = strtolower(now()->format('l'));
-        $todaysSchedule = Routine::where('class_id', $studentDetails->class_id)
-            ->where('section_id', $studentDetails->section_id)
+        $todaysSchedule = Routine::where('class_id', $student->class_id)
+            ->where('section_id', $student->section_id)
             ->where('day_of_week', $dayOfWeek)
             ->with(['subject', 'teacher'])
             ->orderBy('period')
@@ -217,51 +245,70 @@ class DashboardController extends Controller
             return $currentTime >= $period->start_time && $currentTime <= $period->end_time;
         });
     
-        // Upcoming appointments
-        $upcomingAppointments = Appointment::where('student_id', $studentDetails->id)
-            ->where('status', 'scheduled')
-            ->where('appointment_date', '>=', now()->format('Y-m-d'))
+        // Today's video consultations
+        $todaysConsultations = VideoConsultation::where('user_id', $user->id)
+            ->whereDate('scheduled_for', now()->format('Y-m-d'))
+            ->whereIn('status', ['scheduled', 'ongoing'])
             ->with('doctor')
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+            ->orderBy('scheduled_for')
+            ->get();
+    
+        // Upcoming video consultations
+        $upcomingConsultations = VideoConsultation::where('user_id', $user->id)
+            ->where('status', 'scheduled')
+            ->where('scheduled_for', '>=', now())
+            ->with('doctor')
+            ->orderBy('scheduled_for')
             ->take(3)
             ->get();
     
-        // Recent health records
-        $recentHealthRecords = MedicalRecord::where('student_id', $studentDetails->id)
+        // Recent health records - FIXED: using student_id instead of user_id
+        $recentHealthRecords = MedicalRecord::where('student_id', $student->id)
             ->orderBy('record_date', 'desc')
             ->take(3)
             ->get();
     
         // Diary entries count
-        $diaryEntriesCount = DiaryUpdate::where('student_id', $studentDetails->id)
+        $diaryEntriesCount = DiaryUpdate::where('student_id', $student->id)
             ->where('entry_date', '>=', now()->startOfWeek())
             ->count();
     
-        // Pending treatment requests
-        $pendingTreatmentRequests = TreatmentRequest::where('student_id', $studentDetails->id)
+        // Pending treatment requests - FIXED: using student_id instead of user_id
+        $pendingTreatmentRequests = TreatmentRequest::where('student_id', $student->id)
             ->where('status', 'pending')
             ->count();
     
         // Active health card
-        $activeHealthCard = HealthCard::where('student_id', $studentDetails->id)
+        $activeHealthCard = HealthCard::where('student_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
     
         // Today's diary entry
-        $todaysDiaryEntry = DiaryUpdate::where('student_id', $studentDetails->id)
+        $todaysDiaryEntry = DiaryUpdate::where('student_id', $student->id)
             ->where('entry_date', now()->format('Y-m-d'))
             ->first();
     
         // Upcoming exams
-        $upcomingExams = OnlineExam::where('class_id', $studentDetails->class_id)
+        $upcomingExams = OnlineExam::where('class_id', $student->class_id)
             ->where('exam_date', '>=', now()->format('Y-m-d'))
             ->where('status', 'scheduled')
             ->with('subject')
             ->orderBy('exam_date')
             ->take(3)
             ->get();
+    
+        // Video consultation statistics
+        $consultationStats = [
+            'today_count' => $todaysConsultations->count(),
+            'upcoming_count' => $upcomingConsultations->count(),
+            'completed_count' => VideoConsultation::where('user_id', $user->id)
+                ->completed()
+                ->count(),
+            'pending_payment' => VideoConsultation::where('user_id', $user->id)
+                ->where('payment_status', 'pending')
+                ->count(),
+        ];
     
         return view('student.dashboard', compact(
             'school',
@@ -272,7 +319,8 @@ class DashboardController extends Controller
             'todaysSchedule',
             'todaysClassesCount',
             'currentPeriod',
-            'upcomingAppointments',
+            'todaysConsultations',
+            'upcomingConsultations',
             'cityCorporationNotices',
             'recentHealthRecords',
             'diaryEntriesCount',
@@ -280,8 +328,8 @@ class DashboardController extends Controller
             'activeHealthCard',
             'todaysDiaryEntry',
             'upcomingExams',
-            'studentDetails'
+            'student',
+            'consultationStats'
         ));
     }
-
 }
