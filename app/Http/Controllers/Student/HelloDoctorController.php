@@ -404,7 +404,6 @@ class HelloDoctorController extends Controller
 
         // Check if doctor is already in a call
         $ongoingCall = VideoConsultation::where('doctor_id', $doctor->id)
-            ->whereIn('status', ['ongoing', 'scheduled', 'pending'])
             ->where(function($query) {
                 // Check for ongoing calls
                 $query->where('status', 'ongoing')
