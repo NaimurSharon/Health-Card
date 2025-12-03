@@ -23,7 +23,35 @@ class HelloDoctorController extends Controller
 
     public function index()
     {
-        $student = Auth::user();
+        $user = Auth::user();
+
+        // If student, show student view with assigned doctor
+        if ($user && $user->role === 'student') {
+            $studentProfile = \App\Models\Student::where('user_id', $user->id)->first();
+            $assignedDoctor = null;
+            
+            if ($studentProfile && $studentProfile->school && $studentProfile->school->assigned_doctor) {
+                $assignedDoctor = \App\Models\User::with(['doctorDetail', 'hospital'])->find($studentProfile->school->assigned_doctor);
+                
+                if ($assignedDoctor) {
+                    $assignedDoctor->today_availability = $this->getDoctorAvailability($assignedDoctor->id);
+                    $assignedDoctor->next_available_slot = $this->getNextAvailableSlot($assignedDoctor->id);
+                }
+            }
+            
+            $videoConsultations = \App\Models\VideoConsultation::where('user_id', $user->id)
+                ->with('doctor')
+                ->orderBy('created_at', 'desc')
+                ->paginate(5);
+
+            $healthTips = \App\Models\HealthTip::where('status', 'published')
+                ->whereIn('target_audience', ['all', 'students'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            return view('student.hello-doctor.index', compact('assignedDoctor', 'videoConsultations', 'healthTips'));
+        }
         
         // Get doctors with their details and hospital information
         $doctors = \App\Models\User::where('role', 'doctor')
@@ -43,10 +71,6 @@ class HelloDoctorController extends Controller
             ->take(5)
             ->get();
             
-        // if ($student->role === 'student') {
-        //     return view('student.hello-doctor.index', compact('doctors', 'healthTips'));
-        // }
-    
         return view('frontend.hello-doctor.index', compact(
             'doctors', 
             'healthTips'
@@ -68,6 +92,14 @@ class HelloDoctorController extends Controller
             'reason' => 'required|string|max:500',
             'symptoms' => 'nullable|string',
         ]);
+
+        // Enforce assigned doctor for students
+        if ($user->role === 'student') {
+            $studentProfile = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($studentProfile && $studentProfile->school && $studentProfile->school->assigned_doctor != $request->doctor_id) {
+                return redirect()->back()->with('error', 'You can only schedule appointments with your assigned school doctor.');
+            }
+        }
 
         // Determine patient type based on user role
         $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
@@ -147,6 +179,14 @@ class HelloDoctorController extends Controller
             'urgency' => 'required|in:emergency,urgent',
             'payment_method' => 'required|in:card,bkash,nagad,rocket',
         ]);
+
+        // Enforce assigned doctor for students
+        if ($user->role === 'student') {
+            $studentProfile = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($studentProfile && $studentProfile->school && $studentProfile->school->assigned_doctor != $request->doctor_id) {
+                return redirect()->back()->with('error', 'You can only start instant calls with your assigned school doctor.');
+            }
+        }
 
         // Determine patient type
         $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 

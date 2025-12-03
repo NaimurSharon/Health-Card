@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Student\CityNoticesController;
 use App\Http\Controllers\Student\SchoolDiaryController;
-use App\Http\Controllers\Student\HelloDoctorController;
+use App\Http\Controllers\HelloDoctorController;
 use App\Http\Controllers\Student\ScholarshipController;
 use App\Http\Controllers\Student\SchoolNoticesController;
 use App\Http\Controllers\Student\StudentIdCardController;

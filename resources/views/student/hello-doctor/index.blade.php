@@ -7,132 +7,127 @@
 <div class="space-y-6" id="hello-doctor-container">
     <!-- Header -->
     <div class="content-card rounded-lg overflow-hidden">
-        <div class="table-header px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-2xl font-bold text-white">Hello Doctor</h3>
-                    <p class="text-blue-100">Get medical consultation and treatment</p>
+        <div class="table-header px-4 sm:px-6 py-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center">
+                        <div class="hidden sm:block mr-3">
+                            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            
+                            <h3 class="text-lg sm:text-2xl font-bold text-white truncate">Hello, {{ Auth::user()->name ?? 'Student' }}</h3>
+                            <!-- <p class="text-white/80 text-sm sm:text-base mt-0.5 sm:mt-1">
+                                {{ now()->format('l, F j, Y') }}
+                            </p> -->
+                            @php
+                            $upcomingConsultations = \App\Models\VideoConsultation::where('user_id', Auth::user()->id)
+                                ->where('status', 'scheduled')
+                                ->where('scheduled_for', '>', now()->addDay()) // Tomorrow and beyond
+                                ->with('doctor')
+                                ->orderBy('scheduled_for')
+                                ->limit(5)
+                                ->get();
+                            @endphp
+                            <!-- Optional: Add a quick stats badge -->
+                            @if(isset($upcomingConsultations) && $upcomingConsultations->count() > 0)
+                            <div class="hidden sm:block">
+                                <div class="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                    <span class="font-bold text-white">You have {{ $upcomingConsultations->count() }}</span> Upcoming
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-shrink-0 w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <!-- Mobile view: Smaller button -->
+                        <a href="{{ route('video-consultation.index') }}" 
+                        class="sm:hidden inline-flex items-center justify-center w-full px-4 py-2.5 bg-white hover:bg-gray-50 text-dark font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+                            <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            My Appointments
+                        </a>
+                        
+                        <!-- Desktop view: Full button -->
+                        <a href="{{ route('video-consultation.index') }}" 
+                        class="hidden sm:inline-flex items-center justify-center px-5 py-3 bg-white hover:bg-gray-50 text-dark font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white whitespace-nowrap">
+                            <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            My Appointments
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Service Selection Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Schedule Appointment Card -->
-        <div class="content-card rounded-lg p-6 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-lg bg-white service-card transform hover:-translate-y-1 active:scale-95"
-             id="appointment-card"
-             onclick="selectService('appointment')">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110">
-                    <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">Get a Schedule/Appointment</h3>
-                <p class="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors">Book an appointment with our doctors for routine checkups</p>
-                <div class="space-y-2 text-sm text-gray-500">
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-check text-green-500 me-2"></i>
-                        <span>Choose preferred date & time</span>
+     <!-- Doctor Selection Cards - Centered Version -->
+    <div class="flex flex-col items-center justify-center">
+        <div class="w-full max-w-4xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 px-4 md:px-0">
+                <!-- Instant Call Card (Pay Now) -->
+                <div class="flex flex-col items-center">
+                    <div class="content-card rounded-xl overflow-hidden shadow-lg bg-white/80 backdrop-blur-md border border-white/20 transition-transform duration-300 hover:-translate-y-2 max-w-sm w-full">
+                        <div class="h-56 overflow-hidden bg-gray-100">
+                            @if(isset($assignedDoctor) && $assignedDoctor->profile_image)
+                                <img src="{{ asset('public/storage/' . $assignedDoctor->profile_image) }}" alt="Doctor" class="w-full h-full object-cover object-center">
+                            @elseif(isset($assignedDoctor))
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($assignedDoctor->name) }}&size=512" alt="Doctor" class="w-full h-full object-cover object-center">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                    <i class="fas fa-user-md text-5xl text-gray-400"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="p-5 text-center">
+                            <h3 class="text-gray-600 text-lg mb-4">To Get Doctor Consultation</h3>
+                            <button onclick="showInstantCallForm()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-colors text-sm">
+                                Pay Now & Get Consult
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-check text-green-500 me-2"></i>
-                        <span>Select your preferred doctor</span>
-                    </div>
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-check text-green-500 me-2"></i>
-                        <span>Free consultation</span>
-                    </div>
+                    <p class="mt-3 text-red-600 text-xs text-center font-medium px-3 max-w-sm w-full tiro">
+                        সুপ্রিয় শিক্ষার্থী, তুমি বিনামূল্যে চিকিৎসার আওতাভুক্ত নও, ফিতে বিশেষজ্ঞ ডাক্তারের পরামর্শ পেতে Pay Now বাটনে ক্লিক কর মাসিক ৫টাকা হারে চার্জ করা হবে
+                    </p>
                 </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <span class="text-blue-600 font-medium text-sm flex items-center justify-center">
-                        Click to Book Appointment
-                        <i class="fas fa-chevron-right text-xs ml-1 transform group-hover:translate-x-1 transition-transform"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Emergency Consultation Card -->
-        <div class="content-card rounded-lg p-6 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-lg bg-white service-card transform hover:-translate-y-1 active:scale-95"
-             id="emergency-card"
-             onclick="selectService('emergency')">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110">
-                    <i class="fas fa-ambulance text-red-600 text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-red-700 transition-colors">Pay Now & Get Consult</h3>
-                <p class="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors">Immediate medical attention for urgent health issues</p>
-                <div class="space-y-2 text-sm text-gray-500">
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-bolt text-yellow-500 me-2"></i>
-                        <span>Instant consultation</span>
+                <!-- Schedule Card -->
+                <div class="flex flex-col items-center">
+                    <div class="content-card rounded-xl overflow-hidden shadow-lg bg-white/80 backdrop-blur-md border border-white/20 transition-transform duration-300 hover:-translate-y-2 max-w-sm w-full">
+                        <div class="h-56 overflow-hidden bg-gray-100">
+                            @if(isset($assignedDoctor) && $assignedDoctor->profile_image)
+                                <img src="{{ asset('public/storage/' . $assignedDoctor->profile_image) }}" alt="Doctor" class="w-full h-full object-cover object-center">
+                            @elseif(isset($assignedDoctor))
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($assignedDoctor->name) }}&size=512" alt="Doctor" class="w-full h-full object-cover object-center">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                    <i class="fas fa-user-md text-5xl text-gray-400"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="p-5 text-center">
+                            <h3 class="text-gray-600 text-lg mb-4">To Get Doctor Consultation</h3>
+                            <button onclick="selectService('appointment')" class="w-full bg-[#00B074] hover:bg-[#009e68] text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-colors text-sm">
+                                Get A Schedule
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-shield-alt text-yellow-500 me-2"></i>
-                        <span>Priority treatment</span>
-                    </div>
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-credit-card text-yellow-500 me-2"></i>
-                        <span>Secure payment</span>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <span class="text-red-600 font-medium text-sm flex items-center justify-center">
-                        Click for Emergency Consult
-                        <i class="fas fa-chevron-right text-xs ml-1 transform group-hover:translate-x-1 transition-transform"></i>
-                    </span>
+                    <p class="mt-3 text-dark text-xs text-center font-medium px-3 max-w-sm w-full tiro">
+                        সুপ্রিয় শিক্ষার্থী, তুমি বিনামূল্যে চিকিৎসার আওতাভুক্ত
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Video Consultation Options -->
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-                <i class="fas fa-video me-2 text-purple-600"></i>Video Consultation Options
-            </h4>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Instant Video Call -->
-                <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 transition-all duration-300 transform hover:scale-[1.02]"
-                     onclick="showInstantCallForm()">
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fas fa-bolt text-purple-600 text-xl"></i>
-                    </div>
-                    <h5 class="font-semibold text-gray-900 mb-2">Instant Video Call</h5>
-                    <p class="text-sm text-gray-600 mb-3">Connect immediately with available doctors</p>
-                    <div class="text-xs text-purple-600 font-medium">
-                        <i class="fas fa-clock me-1"></i>Connect in 2 minutes
-                    </div>
-                </div>
-        
-                <!-- Schedule Video Call -->
-                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-all duration-300 transform hover:scale-[1.02]"
-                     onclick="selectService('appointment')">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fas fa-calendar-plus text-blue-600 text-xl"></i>
-                    </div>
-                    <h5 class="font-semibold text-gray-900 mb-2">Schedule Video Call</h5>
-                    <p class="text-sm text-gray-600 mb-3">Book a video appointment for later</p>
-                    <div class="text-xs text-blue-600 font-medium">
-                        <i class="fas fa-video me-1"></i>Free consultation
-                    </div>
-                </div>
-        
-                <!-- Emergency Video Call -->
-                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4 text-center cursor-pointer hover:border-red-400 transition-all duration-300 transform hover:scale-[1.02]"
-                     onclick="selectService('emergency')">
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fas fa-ambulance text-red-600 text-xl"></i>
-                    </div>
-                    <h5 class="font-semibold text-gray-900 mb-2">Emergency Video Call</h5>
-                    <p class="text-sm text-gray-600 mb-3">Immediate medical attention</p>
-                    <div class="text-xs text-red-600 font-medium">
-                        <i class="fas fa-shield-alt me-1"></i>Priority access
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <!-- Instant Video Call Form -->
         <div class="content-card rounded-lg p-6 shadow-sm hidden" id="instant-call-form">
@@ -140,7 +135,7 @@
                 <i class="fas fa-bolt me-2 text-purple-600"></i>Instant Video Call
             </h4>
             
-            <form action="{{ route('student.hello-doctor.instant-video-call') }}" method="POST" class="space-y-4">
+            <form action="{{ route('hello-doctor.instant-video-call') }}" method="POST" class="space-y-4">
                 @csrf
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
                     <div class="flex items-start">
@@ -157,19 +152,26 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Select Preferred Doctor</label>
                         <select name="doctor_id" required 
                                 class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200">
-                            <option value="">Choose a doctor (or any available)</option>
-                            @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialization }}</option>
-                            @endforeach
+                            @if(isset($assignedDoctor))
+                                <option value="{{ $assignedDoctor->id }}" selected>Dr. {{ $assignedDoctor->name }} (Assigned)</option>
+                            @else
+                                <option value="">Choose a doctor (or any available)</option>
+                                @foreach($doctors as $doctor)
+                                <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialization }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
-                        <select name="urgency" required 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method *</label>
+                        <select name="payment_method" required 
                                 class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200">
-                            <option value="urgent">Urgent - Connect ASAP</option>
-                            <option value="emergency">Emergency - Critical condition</option>
+                            <option value="">Select Payment Method</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="rocket">Rocket</option>
+                            <option value="card">Credit/Debit Card</option>
                         </select>
                     </div>
                 </div>
@@ -178,18 +180,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Describe Your Symptoms *</label>
                     <textarea name="symptoms" rows="3" required placeholder="Briefly describe your symptoms for the doctor"
                               class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"></textarea>
-                </div>
-        
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method *</label>
-                    <select name="payment_method" required 
-                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200">
-                        <option value="">Select Payment Method</option>
-                        <option value="bkash">bKash</option>
-                        <option value="nagad">Nagad</option>
-                        <option value="rocket">Rocket</option>
-                        <option value="card">Credit/Debit Card</option>
-                    </select>
                 </div>
         
                 <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium text-lg transform hover:scale-[1.02] active:scale-[0.98]">
@@ -204,23 +194,27 @@
             <i class="fas fa-calendar-plus me-2 text-blue-600"></i>Book Appointment
         </h4>
         
-        <form action="{{ route('student.hello-doctor.store-appointment') }}" method="POST" class="space-y-4">
+        <form action="{{ route('hello-doctor.store-video-consultation') }}" method="POST" class="space-y-4">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Select Doctor</label>
                     <select name="doctor_id" required 
                             class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                        <option value="">Choose a doctor</option>
-                        @foreach($doctors as $doctor)
-                        <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialization }}</option>
-                        @endforeach
+                        @if(isset($assignedDoctor))
+                            <option value="{{ $assignedDoctor->id }}" selected>Dr. {{ $assignedDoctor->name }} (Assigned)</option>
+                        @else
+                            <option value="">Choose a doctor</option>
+                            @foreach($doctors as $doctor)
+                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialization }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Date</label>
-                    <input type="date" name="appointment_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required 
+                    <input type="date" name="scheduled_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required 
                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                 </div>
             </div>
@@ -228,24 +222,49 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Consultation Type</label>
-                    <select name="consultation_type" required 
-                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                        <option value="in_person">In-Person Visit</option>
-                        <option value="video_call">Video Call Consultation</option>
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
-                    <select name="appointment_time" required 
+                    <select name="scheduled_time" required 
                             class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
                         <option value="">Select Time</option>
                         <option value="09:00">09:00 AM</option>
                         <option value="10:00">10:00 AM</option>
                         <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">01:00 PM</option>
                         <option value="14:00">02:00 PM</option>
                         <option value="15:00">03:00 PM</option>
                         <option value="16:00">04:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="19:00">07:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                        <option value="21:00">09:00 PM</option>
+                        <option value="22:00">10:00 PM</option>
+                        <!-- <option value="23:00">11:00 PM</option>
+                        <option value="00:00">12:00 AM</option>
+                        <option value="01:00">01:00 AM</option>
+                        <option value="02:00">02:00 AM</option>
+                        <option value="03:00">03:00 AM</option>
+                        <option value="04:00">04:00 AM</option>
+                        <option value="05:00">05:00 AM</option>
+                        <option value="06:00">06:00 AM</option>
+                        <option value="07:00">07:00 AM</option> -->
+                        <!-- <option value="08:00">08:00 AM</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="13:00">01:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                        <option value="19:00">07:00 PM</option>
+                        <option value="20:00">08:00 PM</option>
+                        <option value="21:00">09:00 PM</option>
+                        <option value="22:00">10:00 PM</option>
+                        <option value="23:00">11:00 PM</option> -->
                     </select>
                 </div>
                 <div class="md:col-span-2">
@@ -266,268 +285,9 @@
             </button>
         </form>
     </div>
-
-    <!-- Emergency Consultation Form -->
-    <div class="content-card rounded-lg p-6 shadow-sm hidden" id="emergency-form">
-        <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-            <i class="fas fa-ambulance me-2 text-red-600"></i>Emergency Consultation
-        </h4>
-        
-        <form action="{{ route('student.hello-doctor.store-treatment-request') }}" method="POST" class="space-y-4">
-            @csrf
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <div class="flex items-start">
-                    <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 me-3"></i>
-                    <div>
-                        <p class="text-yellow-800 font-medium">Emergency Service Notice</p>
-                        <p class="text-yellow-700 text-sm mt-1">This service requires immediate payment for priority medical attention. Our doctors will contact you within 15 minutes.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Describe Your Symptoms *</label>
-                <textarea name="symptoms" rows="4" required placeholder="Please describe your symptoms in detail including when they started, severity, and any other relevant information"
-                          class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Consultation Type</label>
-                    <select name="consultation_type" required 
-                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200">
-                        <option value="in_person">In-Person Visit</option>
-                        <option value="video_call">Emergency Video Call</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Number *</label>
-                    <input type="tel" name="emergency_contact" required placeholder="Your contact number"
-                           class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method *</label>
-                    <select name="payment_method" required 
-                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200">
-                        <option value="">Select Payment Method</option>
-                        <option value="bkash">bKash</option>
-                        <option value="nagad">Nagad</option>
-                        <option value="rocket">Rocket</option>
-                        <option value="card">Credit/Debit Card</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level *</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-red-50 cursor-pointer transition-colors">
-                            <input type="radio" name="urgency" value="emergency" checked class="text-red-600 focus:ring-red-500">
-                            <span class="ml-3">
-                                <span class="block text-sm font-medium text-red-600">Emergency</span>
-                                <span class="block text-xs text-red-500">Need immediate attention</span>
-                            </span>
-                        </label>
-                        <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors">
-                            <input type="radio" name="urgency" value="urgent" class="text-orange-600 focus:ring-orange-500">
-                            <span class="ml-3">
-                                <span class="block text-sm font-medium text-orange-600">Urgent</span>
-                                <span class="block text-xs text-orange-500">Within 24 hours</span>
-                            </span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
-                    <textarea name="notes" rows="4" placeholder="Any additional information about your condition, medications, or allergies"
-                              class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"></textarea>
-                </div>
-            </div>
-
-            <!-- Payment Information -->
-            <div class="bg-gray-50 rounded-lg p-4">
-                <h5 class="font-semibold text-gray-900 mb-2">Payment Information</h5>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600">Consultation Fee</span>
-                    <span class="font-semibold text-green-600">৳ 500</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Amount will be deducted after doctor confirmation</p>
-            </div>
-            
-            <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-medium text-lg transform hover:scale-[1.02] active:scale-[0.98]">
-                <i class="fas fa-credit-card me-2"></i>Pay & Get Emergency Consult
-            </button>
-        </form>
-    </div>
-    
-    <!-- My Video Consultations -->
-    <div class="content-card rounded-lg p-6 shadow-sm">
-        <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-            <i class="fas fa-video me-2 text-purple-600"></i>My Video Consultations
-        </h4>
-        
-        @if($videoConsultations->count() > 0)
-            <div class="space-y-3">
-                @foreach($videoConsultations as $consultation)
-                <div class="p-4 bg-white border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                        <div>
-                            <h5 class="font-semibold text-gray-900 text-sm">Dr. {{ $consultation->doctor->name ?? 'Medical Staff' }}</h5>
-                            <p class="text-xs text-gray-600">
-                                @if($consultation->scheduled_for)
-                                    {{ $consultation->scheduled_for->format('M j, Y \\a\\t g:i A') }}
-                                @else
-                                    Instant call
-                                @endif
-                            </p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium 
-                                {{ $consultation->status == 'completed' ? 'bg-green-100 text-green-800' : 
-                                   ($consultation->status == 'ongoing' ? 'bg-blue-100 text-blue-800' : 
-                                   ($consultation->status == 'scheduled' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800')) }}">
-                                {{ ucfirst($consultation->status) }}
-                            </span>
-                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium capitalize">
-                                {{ $consultation->type }}
-                            </span>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ $consultation->symptoms }}</p>
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs text-gray-500">Call ID: {{ $consultation->call_id }}</p>
-                        @if($consultation->isActive())
-                        <a href="{{ route('student.video-consultation.join', $consultation->id) }}" 
-                           class="bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                            <i class="fas fa-play me-1"></i>Join Call
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endforeach
-            </div>
-            
-            <div class="mt-4">
-                {{ $videoConsultations->links() }}
-            </div>
-        @else
-            <div class="text-center py-8">
-                <i class="fas fa-video-slash text-3xl mb-3 text-gray-300"></i>
-                <p class="text-gray-500">No video consultations yet</p>
-                <p class="text-sm text-gray-400 mt-1">Schedule your first video call with a doctor</p>
-            </div>
-        @endif
-    </div>
-
-    <!-- My Appointments & Requests -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Upcoming Appointments -->
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-                <i class="fas fa-calendar-alt me-2 text-green-600"></i>My Appointments
-            </h4>
-            
-            @if($appointments->count() > 0)
-                <div class="space-y-3">
-                    @foreach($appointments as $appointment)
-                    <div class="p-4 bg-white border border-gray-200 rounded-lg hover:border-green-300 transition-colors cursor-pointer">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                            <div>
-                                <h5 class="font-semibold text-gray-900 text-sm">Dr. {{ $appointment->doctor->name ?? 'Medical Staff' }}</h5>
-                                <p class="text-xs text-gray-600">{{ $appointment->appointment_date->format('M j, Y') }} at {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('g:i A') }}</p>
-                            </div>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium self-start 
-                                {{ $appointment->status == 'scheduled' ? 'bg-blue-100 text-blue-800' : 
-                                   ($appointment->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">
-                                {{ ucfirst($appointment->status) }}
-                            </span>
-                        </div>
-                        <p class="text-sm text-gray-600 line-clamp-2">{{ $appointment->reason }}</p>
-                    </div>
-                    @endforeach
-                </div>
-                
-                <div class="mt-4">
-                    {{ $appointments->links() }}
-                </div>
-            @else
-                <div class="text-center py-8">
-                    <i class="fas fa-calendar-times text-3xl mb-3 text-gray-300"></i>
-                    <p class="text-gray-500">No appointments scheduled</p>
-                </div>
-            @endif
-        </div>
-
-        <!-- Treatment Requests -->
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-                <i class="fas fa-clipboard-list me-2 text-orange-600"></i>Treatment Requests
-            </h4>
-            
-            @if($treatmentRequests->count() > 0)
-                <div class="space-y-3">
-                    @foreach($treatmentRequests as $request)
-                    <div class="p-4 bg-white border border-gray-200 rounded-lg hover:border-orange-300 transition-colors cursor-pointer">
-                        <div class="flex flex-wrap gap-2 mb-2">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium 
-                                {{ $request->urgency == 'emergency' ? 'bg-red-100 text-red-800' : 
-                                   ($request->urgency == 'urgent' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800') }}">
-                                {{ ucfirst($request->urgency) }}
-                            </span>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium 
-                                {{ $request->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                   ($request->status == 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
-                                {{ ucfirst($request->status) }}
-                            </span>
-                        </div>
-                        <p class="text-sm text-gray-600 line-clamp-3 mb-2">{{ $request->symptoms }}</p>
-                        <p class="text-xs text-gray-500">{{ $request->created_at->format('M j, Y \\a\\t g:i A') }}</p>
-                    </div>
-                    @endforeach
-                </div>
-                
-                <div class="mt-4">
-                    {{ $treatmentRequests->links() }}
-                </div>
-            @else
-                <div class="text-center py-8">
-                    <i class="fas fa-file-medical text-3xl mb-3 text-gray-300"></i>
-                    <p class="text-gray-500">No treatment requests submitted</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Health Tips -->
-    @if($healthTips->count() > 0)
-    <div class="content-card rounded-lg p-6 shadow-sm">
-        <h4 class="text-xl font-semibold text-gray-900 border-b border-gray-200/60 pb-3 mb-4 flex items-center">
-            <i class="fas fa-heart me-2 text-pink-600"></i>Health Tips
-        </h4>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($healthTips as $tip)
-            <div class="p-4 bg-pink-50 border border-pink-200 rounded-lg hover:border-pink-300 transition-colors cursor-pointer transform hover:scale-[1.02]">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="px-2 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-medium capitalize">
-                        {{ str_replace('_', ' ', $tip->category) }}
-                    </span>
-                </div>
-                <h5 class="font-semibold text-gray-900 mb-2 text-sm">{{ $tip->title }}</h5>
-                <p class="text-sm text-gray-600 line-clamp-3">{{ Str::limit($tip->content, 100) }}</p>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 </div>
 
 <script>
-// Simple JavaScript for service selection
 function selectService(service) {
     // Reset all service cards
     document.querySelectorAll('.service-card').forEach(card => {
@@ -537,15 +297,11 @@ function selectService(service) {
     
     // Hide all forms
     document.getElementById('appointment-form').classList.add('hidden');
-    document.getElementById('emergency-form').classList.add('hidden');
+    document.getElementById('instant-call-form').classList.add('hidden');
     
     // Activate selected service
     if (service === 'appointment') {
-        document.getElementById('appointment-card').classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
         document.getElementById('appointment-form').classList.remove('hidden');
-    } else if (service === 'emergency') {
-        document.getElementById('emergency-card').classList.add('ring-2', 'ring-red-500', 'bg-red-50');
-        document.getElementById('emergency-form').classList.remove('hidden');
     }
     
     // Scroll to form
@@ -558,42 +314,12 @@ function selectService(service) {
 function showInstantCallForm() {
     // Hide other forms
     document.getElementById('appointment-form').classList.add('hidden');
-    document.getElementById('emergency-form').classList.add('hidden');
     
     // Show instant call form
     document.getElementById('instant-call-form').classList.remove('hidden');
     
     // Scroll to form
     document.getElementById('instant-call-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// Update the existing selectService function
-function selectService(service) {
-    // Reset all service cards
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'ring-red-500', 'bg-red-50');
-        card.classList.add('bg-white');
-    });
-    
-    // Hide all forms
-    document.getElementById('appointment-form').classList.add('hidden');
-    document.getElementById('emergency-form').classList.add('hidden');
-    document.getElementById('instant-call-form').classList.add('hidden');
-    
-    // Activate selected service
-    if (service === 'appointment') {
-        document.getElementById('appointment-card').classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-        document.getElementById('appointment-form').classList.remove('hidden');
-    } else if (service === 'emergency') {
-        document.getElementById('emergency-card').classList.add('ring-2', 'ring-red-500', 'bg-red-50');
-        document.getElementById('emergency-form').classList.remove('hidden');
-    }
-    
-    // Scroll to form
-    const formElement = document.getElementById(service + '-form');
-    if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
 }
 
 // Add click handlers for service cards
