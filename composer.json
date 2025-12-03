@@ -7,11 +7,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "barryvdh/laravel-dompdf": "^3.1",
         "get-stream/stream-chat": "^3.13",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
+        "mpdf/mpdf": "^8.2",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/image": "^3.8",
         "spatie/image-optimizer": "^1.8"

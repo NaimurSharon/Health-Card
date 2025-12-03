@@ -372,16 +372,12 @@
                 </div>
 
                 <!-- Details Grid -->
-                <div class="grid grid-cols-2 gap-3 mb-6">
+                <!-- <div class="grid grid-cols-2 gap-3 mb-6">
                     <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Symptoms</p>
                         <p class="text-gray-700 text-sm font-medium truncate" x-text="currentCall?.symptoms || 'General'"></p>
                     </div>
-                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Fee</p>
-                        <p class="text-gray-700 text-sm font-medium">৳ <span x-text="currentCall?.fee || '0'"></span></p>
-                    </div>
-                </div>
+                </div> -->
 
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-4">

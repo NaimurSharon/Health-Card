@@ -53,7 +53,7 @@ class StudentIdCardController extends Controller
             ->first();
 
         // Get recent medical records for health card
-        $medicalRecords = MedicalRecord::where('student_id', $student->student->id)
+        $medicalRecords = MedicalRecord::where('user_id', $student->id)
             ->orderBy('record_date', 'desc')
             ->take(5)
             ->get();
@@ -81,7 +81,7 @@ class StudentIdCardController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        $medicalRecords = MedicalRecord::where('student_id', $student->student->id)
+        $medicalRecords = MedicalRecord::where('user_id', $student->id)
             ->orderBy('record_date', 'desc')
             ->take(10)
             ->get();

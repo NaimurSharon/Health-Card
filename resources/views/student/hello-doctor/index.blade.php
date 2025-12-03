@@ -21,25 +21,29 @@
                         <div>
                             
                             <h3 class="text-lg sm:text-2xl font-bold text-white truncate">Hello, {{ Auth::user()->name ?? 'Student' }}</h3>
-                            <!-- <p class="text-white/80 text-sm sm:text-base mt-0.5 sm:mt-1">
-                                {{ now()->format('l, F j, Y') }}
-                            </p> -->
-                            @php
-                            $upcomingConsultations = \App\Models\VideoConsultation::where('user_id', Auth::user()->id)
-                                ->where('status', 'scheduled')
-                                ->where('scheduled_for', '>', now()->addDay()) // Tomorrow and beyond
-                                ->with('doctor')
-                                ->orderBy('scheduled_for')
-                                ->limit(5)
-                                ->get();
-                            @endphp
-                            <!-- Optional: Add a quick stats badge -->
-                            @if(isset($upcomingConsultations) && $upcomingConsultations->count() > 0)
-                            <div class="hidden sm:block">
-                                <div class="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium">
-                                    <span class="font-bold text-white">You have {{ $upcomingConsultations->count() }}</span> Upcoming
+                            @if(Auth::check())
+                            
+                                @php
+                                    $upcomingConsultations = \App\Models\VideoConsultation::where('user_id', Auth::user()->id)
+                                        ->where('status', 'scheduled')
+                                        ->where('scheduled_for', '>', now()->addDay()) // Tomorrow and beyond
+                                        ->with('doctor')
+                                        ->orderBy('scheduled_for')
+                                        ->limit(5)
+                                        ->get();
+                                @endphp
+                                <!-- Optional: Add a quick stats badge -->
+                                @if(isset($upcomingConsultations) && $upcomingConsultations->count() > 0)
+                                <div class="hidden sm:block">
+                                    <div class="bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                        <span class="font-bold text-white">You have {{ $upcomingConsultations->count() }}</span> Upcoming
+                                    </div>
                                 </div>
-                            </div>
+                                @endif
+                            @else
+                                <p class="text-white/80 text-sm sm:text-base mt-0.5 sm:mt-1">
+                                    {{ now()->format('l, F j, Y') }}
+                                </p>
                             @endif
                         </div>
                     </div>

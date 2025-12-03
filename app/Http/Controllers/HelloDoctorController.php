@@ -176,7 +176,6 @@ class HelloDoctorController extends Controller
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
             'symptoms' => 'required|string|max:1000',
-            'urgency' => 'required|in:emergency,urgent',
             'payment_method' => 'required|in:card,bkash,nagad,rocket',
         ]);
 

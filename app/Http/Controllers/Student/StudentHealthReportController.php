@@ -225,4 +225,205 @@ class StudentHealthReportController extends Controller
         return redirect()->back()->with('error', 'Failed to upload prescription.');
     }
 
+    /**
+     * Print health report
+     */
+    public function print()
+    {
+        $student = Auth::user();
+        $studentDetails = $student->student;
+        
+        if (!$studentDetails) {
+            abort(404, 'Student details not found');
+        }
+
+        $healthReport = \App\Models\StudentHealthReport::where('student_id', $studentDetails->id)
+            ->with(['reportData.field.category'])
+            ->first();
+
+        $categories = \App\Models\HealthReportCategory::with(['fields'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $school = $student->school;
+        $studentDetails->load(['class', 'section']);
+        $class = $studentDetails->class;
+        $section = $studentDetails->section;
+        
+        $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
+            ->latestFirst()
+            ->get();
+            
+        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+            ->where('status', 'active')
+            ->where('expiry_date', '>=', now())
+            ->first();
+
+        $fieldValues = [];
+        if ($healthReport) {
+            foreach ($categories as $category) {
+                foreach ($category->fields as $field) {
+                    $value = $this->getFieldValueForReport($healthReport, $field->field_name);
+                    $formattedValue = $this->formatFieldValue($value, $field->field_type);
+                    $fieldValues[$field->id] = [
+                        'value' => $value,
+                        'formatted' => $formattedValue
+                    ];
+                }
+            }
+        }
+
+        return view('student.health-report.print', compact(
+            'healthReport',
+            'studentDetails',
+            'categories',
+            'annualRecords',
+            'school',
+            'student',
+            'class',
+            'section',
+            'fieldValues',
+            'activeHealthCard'
+        ));
+    }
+
+    /**
+     * Download health report as PDF
+     */
+    public function downloadPdf()
+    {
+        $student = Auth::user();
+        $studentDetails = $student->student;
+        
+        if (!$studentDetails) {
+            abort(404, 'Student details not found');
+        }
+
+        $healthReport = \App\Models\StudentHealthReport::where('student_id', $studentDetails->id)
+            ->with(['reportData.field.category'])
+            ->first();
+
+        $categories = \App\Models\HealthReportCategory::with(['fields'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $school = $student->school;
+        $studentDetails->load(['class', 'section']);
+        $class = $studentDetails->class;
+        $section = $studentDetails->section;
+        
+        $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
+            ->latestFirst()
+            ->get();
+            
+        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+            ->where('status', 'active')
+            ->where('expiry_date', '>=', now())
+            ->first();
+
+        $fieldValues = [];
+        if ($healthReport) {
+            foreach ($categories as $category) {
+                foreach ($category->fields as $field) {
+                    $value = $this->getFieldValueForReport($healthReport, $field->field_name);
+                    $formattedValue = $this->formatFieldValue($value, $field->field_type);
+                    $fieldValues[$field->id] = [
+                        'value' => $value,
+                        'formatted' => $formattedValue
+                    ];
+                }
+            }
+        }
+
+        // Render the view to HTML
+        $html = view('student.health-report.pdf', compact(
+            'healthReport',
+            'studentDetails',
+            'categories',
+            'annualRecords',
+            'school',
+            'student',
+            'class',
+            'section',
+            'fieldValues',
+            'activeHealthCard'
+        ))->render();
+
+        // Create mPDF instance with Bengali font support
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+        
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
+        
+        // Ensure temp directory exists
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'tempDir' => $tempDir,
+            'fontDir' => array_merge($fontDirs, [storage_path('fonts')]),
+            'fontdata' => $fontData + [
+                'notoSansBengali' => [
+                    'R' => 'NotoSansBengali.ttf',
+                    'useOTL' => 0xFF,
+                    'useKashida' => 75,
+                ],
+                'nikosh' => [
+                    'R' => 'Nikosh.ttf',
+                    'useOTL' => 0xFF,
+                    'useKashida' => 75,
+                ]
+            ],
+            'default_font' => 'notoSansBengali',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
+        
+        // Write HTML to PDF
+        $mpdf->WriteHTML($html);
+
+        // Output PDF
+        $fileName = 'health-report-' . $studentDetails->id . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return response()->streamDownload(function() use ($mpdf) {
+            echo $mpdf->Output('', 'S');
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    /**
+     * View prescription details
+     */
+    public function viewPrescription($id)
+    {
+        $student = Auth::user();
+        $studentDetails = $student->student;
+        
+        if (!$studentDetails) {
+            abort(404, 'Student details not found');
+        }
+
+        // Get the prescription record
+        $prescription = \App\Models\MedicalRecord::where('id', $id)
+            ->where('user_id', $student->id)
+            ->whereNotNull('prescription')
+            ->with(['recordedBy', 'student'])
+            ->firstOrFail();
+
+        return view('student.prescription.view', compact('prescription', 'studentDetails'));
+    }
+
 }

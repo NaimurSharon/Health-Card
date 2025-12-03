@@ -31,6 +31,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/health-reports', [StudentHealthReportController::class, 'index'])->name('health-report.index');
     Route::get('/health-report', [StudentHealthReportController::class, 'show'])->name('health-report');
     Route::post('/health-report/upload-prescription', [StudentHealthReportController::class, 'uploadPrescription'])->name('health-report.upload-prescription');
+    Route::get('/health-report/print', [StudentHealthReportController::class, 'print'])->name('health-report.print');
+    Route::get('/health-report/download-pdf', [StudentHealthReportController::class, 'downloadPdf'])->name('health-report.download-pdf');
+    Route::get('/prescription/{id}', [StudentHealthReportController::class, 'viewPrescription'])->name('prescription.view');
+
     
     // ID Card
     Route::get('/id-card', [StudentIdCardController::class, 'index'])->name('id-card');
