@@ -67,10 +67,58 @@ class StudentIdCardController extends Controller
         
         $idCard = IdCard::where('id', $id)
             ->where('student_id', $student->student->id)
-            ->with(['template', 'student.user'])
+            ->with(['template', 'student.user.school', 'student.class', 'student.section'])
             ->firstOrFail();
 
-        return view('student.id-card.print', compact('idCard'));
+        // Render the view to HTML
+        $html = view('student.id-card.pdf', compact('idCard'))->render();
+
+        // Create mPDF instance with Bengali font support
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+        
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
+        
+        // Ensure temp directory exists
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'tempDir' => $tempDir,
+            'fontDir' => array_merge($fontDirs, [storage_path('fonts')]),
+            'fontdata' => $fontData + [
+                'notoSansBengali' => [
+                    'R' => 'NotoSansBengali.ttf',
+                    'useOTL' => 0xFF,
+                    'useKashida' => 75,
+                ],
+            ],
+            'default_font' => 'notoSansBengali',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
+        
+        // Write HTML to PDF
+        $mpdf->WriteHTML($html);
+
+        // Output PDF
+        $fileName = 'id-card-' . $idCard->card_number . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return response()->streamDownload(function() use ($mpdf) {
+            echo $mpdf->Output('', 'S');
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     public function downloadHealthCard()

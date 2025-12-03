@@ -229,11 +229,15 @@
                 <a href="{{ route('student.health-report') }}" class="btn-secondary">
                     <i class="fas fa-arrow-left mr-2"></i>Back to Health Report
                 </a>
+                <a href="{{ route('student.prescription.download-pdf', $prescription->id) }}" 
+                   class="btn-primary">
+                    <i class="fas fa-file-pdf mr-2"></i>Download as PDF
+                </a>
                 @if($prescription->prescription)
                 <a href="{{ asset('public/storage/' . $prescription->prescription) }}" 
                    download
-                   class="btn-primary">
-                    <i class="fas fa-download mr-2"></i>Download Prescription
+                   class="btn-secondary">
+                    <i class="fas fa-download mr-2"></i>Download File
                 </a>
                 @endif
                 <button onclick="window.print()" class="btn-secondary">

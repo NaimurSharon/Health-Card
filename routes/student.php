@@ -34,6 +34,7 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/health-report/print', [StudentHealthReportController::class, 'print'])->name('health-report.print');
     Route::get('/health-report/download-pdf', [StudentHealthReportController::class, 'downloadPdf'])->name('health-report.download-pdf');
     Route::get('/prescription/{id}', [StudentHealthReportController::class, 'viewPrescription'])->name('prescription.view');
+    Route::get('/prescription/{id}/download-pdf', [StudentHealthReportController::class, 'downloadPrescriptionPdf'])->name('prescription.download-pdf');
 
     
     // ID Card

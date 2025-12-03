@@ -238,13 +238,22 @@
     
                                 <div class="flex space-x-1 md:space-x-2">
                                     <a href="{{ route('student.prescription.view', $prescription->id) }}"
-                                       class="text-blue-600 hover:text-blue-800 text-xs md:text-sm tiro px-2 py-1 rounded bg-blue-50">
+                                       class="text-blue-600 hover:text-blue-800 text-xs md:text-sm tiro px-2 py-1 rounded bg-blue-50"
+                                       title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
     
-                                    <a href="{{ asset('storage/' . $prescription->prescription) }}"
+                                    <!-- <a href="{{ asset('public/storage/' . $prescription->prescription) }}"
                                        download
-                                       class="text-green-600 hover:text-green-800 text-xs md:text-sm tiro px-2 py-1 rounded bg-green-50">
+                                       class="text-green-600 hover:text-green-800 text-xs md:text-sm tiro px-2 py-1 rounded bg-green-50"
+                                       title="Download File">
+                                        <i class="fas fa-download"></i>
+                                    </a> -->
+
+                                    <a href="{{ route('student.prescription.download-pdf', $prescription->id) }}"
+                                       download
+                                       class="text-green-600 hover:text-green-800 text-xs md:text-sm tiro px-2 py-1 rounded bg-green-50"
+                                       title="Download File">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 </div>

@@ -426,4 +426,74 @@ class StudentHealthReportController extends Controller
         return view('student.prescription.view', compact('prescription', 'studentDetails'));
     }
 
+    /**
+     * Download prescription as PDF
+     */
+    public function downloadPrescriptionPdf($id)
+    {
+        $student = Auth::user();
+        $studentDetails = $student->student;
+        
+        if (!$studentDetails) {
+            abort(404, 'Student details not found');
+        }
+
+        // Get the prescription record
+        $prescription = \App\Models\MedicalRecord::where('id', $id)
+            ->where('user_id', $student->id)
+            ->whereNotNull('prescription')
+            ->with(['recordedBy', 'student'])
+            ->firstOrFail();
+
+        // Render the view to HTML
+        $html = view('student.prescription.pdf', compact('prescription', 'studentDetails'))->render();
+
+        // Create mPDF instance with Bengali font support
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+        
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
+        
+        // Ensure temp directory exists
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'tempDir' => $tempDir,
+            'fontDir' => array_merge($fontDirs, [storage_path('fonts')]),
+            'fontdata' => $fontData + [
+                'notoSansBengali' => [
+                    'R' => 'NotoSansBengali.ttf',
+                    'useOTL' => 0xFF,
+                    'useKashida' => 75,
+                ],
+            ],
+            'default_font' => 'notoSansBengali',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
+        
+        // Write HTML to PDF
+        $mpdf->WriteHTML($html);
+
+        // Output PDF
+        $fileName = 'prescription-' . $prescription->id . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return response()->streamDownload(function() use ($mpdf) {
+            echo $mpdf->Output('', 'S');
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
 }
