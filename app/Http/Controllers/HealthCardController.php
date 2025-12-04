@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\HealthCard;
-use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -12,7 +12,7 @@ class HealthCardController extends Controller
 {
     public function index()
     {
-        $healthCards = HealthCard::with('student.user')
+        $healthCards = HealthCard::with('user')
             ->orderBy('expiry_date', 'desc')
             ->paginate(20);
 
@@ -21,35 +21,37 @@ class HealthCardController extends Controller
 
     public function create()
     {
-        $students = Student::with('user')
-            ->active()
-            ->whereDoesntHave('healthCard')
+        // Get all users who don't have a health card yet
+        $users = User::whereDoesntHave('healthCard')
+            ->whereIn('role', ['student', 'teacher', 'staff'])
             ->get();
 
-        return view('backend.medical.health-cards.create', compact('students'));
+        return view('backend.medical.health-cards.create', compact('users'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id|unique:health_cards,student_id',
+            'user_id' => 'required|exists:users,id|unique:health_cards,user_id',
             'issue_date' => 'required|date',
             'expiry_date' => 'required|date|after:issue_date',
             'medical_summary' => 'nullable|string',
             'emergency_instructions' => 'nullable|string',
         ]);
 
-        $cardNumber = 'HC' . date('Ymd') . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
-
-        $healthCard = HealthCard::create([
-            'student_id' => $request->student_id,
-            'card_number' => $cardNumber,
+        $healthCard = HealthCard::createForUser($request->user_id, [
             'issue_date' => $request->issue_date,
             'expiry_date' => $request->expiry_date,
             'medical_summary' => $request->medical_summary,
             'emergency_instructions' => $request->emergency_instructions,
-            'qr_code' => $this->generateQrCode($cardNumber),
+            'status' => 'active',
         ]);
+
+        // Generate QR code
+        if ($healthCard) {
+            $qrCodePath = $this->generateAndSaveQrCode($healthCard->card_number);
+            $healthCard->update(['qr_code' => $qrCodePath]);
+        }
 
         return redirect()->route('admin.health-cards.index')
             ->with('success', 'Health card created successfully.');
@@ -57,8 +59,15 @@ class HealthCardController extends Controller
 
     public function show(HealthCard $healthCard)
     {
-        $healthCard->load('student.user', 'student.medicalAlerts', 'student.medicalRecords');
-        return view('backend.medical.health-cards.show', compact('healthCard'));
+        $healthCard->load('user');
+        
+        // Get medical records for this user
+        $medicalRecords = \App\Models\MedicalRecord::where('user_id', $healthCard->user_id)
+            ->orderBy('record_date', 'desc')
+            ->take(10)
+            ->get();
+            
+        return view('backend.medical.health-cards.show', compact('healthCard', 'medicalRecords'));
     }
 
     public function edit(HealthCard $healthCard)
@@ -82,20 +91,20 @@ class HealthCardController extends Controller
             ->with('success', 'Health card updated successfully.');
     }
     
-        public function doctorIndex(Request $request)
+    public function doctorIndex(Request $request)
     {
         $doctorId = auth()->id();
         $search = $request->get('search');
 
-        $healthCards = HealthCard::with(['student.user'])
-            ->whereHas('student.medicalRecords', function($query) use ($doctorId) {
-                $query->recordedByDoctor($doctorId);
+        $healthCards = HealthCard::with(['user'])
+            ->whereHas('user.medicalRecords', function($query) use ($doctorId) {
+                $query->where('recorded_by', $doctorId);
             });
 
         if ($search) {
             $healthCards->where(function($query) use ($search) {
                 $query->where('card_number', 'like', "%{$search}%")
-                    ->orWhereHas('student.user', function($query) use ($search) {
+                    ->orWhereHas('user', function($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
             });
@@ -109,11 +118,15 @@ class HealthCardController extends Controller
 
     public function doctorView(HealthCard $healthCard)
     {
-        $healthCard->load(['student.user', 'student.medicalRecords' => function($query) {
-            $query->recordedByDoctor(auth()->id());
-        }]);
+        $healthCard->load(['user']);
+        
+        // Get medical records for this user recorded by this doctor
+        $medicalRecords = \App\Models\MedicalRecord::where('user_id', $healthCard->user_id)
+            ->where('recorded_by', auth()->id())
+            ->orderBy('record_date', 'desc')
+            ->get();
 
-        return view('doctor.health-cards.show', compact('healthCard'));
+        return view('doctor.health-cards.show', compact('healthCard', 'medicalRecords'));
     }
 
     public function destroy(HealthCard $healthCard)
@@ -126,17 +139,37 @@ class HealthCardController extends Controller
 
     public function print(HealthCard $healthCard)
     {
-        $healthCard->load('student.user', 'student.medicalAlerts');
-        return view('backend.medical.health-cards.print', compact('healthCard'));
+        $healthCard->load('user');
+        
+        $medicalRecords = \App\Models\MedicalRecord::where('user_id', $healthCard->user_id)
+            ->orderBy('record_date', 'desc')
+            ->take(10)
+            ->get();
+            
+        return view('backend.medical.health-cards.print', compact('healthCard', 'medicalRecords'));
     }
 
-    private function generateQrCode($cardNumber)
+    private function generateAndSaveQrCode($cardNumber)
     {
-        $data = [
-            'card_number' => $cardNumber,
-            'timestamp' => now()->timestamp
-        ];
-
-        return QrCode::size(200)->generate(json_encode($data));
+        $qrCodeData = route('student.id-cards.verify', ['cardNumber' => $cardNumber]);
+        
+        // Generate QR code image
+        $qrCode = QrCode::format('png')
+            ->size(300)
+            ->generate($qrCodeData);
+        
+        // Save to storage
+        $fileName = 'qr-codes/health-card-' . $cardNumber . '.png';
+        $path = storage_path('app/public/' . $fileName);
+        
+        // Ensure directory exists
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+        
+        file_put_contents($path, $qrCode);
+        
+        return $fileName;
     }
 }

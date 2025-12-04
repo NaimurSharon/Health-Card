@@ -6,13 +6,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="{{ setting('site_description') }}">
     
-    <title>{{ setting('site_title') }} | @yield('title')</title>
+    <title>{{ setting('site_title') }} | Teacher @yield('title')</title>
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('public/storage/' . setting('site_favicon', 'logo/amardesh-shadhinotar-kotha-bole.webp')) }}" type="image/webp">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Bootstrap JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -30,13 +37,6 @@
                             700: '#374151',
                             800: '#1f2937',
                             900: '#111827',
-                        },
-                        sidebar: {
-                            bg: '#030708',
-                            menu: '#1a1f2e',
-                            active: '#3B82F6',
-                            text: '#e5e7eb',
-                            hover: '#374151'
                         }
                     },
                     fontFamily: {
@@ -54,6 +54,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@100..900&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -81,16 +82,14 @@
             overflow: hidden;
             opacity: 1;
             background:
-                radial-gradient(circle at 10% 20%, #55CEF5 0%, transparent 70%),   /* Cyan top-left */
-                radial-gradient(circle at 90% 15%, #06AC73 0%, transparent 70%),   /* Green top-right */
-                radial-gradient(circle at 85% 85%, #FFAF8B 0%, transparent 70%),   /* Orange bottom-right */
-                radial-gradient(circle at 15% 85%, #9747FF 0%, transparent 70%),   /* Violet bottom-left */
-                radial-gradient(circle at 50% 50%, #007AFF 0%, transparent 70%),   /* Blue center */
-                radial-gradient(circle at 40% 70%, #534ED9 0%, transparent 70%);   /* Deep purple lower-mid */
+                radial-gradient(circle at 10% 20%, #55CEF5 0%, transparent 70%),
+                radial-gradient(circle at 90% 15%, #06AC73 0%, transparent 70%),
+                radial-gradient(circle at 85% 85%, #FFAF8B 0%, transparent 70%),
+                radial-gradient(circle at 15% 85%, #9747FF 0%, transparent 70%),
+                radial-gradient(circle at 50% 50%, #007AFF 0%, transparent 70%),
+                radial-gradient(circle at 40% 70%, #534ED9 0%, transparent 70%);
             filter: blur(120px);
         }
-
-
 
         @keyframes float {
             0%, 100% {
@@ -156,6 +155,33 @@
             background: rgba(249, 250, 251, 0.8);
         }
         
+        
+        .noto {
+          font-family: "Noto Serif Bengali",'Inter', serif;
+          font-optical-sizing: auto;
+          font-weight: <weight>;
+          font-style: normal;
+          font-variation-settings:
+            "wdth" 100;
+        }
+        
+        .tiro {
+          font-family: "Tiro Bangla", 'Inter'!important;
+          font-weight: 400;
+          font-style: normal;
+        }
+        
+        .tiro-italic {
+          font-family: "Tiro Bangla", serif;
+          font-weight: 400;
+          font-style: italic;
+        }
+        
+        .inter{
+            font-family: 'Inter', sans-serif;
+        }
+
+        
         /* Content cards with slight transparency to show background */
         .content-card {
             background: transparent;
@@ -181,126 +207,153 @@
             background: #94a3b8;
         }
         
-        /* Dark scrollbar for sidebar */
-        .sidebar .scrollbar::-webkit-scrollbar-track {
-            background: #1a1f2e;
+        /* Navigation styles */
+        .nav-menu {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
         }
         
-        .sidebar .scrollbar::-webkit-scrollbar-thumb {
-            background: #374151;
+        .nav-link {
+            color: #4b5563;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-weight: 500;
         }
         
-        .sidebar .scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
+        .nav-link:hover {
+            color: #3B82F6;
+            background: rgba(59, 130, 246, 0.1);
         }
         
-        /* Mobile sidebar improvements */
-        @media (max-width: 1023px) {
-            .sidebar-mobile {
-                position: fixed;
-                z-index: 40;
-            }
+        .nav-link.active {
+            color: #3B82F6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .mobile-menu {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+
+        /* Modal animations */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 300ms, transform 300ms;
+        }
+        
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 300ms, transform 300ms;
         }
     </style>
-</head>
-<body class="h-full bg-gray-50" x-data="sidebarState()">
-    <!-- Color Ball Background -->
-    <div class="color-ball-bg"></div>
-
-    <!-- Mobile sidebar backdrop -->
-    <div x-show="sidebarOpen" @click="sidebarOpen = false" 
-         class="fixed inset-0 z-30 bg-black/50 lg:hidden" x-transition.opacity></div>
-    
-    <div class="flex h-full">
-
-        <!-- Sidebar -->
-        @auth
-            @include('teacher.inc.sidebar-teacher')
-        @endauth
-
-        <!-- Main Content Area -->
-        <div class="flex flex-1 flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="header-blur sticky top-0 z-20">
-                <div class="flex items-center justify-between px-6 py-3">
-                    <div class="flex items-center">
-                        <button @click="sidebarOpen = !sidebarOpen" class="mr-4 lg:hidden">
-                            <i class="fas fa-bars text-gray-600"></i>
-                        </button>
-                        <h1 class="text-2xl font-bold text-gray-900">@yield('title', 'Dashboard')</h1>
-                    </div>
-                    
-                    <!-- Right side buttons -->
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-3">
-                            <button class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                                <i class="fas fa-bell"></i>
-                            </button>
-                            <button class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                <i class="fas fa-user text-gray-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main Content -->
-            <main class="flex-1 overflow-y-auto scrollbar p-6">
-                <!-- Notifications -->
-                @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-50 border border-green-600 rounded-lg">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-500 me-3"></i>
-                            <span class="text-green-700">{{ session('success') }}</span>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-circle text-red-500 me-3"></i>
-                            <span class="text-red-700">{{ session('error') }}</span>
-                        </div>
-                    </div>
-                @endif
-                @yield('content')
-            </main>
-        </div>
-    </div>
-
-    <!-- Alpine.js -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
     
     <script>
-        function sidebarState() {
+        // Define navbarState function before body tag uses it
+        function navbarState() {
             return {
-                sidebarOpen: window.innerWidth >= 1024,
+                mobileMenuOpen: false,
+                notificationsOpen: false,
+                messagesOpen: false,
+                userMenuOpen: false,
+                homeworkOpen: false,
                 
                 init() {
-                    // Close sidebar on mobile when clicking a link
                     this.handleResize();
                     window.addEventListener('resize', this.handleResize.bind(this));
                 },
                 
                 handleResize() {
                     if (window.innerWidth >= 1024) {
-                        this.sidebarOpen = true;
-                    } else {
-                        this.sidebarOpen = false;
-                    }
-                },
-                
-                handleMobileClick() {
-                    if (window.innerWidth < 1024) {
-                        this.sidebarOpen = false;
+                        this.mobileMenuOpen = false;
                     }
                 }
             }
         }
+
+        // Make it globally available
+        window.navbarState = navbarState;
+    </script>
+</head>
+<body class="h-full bg-gray-50" x-data="navbarState()">
+    <!-- Color Ball Background -->
+    <div class="color-ball-bg"></div>
+
+    <!-- Mobile menu backdrop -->
+    <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" 
+         class="fixed inset-0 z-40 bg-black/50 lg:hidden" x-transition.opacity></div>
+    
+    <div class="flex flex-col h-full">
+        
+        @php
+            $role = Auth::user()->role ?? 'guest';
+        @endphp
+
+        @switch($role)
+            @case('teacher')
+                @include('teacher.inc.navbar')
+                @break
+
+            @case('student')
+                @include('student.inc.navbar')
+                @break
+
+            @case('public')
+                @include('inc.navbar')
+                @break
+
+            @default
+                @include('inc.navbar')
+        @endswitch
+
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto scrollbar p-6">
+            <!-- Notifications -->
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-50 border border-green-600 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 me-3"></i>
+                        <span class="text-green-700">{{ session('success') }}</span>
+                    </div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-500 me-3"></i>
+                        <span class="text-red-700">{{ session('error') }}</span>
+                    </div>
+                </div>
+            @endif
+
+            @yield('content')
+        </main>
+    </div>
+
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+    
+    <script>
+        // Global appointment data storage - accessible from all pages
+        window.pendingAppointmentData = null;
+
+
 
         document.addEventListener('alpine:init', () => {
             // Alpine is already initialized by the CDN script

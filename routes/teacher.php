@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Teacher\TeacherDashboardController;
 use App\Http\Controllers\Teacher\TeacherRoutineController;
 use App\Http\Controllers\Teacher\TeacherHomeworkController;
+use App\Http\Controllers\Teacher\TeacherHealthCardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,5 +40,12 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'role:teacher'])
         // AJAX Routes
         Route::get('/get-sections/{classId}', [TeacherHomeworkController::class, 'getSections'])->name('get-sections');
         Route::get('/get-subjects/{classId}/{sectionId}', [TeacherHomeworkController::class, 'getSubjects'])->name('get-subjects');
+    });
+
+    // Health Card
+    Route::prefix('health-card')->name('health-card.')->group(function () {
+        Route::get('/', [TeacherHealthCardController::class, 'index'])->name('index');
+        Route::get('/download-pdf', [TeacherHealthCardController::class, 'downloadPdf'])->name('download-pdf');
+        Route::get('/print', [TeacherHealthCardController::class, 'print'])->name('print');
     });
 });

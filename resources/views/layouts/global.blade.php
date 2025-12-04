@@ -268,6 +268,33 @@
             transition: opacity 300ms, transform 300ms;
         }
     </style>
+    
+    <script>
+        // Define navbarState function before body tag uses it
+        function navbarState() {
+            return {
+                mobileMenuOpen: false,
+                notificationsOpen: false,
+                messagesOpen: false,
+                userMenuOpen: false,
+                homeworkOpen: false,
+                
+                init() {
+                    this.handleResize();
+                    window.addEventListener('resize', this.handleResize.bind(this));
+                },
+                
+                handleResize() {
+                    if (window.innerWidth >= 1024) {
+                        this.mobileMenuOpen = false;
+                    }
+                }
+            }
+        }
+
+        // Make it globally available
+        window.navbarState = navbarState;
+    </script>
 </head>
 <body class="h-full bg-gray-50" x-data="navbarState()">
     <!-- Color Ball Background -->
@@ -279,7 +306,27 @@
     
     <div class="flex flex-col h-full">
         
-        @include('inc.navbar')
+        @php
+            $role = Auth::user()->role ?? 'guest';
+        @endphp
+
+        @switch($role)
+            @case('teacher')
+                @include('teacher.inc.navbar')
+                @break
+
+            @case('student')
+                @include('student.inc.navbar')
+                @break
+
+            @case('public')
+                @include('inc.navbar')
+                @break
+
+            @default
+                @include('inc.navbar')
+        @endswitch
+
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto scrollbar p-6">
@@ -473,24 +520,6 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
     
     <script>
-        function navbarState() {
-            return {
-                mobileMenuOpen: false,
-                
-                init() {
-                    // Handle resize events
-                    this.handleResize();
-                    window.addEventListener('resize', this.handleResize.bind(this));
-                },
-                
-                handleResize() {
-                    if (window.innerWidth >= 1024) {
-                        this.mobileMenuOpen = false;
-                    }
-                }
-            }
-        }
-
         // Global appointment data storage - accessible from all pages
         window.pendingAppointmentData = null;
 

@@ -23,7 +23,7 @@ class StudentIdCardController extends Controller
             ->get();
 
         // Get student's health card
-        $healthCard = HealthCard::where('student_id', $student->student->id)
+        $healthCard = HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->first();
 
@@ -36,7 +36,7 @@ class StudentIdCardController extends Controller
         return view('student.id-card.index', compact('idCards', 'healthCard', 'medicalRecords'));
     }
     
-        public function myIdCards()
+    public function myIdCards()
     {
         $student = Auth::user();
         
@@ -48,7 +48,7 @@ class StudentIdCardController extends Controller
             ->get();
 
         // Get student's health card
-        $healthCard = HealthCard::where('student_id', $student->student->id)
+        $healthCard = HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->first();
 
@@ -125,7 +125,7 @@ class StudentIdCardController extends Controller
     {
         $student = Auth::user();
         
-        $healthCard = HealthCard::where('student_id', $student->student->id)
+        $healthCard = HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->firstOrFail();
 

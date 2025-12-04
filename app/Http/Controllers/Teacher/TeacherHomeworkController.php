@@ -14,12 +14,12 @@ class TeacherHomeworkController extends Controller
     public function index(Request $request)
     {
         $teacher = Auth::user();
-        
+
         try {
             $filterDate = $request->get('date', Carbon::today()->format('Y-m-d'));
-            
+
             $homeworks = ClassDiary::where('teacher_id', $teacher->id)
-                ->when($filterDate, function($query) use ($filterDate) {
+                ->when($filterDate, function ($query) use ($filterDate) {
                     return $query->where('entry_date', $filterDate);
                 })
                 ->with(['class', 'section', 'subject'])
@@ -52,7 +52,7 @@ class TeacherHomeworkController extends Controller
     public function create()
     {
         $teacher = Auth::user();
-        
+
         $assignedClasses = ClassSubject::where('teacher_id', $teacher->id)
             ->with(['class', 'section', 'subject'])
             ->get()
@@ -64,7 +64,7 @@ class TeacherHomeworkController extends Controller
     public function store(Request $request)
     {
         $teacher = Auth::user();
-        
+
         $request->validate([
             'class_id' => 'required|exists:classes,id',
             'section_id' => 'required|exists:sections,id',
@@ -93,6 +93,7 @@ class TeacherHomeworkController extends Controller
 
             $homework = ClassDiary::create([
                 'teacher_id' => $teacher->id,
+                'school_id' => $teacher->school_id,
                 'class_id' => $request->class_id,
                 'section_id' => $request->section_id,
                 'subject_id' => $request->subject_id,
@@ -131,7 +132,7 @@ class TeacherHomeworkController extends Controller
     public function edit($id)
     {
         $teacher = Auth::user();
-        
+
         try {
             $homework = ClassDiary::where('id', $id)
                 ->where('teacher_id', $teacher->id)
@@ -154,7 +155,7 @@ class TeacherHomeworkController extends Controller
     public function update(Request $request, $id)
     {
         $teacher = Auth::user();
-        
+
         $request->validate([
             'homework_title' => 'required|string|max:255',
             'homework_description' => 'required|string',
@@ -180,7 +181,7 @@ class TeacherHomeworkController extends Controller
             if ($request->hasFile('attachments')) {
                 $currentAttachments = $homework->attachments ?? [];
                 $newAttachments = [];
-                
+
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store('homework-attachments', 'public');
                     $newAttachments[] = [
@@ -189,7 +190,7 @@ class TeacherHomeworkController extends Controller
                         'size' => $file->getSize(),
                     ];
                 }
-                
+
                 $homework->attachments = array_merge($currentAttachments, $newAttachments);
                 $homework->save();
             }
@@ -207,7 +208,7 @@ class TeacherHomeworkController extends Controller
     public function destroy($id)
     {
         $teacher = Auth::user();
-        
+
         try {
             $homework = ClassDiary::where('id', $id)
                 ->where('teacher_id', $teacher->id)
@@ -227,7 +228,7 @@ class TeacherHomeworkController extends Controller
     public function getSections($classId)
     {
         $teacher = Auth::user();
-        
+
         $sections = ClassSubject::where('teacher_id', $teacher->id)
             ->where('class_id', $classId)
             ->with('section')
@@ -241,7 +242,7 @@ class TeacherHomeworkController extends Controller
     public function getSubjects($classId, $sectionId)
     {
         $teacher = Auth::user();
-        
+
         $subjects = ClassSubject::where('teacher_id', $teacher->id)
             ->where('class_id', $classId)
             ->where('section_id', $sectionId)
