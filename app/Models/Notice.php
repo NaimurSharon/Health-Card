@@ -7,12 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Notice extends Model
 {
     protected $fillable = [
-        'title', 'content', 'priority', 'target_roles',
-        'expiry_date', 'published_by', 'status'
+        'title',
+        'school_id',
+        'content',
+        'priority',
+        'target_roles',
+        'expiry_date',
+        'published_by',
+        'published_at',
+        'status'
     ];
 
     protected $casts = [
         'expiry_date' => 'date',
+        'published_at' => 'datetime',
         'target_roles' => 'array',
     ];
 

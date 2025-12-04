@@ -32,13 +32,13 @@ class NoticeController extends Controller
         ]);
 
         Notice::create([
-            'title' => $request->title,
-            'content' => $request->content,
-            'priority' => $request->priority,
-            'target_roles' => $request->target_roles,
-            'expiry_date' => $request->expiry_date,
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'priority' => $request->input('priority'),
+            'target_roles' => $request->input('target_roles'),
+            'expiry_date' => $request->input('expiry_date'),
             'published_by' => auth()->id(),
-            'status' => $request->status,
+            'status' => $request->input('status'),
         ]);
 
         return redirect()->route('admin.notices.index')
@@ -55,7 +55,7 @@ class NoticeController extends Controller
     {
         return view('backend.notices.form', compact('notice'));
     }
-    
+
     public function diary()
     {
         $notices = Notice::with('publishedBy')->latest()->paginate(10);
@@ -73,12 +73,19 @@ class NoticeController extends Controller
             'status' => 'required|in:published,draft',
         ]);
 
-        $notice->update($request->all());
+        $notice->update([
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'priority' => $request->input('priority'),
+            'target_roles' => $request->input('target_roles'),
+            'expiry_date' => $request->input('expiry_date'),
+            'status' => $request->input('status'),
+        ]);
 
         return redirect()->route('admin.notices.index')
             ->with('success', 'Notice updated successfully.');
     }
-    
+
     public function homepage()
     {
         $notices = Notice::with('publishedBy')

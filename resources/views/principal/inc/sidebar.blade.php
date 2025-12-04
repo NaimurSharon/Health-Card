@@ -135,7 +135,7 @@
             </a>
 
             <!-- Health Records -->
-            <a href="{{ route('principal.health.records') }}"
+            <a href="{{ route('principal.health.reports.index') }}"
                 class="sidebar-item flex items-center px-3 py-2 text-lg font-medium rounded-lg {{ request()->routeIs('principal.health.*') ? 'active' : '' }}">
                 <span>Health Records</span>
             </a>
@@ -147,10 +147,10 @@
             </a>
 
             <!-- My Classes -->
-            <a href="{{ route('principal.assigned-classes') }}"
+            <!-- <a href="{{ route('principal.assigned-classes') }}"
                 class="sidebar-item flex items-center px-3 py-2 text-lg font-medium rounded-lg {{ request()->routeIs('principal.assigned-classes') ? 'active' : '' }}">
                 <span>My Classes</span>
-            </a>
+            </a> -->
 
             <!-- Profile & Settings -->
             <div class="mt-8 pt-4 border-t border-gray-700 flex flex-col gap-3">
