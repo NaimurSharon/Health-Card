@@ -29,16 +29,16 @@ class HelloDoctorController extends Controller
         if ($user && $user->role === 'student') {
             $studentProfile = \App\Models\Student::where('user_id', $user->id)->first();
             $assignedDoctor = null;
-            
+
             if ($studentProfile && $studentProfile->school && $studentProfile->school->assigned_doctor) {
                 $assignedDoctor = \App\Models\User::with(['doctorDetail', 'hospital'])->find($studentProfile->school->assigned_doctor);
-                
+
                 if ($assignedDoctor) {
                     $assignedDoctor->today_availability = $this->getDoctorAvailability($assignedDoctor->id);
                     $assignedDoctor->next_available_slot = $this->getNextAvailableSlot($assignedDoctor->id);
                 }
             }
-            
+
             $videoConsultations = \App\Models\VideoConsultation::where('user_id', $user->id)
                 ->with('doctor')
                 ->orderBy('created_at', 'desc')
@@ -52,39 +52,39 @@ class HelloDoctorController extends Controller
 
             return view('student.hello-doctor.index', compact('assignedDoctor', 'videoConsultations', 'healthTips'));
         }
-        
+
         // Get doctors with their details and hospital information
         $doctors = \App\Models\User::where('role', 'doctor')
             ->where('status', 'active')
             ->with(['doctorDetail', 'hospital']) // Changed to singular
             ->get()
-            ->map(function($doctor) {
+            ->map(function ($doctor) {
                 // Add availability information
                 $doctor->today_availability = $this->getDoctorAvailability($doctor->id);
                 $doctor->next_available_slot = $this->getNextAvailableSlot($doctor->id);
                 return $doctor;
             });
-    
+
         $healthTips = \App\Models\HealthTip::where('status', 'published')
             ->whereIn('target_audience', ['all', 'students'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-            
+
         return view('frontend.hello-doctor.index', compact(
-            'doctors', 
+            'doctors',
             'healthTips'
         ));
     }
-    
-    
+
+
     /**
      * Store video consultation directly (replaces appointment booking)
      */
     public function storeVideoConsultation(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
             'scheduled_date' => 'required|date|after:today',
@@ -102,8 +102,8 @@ class HelloDoctorController extends Controller
         }
 
         // Determine patient type based on user role
-        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
-            ? $user->role 
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal'])
+            ? $user->role
             : 'public';
 
         // Combine date and time for scheduled_for
@@ -136,7 +136,7 @@ class HelloDoctorController extends Controller
     public function storeTreatmentRequest(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'symptoms' => 'required|string|max:1000',
             'urgency' => 'required|in:emergency,urgent,routine',
@@ -147,8 +147,8 @@ class HelloDoctorController extends Controller
         ]);
 
         // Determine patient type
-        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
-            ? $user->role 
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal'])
+            ? $user->role
             : 'public';
 
         $treatmentRequest = TreatmentRequest::create([
@@ -172,11 +172,10 @@ class HelloDoctorController extends Controller
     public function createInstantVideoCall(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'doctor_id' => 'required|exists:users,id',
             'symptoms' => 'required|string|max:1000',
-            'payment_method' => 'required|in:card,bkash,nagad,rocket',
         ]);
 
         // Enforce assigned doctor for students
@@ -188,14 +187,14 @@ class HelloDoctorController extends Controller
         }
 
         // Determine patient type
-        $patientType = in_array($user->role, ['student', 'teacher', 'principal']) 
-            ? $user->role 
+        $patientType = in_array($user->role, ['student', 'teacher', 'principal'])
+            ? $user->role
             : 'public';
 
         $consultation = $this->createVideoConsultation(
-            $user->id, 
-            $request->doctor_id, 
-            null, 
+            $user->id,
+            $request->doctor_id,
+            null,
             $request,
             'instant',
             $patientType
@@ -220,7 +219,7 @@ class HelloDoctorController extends Controller
             'scheduled_for' => $request->appointment_date ?? now()->addMinutes(5),
             'consultation_fee' => $type === 'instant' ? 500 : 0,
             'status' => 'scheduled',
-            'payment_status' => $type === 'instant' ? 'pending' : 'free',
+            'payment_status' => 'free',
         ]);
 
         // Note: No backend API call to Stream - call creation happens in frontend
@@ -272,14 +271,14 @@ class HelloDoctorController extends Controller
         try {
             // Get user information
             $user = \App\Models\User::find($userId);
-            
+
             // Get additional details based on patient type
             $patientDetails = 'N/A';
             if ($consultation->patient_type === 'student') {
                 $student = \App\Models\Student::with('class')->where('user_id', $userId)->first();
                 $patientDetails = $student && $student->class ? $student->class->name : 'N/A';
             }
-            
+
             $callData = [
                 'id' => $consultation->id,
                 'call_id' => $consultation->call_id,
@@ -310,14 +309,14 @@ class HelloDoctorController extends Controller
         try {
             // Get user information
             $user = \App\Models\User::find($userId);
-            
+
             // Get additional details based on patient type
             $patientDetails = 'N/A';
             if ($consultation->patient_type === 'student') {
                 $student = \App\Models\Student::with('class')->where('user_id', $userId)->first();
                 $patientDetails = $student && $student->class ? $student->class->name : 'N/A';
             }
-            
+
             $emergencyCallData = [
                 'id' => $consultation->id,
                 'call_id' => $consultation->call_id,
@@ -349,14 +348,14 @@ class HelloDoctorController extends Controller
     public function getVideoCallConfig($consultationId)
     {
         $student = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $consultationId)
             ->where('student_id', $student->id)
             ->firstOrFail();
 
         // Generate frontend configuration for Stream Video
         $streamConfig = $this->streamService->getFrontendConfig(
-            $student->id, 
+            $student->id,
             $student->name,
             $student->profile_photo_url ?? null
         );
@@ -375,7 +374,7 @@ class HelloDoctorController extends Controller
     public function startVideoCall($consultationId)
     {
         $student = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $consultationId)
             ->where('student_id', $student->id)
             ->where('status', 'scheduled')
@@ -394,7 +393,7 @@ class HelloDoctorController extends Controller
     public function cancelCall($consultationId)
     {
         $student = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $consultationId)
             ->where('student_id', $student->id)
             ->firstOrFail();
@@ -411,7 +410,7 @@ class HelloDoctorController extends Controller
     public function completeCall(Request $request, $consultationId)
     {
         $student = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $consultationId)
             ->where('student_id', $student->id)
             ->firstOrFail();
@@ -435,7 +434,7 @@ class HelloDoctorController extends Controller
     public function getCallStatus($consultationId)
     {
         $student = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $consultationId)
             ->where('student_id', $student->id)
             ->firstOrFail();
@@ -447,54 +446,54 @@ class HelloDoctorController extends Controller
             'duration' => $consultation->duration
         ]);
     }
-    
+
     // Helper method to get doctor availability
     private function getDoctorAvailability($doctorId)
     {
         $today = strtolower(now()->englishDayOfWeek);
-        
+
         $availability = \App\Models\DoctorAvailability::where('doctor_id', $doctorId)
             ->where('day_of_week', $today)
             ->where('is_available', true)
             ->first();
-        
+
         return $availability;
     }
-    
+
     // Helper method to get next available slot
     private function getNextAvailableSlot($doctorId)
     {
         $today = now();
         $todayDay = strtolower($today->englishDayOfWeek);
-        
+
         // Check today's availability
         $todayAvailability = \App\Models\DoctorAvailability::where('doctor_id', $doctorId)
             ->where('day_of_week', $todayDay)
             ->where('is_available', true)
             ->first();
-        
+
         if ($todayAvailability) {
             $currentTime = $today->format('H:i:s');
             if ($currentTime < $todayAvailability->end_time) {
                 return 'Today';
             }
         }
-        
+
         // Check next available day
         for ($i = 1; $i <= 7; $i++) {
             $checkDate = $today->copy()->addDays($i);
             $dayName = strtolower($checkDate->englishDayOfWeek);
-            
+
             $availability = \App\Models\DoctorAvailability::where('doctor_id', $doctorId)
                 ->where('day_of_week', $dayName)
                 ->where('is_available', true)
                 ->first();
-                
+
             if ($availability) {
                 return $checkDate->format('D, M j');
             }
         }
-        
+
         return 'Not available';
     }
 }

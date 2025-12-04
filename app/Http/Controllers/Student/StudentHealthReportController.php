@@ -12,7 +12,7 @@ class StudentHealthReportController extends Controller
     {
         $student = Auth::user();
         $studentDetails = $student->student;
-        
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
@@ -41,12 +41,12 @@ class StudentHealthReportController extends Controller
             ->get();
 
         // Combine both vaccination sources
-        $allVaccinations = $vaccinationRecords->merge($medicalVaccinations)->sortByDesc(function($item) {
+        $allVaccinations = $vaccinationRecords->merge($medicalVaccinations)->sortByDesc(function ($item) {
             return $item->vaccine_date ?? $item->record_date;
         });
 
         // Active Health Card
-        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+        $activeHealthCard = \App\Models\HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
@@ -63,8 +63,8 @@ class StudentHealthReportController extends Controller
             ->get();
 
         return view('student.health-report.index', compact(
-            'healthReports', 
-            'medicalRecords', 
+            'healthReports',
+            'medicalRecords',
             'allVaccinations',
             'activeHealthCard',
             'studentDetails',
@@ -80,47 +80,47 @@ class StudentHealthReportController extends Controller
         $student = Auth::user();
         // Ensure studentDetails relationship is loaded if not already
         $studentDetails = $student->student;
-        
-        
+
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
-        
-    
+
+
         // Get specific health report with correct relationship
         // Note: The second 'where' clause is redundant but kept for consistency
         $healthReport = \App\Models\StudentHealthReport::where('student_id', $studentDetails->id)
             ->where('student_id', $studentDetails->id)
             ->with(['reportData.field.category'])
             // Changed from firstOrFail() to first() to allow the Blade to handle missing report gracefully
-            ->first(); 
-            
-    
+            ->first();
+
+
         // Get all categories with fields for display
         $categories = \App\Models\HealthReportCategory::with(['fields'])
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get();
-    
+
         // School and Class Information
         $school = $student->school;
-        
+
         // Ensure class and section relationships are loaded
-        $studentDetails->load(['class', 'section']); 
+        $studentDetails->load(['class', 'section']);
         $class = $studentDetails->class;
         $section = $studentDetails->section;
-        
+
         $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
             ->latestFirst()
             ->get();
-            
+
         // 💡 NEW ADDITION: Fetch Active Health Card
-        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+        $activeHealthCard = \App\Models\HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
-            
-    
+
+
         // Pre-calculate field values and formatted values for the view
         $fieldValues = [];
         if ($healthReport) {
@@ -135,8 +135,8 @@ class StudentHealthReportController extends Controller
                 }
             }
         }
-        
-    
+
+
         return view('student.health-report.show', compact(
             'healthReport',
             'studentDetails',
@@ -148,10 +148,10 @@ class StudentHealthReportController extends Controller
             'section',
             'fieldValues',
             // 💡 NEW ADDITION: Pass to the view
-            'activeHealthCard' 
+            'activeHealthCard'
         ));
     }
-    
+
     /**
      * Get field value for a specific health report
      */
@@ -173,8 +173,8 @@ class StudentHealthReportController extends Controller
         if (!$value || $value === 'Not Recorded' || $value === 'null') {
             return null;
         }
-        
-        switch($fieldType) {
+
+        switch ($fieldType) {
             case 'date':
                 try {
                     return \Carbon\Carbon::parse($value)->format('M j, Y');
@@ -191,7 +191,7 @@ class StudentHealthReportController extends Controller
                 return $value;
         }
     }
-    
+
     public function uploadPrescription(Request $request)
     {
         $request->validate([
@@ -232,7 +232,7 @@ class StudentHealthReportController extends Controller
     {
         $student = Auth::user();
         $studentDetails = $student->student;
-        
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
@@ -250,12 +250,12 @@ class StudentHealthReportController extends Controller
         $studentDetails->load(['class', 'section']);
         $class = $studentDetails->class;
         $section = $studentDetails->section;
-        
+
         $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
             ->latestFirst()
             ->get();
-            
-        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+
+        $activeHealthCard = \App\Models\HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
@@ -295,7 +295,7 @@ class StudentHealthReportController extends Controller
     {
         $student = Auth::user();
         $studentDetails = $student->student;
-        
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
@@ -313,12 +313,12 @@ class StudentHealthReportController extends Controller
         $studentDetails->load(['class', 'section']);
         $class = $studentDetails->class;
         $section = $studentDetails->section;
-        
+
         $annualRecords = \App\Models\AnnualHealthRecord::where('student_id', $studentDetails->id)
             ->latestFirst()
             ->get();
-            
-        $activeHealthCard = \App\Models\HealthCard::where('student_id', $studentDetails->id)
+
+        $activeHealthCard = \App\Models\HealthCard::where('user_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
@@ -354,16 +354,16 @@ class StudentHealthReportController extends Controller
         // Create mPDF instance with Bengali font support
         $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
         $fontDirs = $defaultConfig['fontDir'];
-        
+
         $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
         $fontData = $defaultFontConfig['fontdata'];
-        
+
         // Ensure temp directory exists
         $tempDir = storage_path('app/mpdf');
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
-        
+
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
@@ -390,14 +390,14 @@ class StudentHealthReportController extends Controller
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
         ]);
-        
+
         // Write HTML to PDF
         $mpdf->WriteHTML($html);
 
         // Output PDF
         $fileName = 'health-report-' . $studentDetails->id . '-' . now()->format('Y-m-d') . '.pdf';
-        
-        return response()->streamDownload(function() use ($mpdf) {
+
+        return response()->streamDownload(function () use ($mpdf) {
             echo $mpdf->Output('', 'S');
         }, $fileName, [
             'Content-Type' => 'application/pdf',
@@ -411,7 +411,7 @@ class StudentHealthReportController extends Controller
     {
         $student = Auth::user();
         $studentDetails = $student->student;
-        
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
@@ -433,7 +433,7 @@ class StudentHealthReportController extends Controller
     {
         $student = Auth::user();
         $studentDetails = $student->student;
-        
+
         if (!$studentDetails) {
             abort(404, 'Student details not found');
         }
@@ -451,16 +451,16 @@ class StudentHealthReportController extends Controller
         // Create mPDF instance with Bengali font support
         $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
         $fontDirs = $defaultConfig['fontDir'];
-        
+
         $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
         $fontData = $defaultFontConfig['fontdata'];
-        
+
         // Ensure temp directory exists
         $tempDir = storage_path('app/mpdf');
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
-        
+
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
@@ -482,14 +482,14 @@ class StudentHealthReportController extends Controller
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
         ]);
-        
+
         // Write HTML to PDF
         $mpdf->WriteHTML($html);
 
         // Output PDF
         $fileName = 'prescription-' . $prescription->id . '-' . now()->format('Y-m-d') . '.pdf';
-        
-        return response()->streamDownload(function() use ($mpdf) {
+
+        return response()->streamDownload(function () use ($mpdf) {
             echo $mpdf->Output('', 'S');
         }, $fileName, [
             'Content-Type' => 'application/pdf',

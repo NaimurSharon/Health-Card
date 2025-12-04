@@ -67,6 +67,10 @@
 
                         <div x-show="open" @click.outside="open = false"
                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                            <a href="{{ route('video-consultation.index') }}"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user me-2"></i>My Appointments
+                            </a>
                             <div class="border-t border-gray-200"></div>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -129,44 +133,3 @@
         </a>
     </div>
 </div>
-
-<style>
-    #healthTipBanner {
-        transition: all 0.5s ease-in-out;
-        max-height: 80px;
-        /* banner height */
-        overflow: hidden;
-    }
-
-    #healthTipBanner.hide-banner {
-        opacity: 0;
-        max-height: 0;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        margin-bottom: 0 !important;
-    }
-</style>
-
-<script>
-    // Health Tip Banner Dismissal Functionality
-    function dismissHealthTip() {
-        const banner = document.getElementById('healthTipBanner');
-        if (banner) {
-            banner.classList.add('hide-banner');
-
-            // Remove after animation ends (0.5s)
-            setTimeout(() => banner.remove(), 500);
-        }
-    }
-
-
-    // Optional: Auto-dismiss after 1 minute (60 seconds)
-    document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(() => {
-            const banner = document.getElementById('healthTipBanner');
-            if (banner && !document.cookie.includes('healthTipDismissed')) {
-                dismissHealthTip();
-            }
-        }, 60000); // 1 minute
-    });
-</script>
