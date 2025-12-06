@@ -61,7 +61,7 @@ class DoctorAppointmentController extends Controller
     public function show(VideoConsultation $consultation)
     {
         // Ensure doctor can only view their own consultations
-        if ($consultation->doctor_id !== auth()->id()) {
+        if ($consultation->doctor_id != auth()->id()) {
             abort(403);
         }
 
@@ -86,7 +86,7 @@ class DoctorAppointmentController extends Controller
 
     public function updateStatus(Request $request, VideoConsultation $consultation)
     {
-        if ($consultation->doctor_id !== auth()->id()) {
+        if ($consultation->doctor_id != auth()->id()) {
             abort(403);
         }
 
@@ -113,7 +113,7 @@ class DoctorAppointmentController extends Controller
 
     public function createMedicalRecord(VideoConsultation $consultation, Request $request)
     {
-        if ($consultation->doctor_id !== auth()->id()) {
+        if ($consultation->doctor_id != auth()->id()) {
             abort(403);
         }
 

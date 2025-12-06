@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\DoctorDetail;
+use App\Models\Hospital;
 
 class DoctorProfileController extends Controller
 {
@@ -19,16 +20,13 @@ class DoctorProfileController extends Controller
     public function edit()
     {
         $doctor = Auth::user();
-        
+
         if ($doctor->role !== 'doctor') {
             abort(403, 'Unauthorized access.');
         }
 
-        // Load doctor details with fallback
         $doctor->load(['doctorDetail', 'hospital']);
-        
-        // Get hospitals for dropdown
-        $hospitals = \App\Models\Hospital::where('status', 'active')->get();
+        $hospitals = Hospital::where('status', 'active')->get();
 
         return view('doctor.profile.edit', compact('doctor', 'hospitals'));
     }
@@ -39,79 +37,47 @@ class DoctorProfileController extends Controller
     public function update(Request $request)
     {
         $doctor = Auth::user();
-        
+
         if ($doctor->role !== 'doctor') {
             abort(403, 'Unauthorized access.');
         }
 
-        // Validation rules
-        $validator = validator($request->all(), [
+        // Simplified validation rules
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $doctor->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $doctor->id,
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'date_of_birth' => 'nullable|date',
             'gender' => 'required|in:male,female',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'signature' => 'nullable|mimes:png,svg,webp|max:1024',
             'specialization' => 'required|string|max:255',
             'qualifications' => 'required|string',
             'hospital_id' => 'required|exists:hospitals,id',
-            'experience' => 'required|string|max:100',
-            'license_number' => 'required|string|max:100|unique:doctor_details,license_number,' . ($doctor->doctorDetail ? $doctor->doctorDetail->id : 'NULL') . ',id,user_id,' . $doctor->id,
+            'license_number' => 'required|string|max:100',
             'consultation_fee' => 'required|numeric|min:0',
             'follow_up_fee' => 'nullable|numeric|min:0',
             'emergency_fee' => 'nullable|numeric|min:0',
+            'experience' => 'nullable|string|max:100',
             'bio' => 'nullable|string',
             'department' => 'nullable|string|max:255',
             'designation' => 'nullable|string|max:255',
-            'max_patients_per_day' => 'nullable|integer|min:1|max:50',
-            'languages' => 'nullable|string',
             'password' => 'nullable|min:8|confirmed',
-            'remove_profile_image' => 'nullable|boolean',
-            'remove_signature' => 'nullable|boolean',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
 
         try {
             DB::transaction(function () use ($request, $doctor) {
-                // Handle profile image upload/removal
+                // Handle profile image upload
                 $profileImagePath = $doctor->profile_image;
-                
-                if ($request->has('remove_profile_image') && $request->remove_profile_image) {
-                    // Remove existing profile image
-                    if ($profileImagePath) {
-                        $this->deleteOldFile($profileImagePath);
-                        $profileImagePath = null;
-                    }
-                } elseif ($request->hasFile('profile_image')) {
-                    // Upload new profile image
-                    if ($profileImagePath) {
-                        $this->deleteOldFile($profileImagePath);
-                    }
-                    $profileImagePath = $this->handleImageUpload($request->file('profile_image'), 'doctor_profile');
-                }
 
-                // Handle signature image upload/removal
-                $signaturePath = $doctor->signature;
-                
-                if ($request->has('remove_signature') && $request->remove_signature) {
-                    // Remove existing signature
-                    if ($signaturePath) {
-                        $this->deleteOldFile($signaturePath);
-                        $signaturePath = null;
+                if ($request->hasFile('profile_image')) {
+                    // Delete old profile image if exists
+                    if ($profileImagePath) {
+                        Storage::delete('public/' . $profileImagePath);
                     }
-                } elseif ($request->hasFile('signature')) {
-                    // Upload new signature
-                    if ($signaturePath) {
-                        $this->deleteOldFile($signaturePath);
-                    }
-                    $signaturePath = $this->handleSignatureUpload($request->file('signature'));
+
+                    // Upload new profile image
+                    $profileImagePath = $request->file('profile_image')->store('doctors/profile-images', 'public');
                 }
 
                 // Update user
@@ -127,7 +93,6 @@ class DoctorProfileController extends Controller
                     'hospital_id' => $request->hospital_id,
                 ];
 
-                // Only update profile image if changed
                 if ($profileImagePath !== $doctor->profile_image) {
                     $updateData['profile_image'] = $profileImagePath;
                 }
@@ -148,20 +113,17 @@ class DoctorProfileController extends Controller
                     'bio' => $request->bio,
                     'department' => $request->department,
                     'designation' => $request->designation,
-                    'max_patients_per_day' => $request->max_patients_per_day ?? 20,
                 ];
-                
-                // Only update signature if changed
-                if ($signaturePath !== $doctor->doctorDetail->signature) {
-                    $doctorDetailData['signature'] = $signaturePath;
-                }
 
-                // Handle languages - convert string to array
-                if ($request->languages) {
-                    $languages = array_map('trim', explode(',', $request->languages));
-                    $doctorDetailData['languages'] = json_encode($languages);
-                } else {
-                    $doctorDetailData['languages'] = json_encode(['Bangla', 'English']);
+                // Check if license number is unique (excluding current doctor)
+                if ($request->license_number !== $doctor->doctorDetail?->license_number) {
+                    $exists = DoctorDetail::where('license_number', $request->license_number)
+                        ->where('user_id', '!=', $doctor->id)
+                        ->exists();
+
+                    if ($exists) {
+                        throw new \Exception('License number already exists for another doctor.');
+                    }
                 }
 
                 if ($doctor->doctorDetail) {
@@ -181,157 +143,31 @@ class DoctorProfileController extends Controller
         }
     }
 
-    protected function handleImageUpload($file, $type)
+    /**
+     * Remove profile image
+     */
+    public function removeProfileImage()
     {
-        $baseName = $type . '_' . Str::uuid();
-        $originalExtension = $file->getClientOriginalExtension();
-    
-        $destinationPath = public_path('storage/users');
-    
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
-        if (!file_exists($destinationPath . '/compressed')) {
-            mkdir($destinationPath . '/compressed', 0755, true);
-        }
-    
-        $originalName = $baseName . '.' . $originalExtension;
-        $file->move($destinationPath, $originalName);
-    
-        $webpName  = $baseName . '.webp';
-        $webpPath  = $destinationPath . '/compressed/' . $webpName;
-    
-        // Convert to WebP (GD)
-        $this->convertToWebpWithGD($destinationPath . '/' . $originalName, $webpPath, 80);
-    
-        // Delete original
-        unlink($destinationPath . '/' . $originalName);
-    
-        return 'users/compressed/' . $webpName;
-    }
+        $doctor = Auth::user();
 
+        if ($doctor->role !== 'doctor') {
+            abort(403, 'Unauthorized access.');
+        }
 
-    protected function handleSignatureUpload($file)
-    {
-        $baseName = 'signature_' . Str::uuid();
-        $originalExtension = strtolower($file->getClientOriginalExtension());
-    
-        $destinationPath = public_path('storage/signatures');
-    
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
-        if (!file_exists($destinationPath . '/compressed')) {
-            mkdir($destinationPath . '/compressed', 0755, true);
-        }
-    
-        $originalName = $baseName . '.' . $originalExtension;
-        $file->move($destinationPath, $originalName);
-    
-        // Transparent PNG / SVG (keep original)
-        if (in_array($originalExtension, ['png', 'svg'])) {
-    
-            $finalName = $baseName . '.' . $originalExtension;
-            $finalPath = $destinationPath . '/compressed/' . $finalName;
-    
-            if ($originalExtension === 'png') {
-                $this->optimizePngWithGD($destinationPath . '/' . $originalName, $finalPath);
-            } else {
-                copy($destinationPath . '/' . $originalName, $finalPath);
+        try {
+            if ($doctor->profile_image) {
+                Storage::delete('public/' . $doctor->profile_image);
+                $doctor->update(['profile_image' => null]);
             }
-    
-        } else {
-    
-            // Convert to WebP
-            $finalName = $baseName . '.webp';
-            $finalPath = $destinationPath . '/compressed/' . $finalName;
-    
-            $this->convertToWebpWithGD($destinationPath . '/' . $originalName, $finalPath, 90);
-        }
-    
-        // Remove original
-        unlink($destinationPath . '/' . $originalName);
-    
-        return 'signatures/compressed/' . $finalName;
-    }
 
+            return redirect()->route('doctor.profile.edit')
+                ->with('success', 'Profile image removed successfully.');
 
-    /**
-     * Optimize PNG while preserving transparency
-     */
-    protected function optimizePngWithGD($sourcePath, $destinationPath)
-    {
-        $image = imagecreatefrompng($sourcePath);
-        
-        // Preserve transparency
-        imagealphablending($image, false);
-        imagesavealpha($image, true);
-        
-        // Save optimized PNG
-        imagepng($image, $destinationPath, 6); // Compression level 6 (0-9)
-        imagedestroy($image);
-        
-        return true;
-    }
-
-    /**
-     * Convert image to WebP using GD library
-     */
-    protected function convertToWebpWithGD($sourcePath, $destinationPath, $quality = 80)
-    {
-        $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION));
-        
-        switch ($extension) {
-            case 'jpeg':
-            case 'jpg':
-                $image = imagecreatefromjpeg($sourcePath);
-                break;
-            case 'png':
-                $image = imagecreatefrompng($sourcePath);
-                // Preserve transparency for PNG
-                imagepalettetotruecolor($image);
-                imagealphablending($image, true);
-                imagesavealpha($image, true);
-                break;
-            case 'gif':
-                $image = imagecreatefromgif($sourcePath);
-                break;
-            case 'webp':
-                // If already webp, just copy the file
-                return copy($sourcePath, $destinationPath);
-            default:
-                throw new \Exception("Unsupported image type: $extension");
-        }
-    
-        // Convert and save as WebP
-        $result = imagewebp($image, $destinationPath, $quality);
-        imagedestroy($image);
-        
-        if (!$result) {
-            throw new \Exception("Failed to convert image to WebP");
-        }
-        
-        return true;
-    }
-
-    protected function deleteOldFile($path)
-    {
-        if (!$path) return;
-    
-        $filePath = public_path('storage/' . $path);
-    
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-    
-        // Also remove uncompressed version
-        $uncompressedPath = str_replace('compressed/', '', $filePath);
-    
-        if (file_exists($uncompressedPath)) {
-            unlink($uncompressedPath);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to remove profile image: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Show the doctor's profile (view only)
@@ -339,7 +175,7 @@ class DoctorProfileController extends Controller
     public function show()
     {
         $doctor = Auth::user();
-        
+
         if ($doctor->role !== 'doctor') {
             abort(403, 'Unauthorized access.');
         }
