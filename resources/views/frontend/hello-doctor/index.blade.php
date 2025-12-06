@@ -100,7 +100,7 @@
                                 class="h-48 bg-gradient-to-br from-blue-50 to-green-50 rounded-t-lg flex items-center justify-center overflow-hidden">
                                 @if($doctor->profile_image)
                                     <img src="{{ asset('public/storage/' . $doctor->profile_image) }}" alt="Dr. {{ $doctor->name }}"
-                                        class="w-45 h-45 object-cover border-4 border-white shadow-lg">
+                                        class="w-48 h-48 object-cover border-4 border-white shadow-lg">
                                 @else
                                     <div
                                         class="w-32 h-32 bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
@@ -377,14 +377,14 @@
                 // User is logged in, proceed with booking
                 openAppointmentForm(doctorId);
             @else
-                                                                        // User is not logged in, show auth modal with appointment data
-                                                                        const appointmentData = {
+                                                                                // User is not logged in, show auth modal with appointment data
+                                                                                const appointmentData = {
                     doctor_id: doctorId,
                     action: 'book_appointment'
                 };
                 showAuthModal(appointmentData);
             @endif
-                                }
+                                    }
 
         // Function to handle pending appointment after login
         window.handlePendingAppointment = function () {
@@ -492,14 +492,14 @@
                 e.preventDefault();
                 alert('Please log in to schedule a video consultation.');
             @endif
-                                });
+                                    });
 
         document.getElementById('emergencyForm').addEventListener('submit', function (e) {
             @if(!Auth::check())
                 e.preventDefault();
                 alert('Please log in to request emergency consultation.');
             @endif
-                                });
+                                    });
 
         // Function to show emergency form (if needed elsewhere)
         function showEmergencyForm() {
@@ -526,7 +526,7 @@
                 showAuthModal(appointmentData);
             @endif
 
-                                    const button = document.getElementById(`instant-call-btn-${doctorId}`);
+                                        const button = document.getElementById(`instant-call-btn-${doctorId}`);
             const originalHTML = button.innerHTML;
 
             try {
@@ -607,51 +607,51 @@
             return new Promise((resolve) => {
                 // Create modal HTML
                 const modalHTML = `
-                                            <div id="symptoms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                                                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
-                                                    <div class="flex items-center justify-between mb-4">
-                                                        <h3 class="text-xl font-bold text-gray-900">Instant Call with ${doctorName}</h3>
-                                                        <button onclick="closeSymptomsModal()" class="text-gray-400 hover:text-gray-600">
-                                                            <i class="fas fa-times text-xl"></i>
-                                                        </button>
-                                                    </div>
+                                                <div id="symptoms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                                                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+                                                        <div class="flex items-center justify-between mb-4">
+                                                            <h3 class="text-xl font-bold text-gray-900">Instant Call with ${doctorName}</h3>
+                                                            <button onclick="closeSymptomsModal()" class="text-gray-400 hover:text-gray-600">
+                                                                <i class="fas fa-times text-xl"></i>
+                                                            </button>
+                                                        </div>
 
-                                                    <div class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                                                        <p class="text-sm text-blue-700">
-                                                            <i class="fas fa-info-circle mr-2"></i>
-                                                            Consultation Fee: <strong>৳${fee}</strong>
-                                                        </p>
-                                                    </div>
+                                                        <div class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                                                            <p class="text-sm text-blue-700">
+                                                                <i class="fas fa-info-circle mr-2"></i>
+                                                                Consultation Fee: <strong>৳${fee}</strong>
+                                                            </p>
+                                                        </div>
 
-                                                    <div class="mb-4">
-                                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                                            Please describe your symptoms: <span class="text-red-500">*</span>
-                                                        </label>
-                                                        <textarea 
-                                                            id="symptoms-input" 
-                                                            rows="4" 
-                                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                                            placeholder="E.g., Fever, headache, cough..."
-                                                            maxlength="500"
-                                                        ></textarea>
-                                                        <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
-                                                    </div>
+                                                        <div class="mb-4">
+                                                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                                                Please describe your symptoms: <span class="text-red-500">*</span>
+                                                            </label>
+                                                            <textarea 
+                                                                id="symptoms-input" 
+                                                                rows="4" 
+                                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                                                placeholder="E.g., Fever, headache, cough..."
+                                                                maxlength="500"
+                                                            ></textarea>
+                                                            <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
+                                                        </div>
 
-                                                    <div class="flex gap-3">
-                                                        <button 
-                                                            onclick="closeSymptomsModal()" 
-                                                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors">
-                                                            Cancel
-                                                        </button>
-                                                        <button 
-                                                            onclick="submitSymptoms()" 
-                                                            class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors">
-                                                            Start Call
-                                                        </button>
+                                                        <div class="flex gap-3">
+                                                            <button 
+                                                                onclick="closeSymptomsModal()" 
+                                                                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors">
+                                                                Cancel
+                                                            </button>
+                                                            <button 
+                                                                onclick="submitSymptoms()" 
+                                                                class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors">
+                                                                Start Call
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        `;
+                                            `;
 
                 // Add modal to page
                 document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -707,11 +707,11 @@
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
 
             const notificationHTML = `
-                                        <div id="notification" class="fixed top-4 right-4 z-50 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all">
-                                            <i class="fas ${icon} text-xl"></i>
-                                            <span>${message}</span>
-                                        </div>
-                                    `;
+                                            <div id="notification" class="fixed top-4 right-4 z-50 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 transform transition-all">
+                                                <i class="fas ${icon} text-xl"></i>
+                                                <span>${message}</span>
+                                            </div>
+                                        `;
 
             document.body.insertAdjacentHTML('beforeend', notificationHTML);
 

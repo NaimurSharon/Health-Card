@@ -102,7 +102,7 @@ class DashboardController extends Controller
             'monthlyGrowth'
         ));
     }
-    
+
     public function doctorIndex()
     {
         $doctorId = auth()->id();
@@ -177,57 +177,57 @@ class DashboardController extends Controller
             'recentRecords'
         ));
     }
-    
+
     public function studentIndex()
     {
         $user = Auth::user();
         $student = $user->student;
-    
+
         // School Information
         $school = $user->school;
         $schoolId = $user->school_id;
-    
+
         $cityCorporationNotices = CityCorporationNotice::active()
             ->forSchool($schoolId)
             ->forRoles(['student'])
             ->latest()
             ->take(5)
             ->get();
-    
+
         // Class Information
         $class = $student->class;
         $section = $student->section;
-    
+
         // School Notices
         $schoolNotices = Notice::where('status', 'published')
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('target_roles', 'like', '%student%')
-                      ->orWhere('target_roles', 'like', '%all%');
+                    ->orWhere('target_roles', 'like', '%all%');
             })
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('expiry_date', '>=', now())
-                      ->orWhereNull('expiry_date');
+                    ->orWhereNull('expiry_date');
             })
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-    
+
         // Class-specific announcements
         $classAnnouncements = Notice::where('status', 'published')
-            ->where(function($query) use ($class, $section) {
+            ->where(function ($query) use ($class, $section) {
                 if ($class) {
                     $query->where('target_roles', 'like', '%class_' . $class->id . '%')
-                          ->orWhere('target_roles', 'like', '%section_' . ($section->id ?? '0') . '%');
+                        ->orWhere('target_roles', 'like', '%section_' . ($section->id ?? '0') . '%');
                 }
             })
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('expiry_date', '>=', now())
-                      ->orWhereNull('expiry_date');
+                    ->orWhereNull('expiry_date');
             })
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-    
+
         // Today's schedule
         $dayOfWeek = strtolower(now()->format('l'));
         $todaysSchedule = Routine::where('class_id', $student->class_id)
@@ -236,15 +236,15 @@ class DashboardController extends Controller
             ->with(['subject', 'teacher'])
             ->orderBy('period')
             ->get();
-    
+
         $todaysClassesCount = $todaysSchedule->count();
-    
+
         // Current period
         $currentTime = now()->format('H:i:s');
-        $currentPeriod = $todaysSchedule->first(function($period) use ($currentTime) {
+        $currentPeriod = $todaysSchedule->first(function ($period) use ($currentTime) {
             return $currentTime >= $period->start_time && $currentTime <= $period->end_time;
         });
-    
+
         // Today's video consultations
         $todaysConsultations = VideoConsultation::where('user_id', $user->id)
             ->whereDate('scheduled_for', now()->format('Y-m-d'))
@@ -252,7 +252,7 @@ class DashboardController extends Controller
             ->with('doctor')
             ->orderBy('scheduled_for')
             ->get();
-    
+
         // Upcoming video consultations
         $upcomingConsultations = VideoConsultation::where('user_id', $user->id)
             ->where('status', 'scheduled')
@@ -261,34 +261,34 @@ class DashboardController extends Controller
             ->orderBy('scheduled_for')
             ->take(3)
             ->get();
-    
+
         // Recent health records - FIXED: using student_id instead of user_id
         $recentHealthRecords = MedicalRecord::where('student_id', $student->id)
             ->orderBy('record_date', 'desc')
             ->take(3)
             ->get();
-    
+
         // Diary entries count
         $diaryEntriesCount = DiaryUpdate::where('student_id', $student->id)
             ->where('entry_date', '>=', now()->startOfWeek())
             ->count();
-    
+
         // Pending treatment requests - FIXED: using student_id instead of user_id
         $pendingTreatmentRequests = TreatmentRequest::where('student_id', $student->id)
             ->where('status', 'pending')
             ->count();
-    
+
         // Active health card
         $activeHealthCard = HealthCard::where('student_id', $student->id)
             ->where('status', 'active')
             ->where('expiry_date', '>=', now())
             ->first();
-    
+
         // Today's diary entry
         $todaysDiaryEntry = DiaryUpdate::where('student_id', $student->id)
             ->where('entry_date', now()->format('Y-m-d'))
             ->first();
-    
+
         // Upcoming exams
         $upcomingExams = OnlineExam::where('class_id', $student->class_id)
             ->where('exam_date', '>=', now()->format('Y-m-d'))
@@ -297,7 +297,7 @@ class DashboardController extends Controller
             ->orderBy('exam_date')
             ->take(3)
             ->get();
-    
+
         // Video consultation statistics
         $consultationStats = [
             'today_count' => $todaysConsultations->count(),
@@ -309,7 +309,7 @@ class DashboardController extends Controller
                 ->where('payment_status', 'pending')
                 ->count(),
         ];
-    
+
         return view('student.dashboard', compact(
             'school',
             'class',

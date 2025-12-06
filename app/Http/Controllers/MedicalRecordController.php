@@ -20,10 +20,10 @@ class MedicalRecordController extends Controller
             ->latest('record_date');
 
         if ($search) {
-            $medicalRecords->where(function($query) use ($search) {
+            $medicalRecords->where(function ($query) use ($search) {
                 $query->where('diagnosis', 'like', "%{$search}%")
                     ->orWhere('symptoms', 'like', "%{$search}%")
-                    ->orWhereHas('student.user', function($query) use ($search) {
+                    ->orWhereHas('student.user', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%");
                     });
             });
@@ -104,7 +104,7 @@ class MedicalRecordController extends Controller
 
     public function show(MedicalRecord $medicalRecord)
     {
-        if ($medicalRecord->recorded_by !== auth()->id()) {
+        if ($medicalRecord->recorded_by != auth()->id()) {
             abort(403, 'This patient record was created by another doctor and cannot be accessed.');
         }
 
