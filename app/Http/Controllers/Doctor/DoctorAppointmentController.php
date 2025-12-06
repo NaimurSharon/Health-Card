@@ -137,7 +137,7 @@ class DoctorAppointmentController extends Controller
 
             if ($student) {
                 MedicalRecord::create([
-                    'student_id' => $student->id,
+                    'user_id' => $student->user->id,
                     'record_date' => today(),
                     'record_type' => 'consultation',
                     'symptoms' => $consultation->symptoms,
