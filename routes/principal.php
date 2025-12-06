@@ -10,6 +10,7 @@ use App\Http\Controllers\Principal\PrincipalSubjectController;
 use App\Http\Controllers\Principal\PrincipalRoutineController;
 use App\Http\Controllers\Principal\PrincipalHomeworkController;
 use App\Http\Controllers\Principal\PrincipalNoticeController;
+use App\Http\Controllers\Principal\PrincipalSchoolController;
 use App\Http\Controllers\Principal\PrincipalHealthController;
 use App\Http\Controllers\Principal\PrincipalIdCardController;
 use App\Http\Controllers\Principal\PrincipalProfileController;
@@ -43,6 +44,12 @@ Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:princi
 
         // AJAX Routes
         Route::get('/get-sections/{classId}', [PrincipalStudentController::class, 'getSections'])->name('get-sections');
+    });
+
+    Route::prefix('school')->name('school.')->group(function () {
+        Route::get('/edit', [PrincipalSchoolController::class, 'editSchool'])->name('edit');
+        Route::post('/update', [PrincipalSchoolController::class, 'updateSchool'])->name('update');
+        Route::post('/update-principal-info', [PrincipalSchoolController::class, 'updatePrincipalInfo'])->name('update-principal-info');
     });
 
     // Teachers Management
@@ -168,11 +175,5 @@ Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:princi
         Route::get('/', [PrincipalProfileController::class, 'index'])->name('index');
         Route::put('/update', [PrincipalProfileController::class, 'update'])->name('update');
         Route::put('/update-password', [PrincipalProfileController::class, 'updatePassword'])->name('update-password');
-    });
-
-    // School Management
-    Route::prefix('school')->name('school.')->group(function () {
-        Route::get('/edit', [PrincipalProfileController::class, 'editSchool'])->name('edit');
-        Route::put('/update', [PrincipalProfileController::class, 'updateSchool'])->name('update');
     });
 });

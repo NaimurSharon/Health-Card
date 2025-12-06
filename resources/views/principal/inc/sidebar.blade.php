@@ -141,10 +141,10 @@
             </a>
 
             <!-- ID Cards -->
-            <a href="{{ route('principal.id-cards.index') }}"
+            <!-- <a href="{{ route('principal.id-cards.index') }}"
                 class="sidebar-item flex items-center px-3 py-2 text-lg font-medium rounded-lg {{ request()->routeIs('principal.id-cards.*') ? 'active' : '' }}">
                 <span>ID Cards</span>
-            </a>
+            </a> -->
 
             <!-- My Classes -->
             <!-- <a href="{{ route('principal.assigned-classes') }}"
@@ -163,10 +163,10 @@
                     </button>
 
                     <div x-show="open" x-cloak class="ml-4 mt-2 space-y-2">
-                        <a href="{{ route('principal.profile.index') }}"
+                        <!-- <a href="{{ route('principal.profile.index') }}"
                             class="sidebar-item flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('principal.profile.index') ? 'active' : '' }}">
                             <span>My Profile</span>
-                        </a>
+                        </a> -->
                         <a href="{{ route('principal.school.edit') }}"
                             class="sidebar-item flex items-center px-3 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('principal.school.*') ? 'active' : '' }}">
                             <span>School Info</span>
@@ -194,6 +194,10 @@
         border-right: 1px solid rgba(255, 255, 255, 0.05);
         height: 100vh;
         padding-top: 1rem;
+        overflow-y: auto;
+        /* NEW */
+        overscroll-behavior: contain;
+        /* NEW */
     }
 
     .sidebar .text-xl {
@@ -261,5 +265,12 @@
         background: transparent;
         color: inherit;
         cursor: pointer;
+    }
+
+    /* NEW: Prevent logo overflow */
+    .sidebar img {
+        max-height: 65px;
+        width: auto;
+        object-fit: contain;
     }
 </style>

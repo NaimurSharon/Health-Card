@@ -7,11 +7,35 @@ use Illuminate\Database\Eloquent\Model;
 class School extends Model
 {
     protected $fillable = [
-        'name', 'code', 'type', 'established_year', 'address', 'city', 'district', 'division',
-        'phone', 'email', 'website', 'principal_id', 'assigned_doctor', 'logo', 'cover_image', 'school_image', 
-        'motto', 'vision', 'mission', 'academic_system', 'medium', 'total_students', 
-        'total_teachers', 'total_staff', 'campus_area', 'facilities', 'accreditations', 
-        'social_links', 'status'
+        'name',
+        'code',
+        'type',
+        'established_year',
+        'address',
+        'city',
+        'district',
+        'division',
+        'phone',
+        'email',
+        'website',
+        'principal_id',
+        'assigned_doctor',
+        'logo',
+        'cover_image',
+        'school_image',
+        'motto',
+        'vision',
+        'mission',
+        'academic_system',
+        'medium',
+        'total_students',
+        'total_teachers',
+        'total_staff',
+        'campus_area',
+        'facilities',
+        'accreditations',
+        'social_links',
+        'status'
     ];
 
     // Relationships
@@ -89,9 +113,9 @@ class School extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('city', 'like', "%{$search}%")
-                    ->orWhere('district', 'like', "%{$search}%");
+            ->orWhere('code', 'like', "%{$search}%")
+            ->orWhere('city', 'like', "%{$search}%")
+            ->orWhere('district', 'like', "%{$search}%");
     }
 
     // Accessors
@@ -268,13 +292,13 @@ class School extends Model
     {
         return [
             'assigned_doctor' => $this->assigned_doctor ? $this->assignedDoctorName : 'Not Assigned',
-            'doctor_available' => $this->assignedDoctor && $this->assignedDoctor->doctorDetail 
-                ? $this->assignedDoctor->doctorDetail->is_available 
+            'doctor_available' => $this->assignedDoctor && $this->assignedDoctor->doctorDetail
+                ? $this->assignedDoctor->doctorDetail->is_available
                 : false,
-            'medical_records_count' => MedicalRecord::whereHas('student', function($query) {
+            'medical_records_count' => MedicalRecord::whereHas('student', function ($query) {
                 $query->where('school_id', $this->id);
             })->count(),
-            'health_cards_count' => HealthCard::whereHas('student', function($query) {
+            'health_cards_count' => HealthCard::whereHas('student', function ($query) {
                 $query->where('school_id', $this->id);
             })->count(),
         ];
@@ -310,16 +334,16 @@ class School extends Model
     public function getAvailableDoctors()
     {
         return User::where('role', 'doctor')
-                  ->where('school_id', $this->id)
-                  ->where('status', 'active')
-                  ->get();
+            ->where('school_id', $this->id)
+            ->where('status', 'active')
+            ->get();
     }
 
     public function canScheduleAppointment()
     {
-        return $this->isDoctorAssigned() && 
-               $this->assignedDoctor->doctorDetail && 
-               $this->assignedDoctor->doctorDetail->is_available;
+        return $this->isDoctorAssigned() &&
+            $this->assignedDoctor->doctorDetail &&
+            $this->assignedDoctor->doctorDetail->is_available;
     }
 
     public function getDoctorAvailability()
