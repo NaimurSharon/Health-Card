@@ -30,7 +30,7 @@ class Teacher extends Model
         'disabilities',
         'class_teacher_of',
         'status',
-        'signature', 
+        'signature',
     ];
 
     protected $casts = [
@@ -155,7 +155,18 @@ class Teacher extends Model
      */
     public function getQualificationsAttribute(): string
     {
-        return $this->user->qualifications ?? '';
+        $qualifications = $this->user->qualifications ?? null;
+
+        if (!$qualifications) {
+            return '';
+        }
+
+        // Handle both string and array formats
+        if (is_array($qualifications)) {
+            return implode(', ', $qualifications);
+        }
+
+        return (string) $qualifications;
     }
 
     /**

@@ -9,7 +9,7 @@
         <div class="table-header px-4 py-4 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h3 class="text-xl sm:text-2xl font-bold">Health Report - {{ $user->name }}</h3>
-                <p class="text-gray-600 mt-1">Manage student health data and annual checkups</p>
+                <p class="text-gray-200 mt-1">Manage student health data and annual checkups</p>
             </div>
             <div class="flex space-x-3">
                 <button type="button" onclick="saveHealthReport()" 
@@ -24,127 +24,156 @@
         </div>
     </div>
 
-    <!-- Age-based Health Tracking -->
-    <div class="content-card rounded-lg p-4 sm:p-6">
-        <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center">
-            <i class="fas fa-chart-line me-2"></i>Annual Health Tracking (4-18 years)
-        </h4>
-        
-        @php
-            $allHealthReports = \App\Models\StudentHealthReport::where('student_id', $student->id)
-                ->with(['reportData.field'])
-                ->orderBy('checkup_date', 'asc')
-                ->get();
-            
-            $reportsWithAge = [];
-            foreach ($allHealthReports as $report) {
-                $age = $user->date_of_birth ? 
-                    $report->checkup_date->diffInYears(\Carbon\Carbon::parse($user->date_of_birth)) : 
-                    null;
-                
-                if ($age && $age >= 4 && $age <= 18) {
-                    $reportsWithAge[$age] = $report;
-                }
-            }
-            
-            ksort($reportsWithAge);
-            $currentAge = $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->age : null;
-        @endphp
+    <!-- Annual Health Records -->
+<div class="content-card rounded-lg p-4 sm:p-6">
+    <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center justify-between">
+        <span class="flex items-center">
+            <i class="fas fa-chart-line me-2"></i>Annual Health Records
+        </span>
+        <a href="{{ route('principal.health.annual-records.create') }}" 
+           class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+            <i class="fas fa-plus mr-1"></i>Add Record
+        </a>
+    </h4>
+    
+    @php
+        $currentAge = $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->age : null;
+    @endphp
 
-        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div class="text-sm text-gray-600">
-                <strong>Current Age:</strong> 
-                @if($currentAge)
-                    <span class="font-medium">{{ $currentAge }} years</span>
-                @else
-                    <span class="text-yellow-600">Age not available</span>
-                @endif
-            </div>
-            <a href="{{ route('principal.health.annual-records.student', $student->id) }}" 
-               class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
-                <i class="fas fa-history mr-1"></i>View Annual Records
-            </a>
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="text-sm text-gray-600">
+            <strong>Student Age:</strong> 
+            @if($currentAge)
+                <span class="font-medium">{{ $currentAge }} years</span>
+            @else
+                <span class="text-yellow-600">Date of birth not set</span>
+            @endif
         </div>
-
-        @if(count($reportsWithAge) > 0)
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Age (Years)</th>
-                        <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Checkup Date</th>
-                        <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Weight (kg)</th>
-                        <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Height (cm)</th>
-                        <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for($age = 4; $age <= 18; $age++)
-                        @php
-                            $report = $reportsWithAge[$age] ?? null;
-                            $weight = $report ? ($report->getFieldValue('weight_kg') ?? $report->getFieldValue('weight')) : null;
-                            $height = $report ? ($report->getFieldValue('height_cm') ?? $report->getFieldValue('height')) : null;
-                        @endphp
-                        <tr class="hover:bg-gray-50 {{ $report && $report->id == $healthReport->id ? 'bg-blue-50' : '' }}">
-                            <td class="border px-4 py-3 text-sm font-medium text-gray-900">
-                                {{ $age }} years
-                                @if($report && $report->id == $healthReport->id)
-                                    <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        Editing
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="border px-4 py-3 text-sm text-gray-700">
-                                @if($report)
-                                    {{ $report->checkup_date->format('M j, Y') }}
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="border px-4 py-3 text-sm text-gray-700">
-                                @if($weight)
-                                    <span class="font-semibold">{{ $weight }} kg</span>
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="border px-4 py-3 text-sm text-gray-700">
-                                @if($height)
-                                    <span class="font-semibold">{{ $height }} cm</span>
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="border px-4 py-3 text-sm text-gray-700">
-                                @if($report)
-                                    <a href="{{ route('principal.health.reports.edit', $report) }}" 
-                                       class="text-blue-600 hover:text-blue-900 text-sm font-medium mr-3 inline-flex items-center">
-                                        <i class="fas fa-edit mr-1"></i>Edit
-                                    </a>
-                                    <button onclick="loadAgeData({{ $age }})" 
-                                            class="text-green-600 hover:text-green-900 text-sm font-medium inline-flex items-center">
-                                        <i class="fas fa-sync-alt mr-1"></i>Load
-                                    </button>
-                                @else
-                                    <button onclick="createAgeReport({{ $age }})" 
-                                            class="text-green-600 hover:text-green-900 text-sm font-medium inline-flex items-center">
-                                        <i class="fas fa-plus mr-1"></i>Create
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                    @endfor
-                </tbody>
-            </table>
+        <div class="text-sm text-gray-600">
+            <strong>Total Records:</strong> 
+            <span class="font-medium">{{ $annualRecords->count() }}</span>
         </div>
-        @else
-        <div class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-            <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-3"></i>
-            <h5 class="text-lg font-medium text-gray-900 mb-2">No Health Data Available</h5>
-            <p class="text-gray-600">Health tracking data will appear here as annual checkups are recorded.</p>
-        </div>
-        @endif
     </div>
+
+    @if($annualRecords->count() > 0)
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Age</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Record Date</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Weight</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Height</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Head Circ.</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Health Status</th>
+                    <th class="border px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($annualRecords as $record)
+                <tr class="hover:bg-gray-50">
+                    <td class="border px-4 py-3 text-sm font-medium text-gray-900">
+                        {{ $record->age }} years
+                    </td>
+                    <td class="border px-4 py-3 text-sm text-gray-700">
+                        {{ $record->created_at->format('M j, Y') }}
+                    </td>
+                    <td class="border px-4 py-3 text-sm text-gray-700">
+                        <span class="font-semibold">{{ $record->weight }} kg</span>
+                    </td>
+                    <td class="border px-4 py-3 text-sm text-gray-700">
+                        <span class="font-semibold">{{ $record->height }} cm</span>
+                    </td>
+                    <td class="border px-4 py-3 text-sm text-gray-700">
+                        @if($record->head_circumference)
+                            <span class="font-semibold">{{ $record->head_circumference }} cm</span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
+                    <td class="border px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {{ $record->general_health == 'excellent' || $record->general_health == 'good' ? 'bg-green-100 text-green-800' : 
+                               ($record->general_health == 'fair' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                            {{ ucfirst($record->general_health) }}
+                        </span>
+                    </td>
+                    <td class="border px-4 py-3 text-sm text-gray-700">
+                        <div class="flex space-x-2">
+                            <a href="{{ route('principal.health.annual-records.edit', $record) }}" 
+                               class="text-blue-600 hover:text-blue-900 text-sm font-medium inline-flex items-center"
+                               title="Edit Record">
+                                <i class="fas fa-edit mr-1"></i>
+                            </a>
+                            <form action="{{ route('principal.health.annual-records.destroy', $record) }}" method="POST" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="text-red-600 hover:text-red-900 text-sm font-medium inline-flex items-center"
+                                        onclick="return confirm('Are you sure you want to delete this annual record?')"
+                                        title="Delete Record">
+                                    <i class="fas fa-trash mr-1"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Growth Summary -->
+    @if($annualRecords->count() > 1)
+    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+        <h5 class="text-sm font-medium text-gray-900 mb-3">Growth Summary</h5>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            @php
+                $oldestRecord = $annualRecords->first();
+                $latestRecord = $annualRecords->last();
+                $ageDifference = $latestRecord->age - $oldestRecord->age;
+                $weightGain = $latestRecord->weight - $oldestRecord->weight;
+                $heightGain = $latestRecord->height - $oldestRecord->height;
+                $weightPerYear = $ageDifference > 0 ? $weightGain / $ageDifference : 0;
+                $heightPerYear = $ageDifference > 0 ? $heightGain / $ageDifference : 0;
+            @endphp
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ number_format($weightGain, 1) }} kg</div>
+                <div class="text-xs text-gray-600">Weight Gain ({{ $ageDifference }} years)</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Avg: {{ number_format($weightPerYear, 1) }} kg/year
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{{ number_format($heightGain, 1) }} cm</div>
+                <div class="text-xs text-gray-600">Height Gain ({{ $ageDifference }} years)</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Avg: {{ number_format($heightPerYear, 1) }} cm/year
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">{{ $annualRecords->count() }}</div>
+                <div class="text-xs text-gray-600">Records Available</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Ages {{ $oldestRecord->age }} to {{ $latestRecord->age }} years
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
+    @else
+    <div class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+        <i class="fas fa-heartbeat text-4xl text-gray-300 mb-3"></i>
+        <h5 class="text-lg font-medium text-gray-900 mb-2">No Annual Health Records</h5>
+        <p class="text-gray-600 mb-4">Annual health records track growth and development year by year.</p>
+        <a href="{{ route('principal.health.annual-records.create') }}" 
+           class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+            <i class="fas fa-plus mr-2"></i>Add First Annual Record
+        </a>
+    </div>
+    @endif
+</div>
 
     <!-- Student Information -->
     <div class="content-card rounded-lg p-4 sm:p-6">

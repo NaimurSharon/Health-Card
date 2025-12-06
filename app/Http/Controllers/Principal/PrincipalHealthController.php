@@ -83,6 +83,7 @@ class PrincipalHealthController extends Controller
             ->orderBy('age', 'asc')
             ->get();
 
+
         return view('principal.health-reports.student', compact('user', 'student', 'healthReport', 'categories', 'annualRecords'));
     }
 
@@ -228,7 +229,7 @@ class PrincipalHealthController extends Controller
             ->ordered()
             ->get();
 
-        return view('principal.health-reports.edit', compact('healthReport', 'student', 'user', 'categories'));
+        return view('principal.health-reports.form', compact('healthReport', 'student', 'user', 'categories'));
     }
 
     public function update(Request $request, StudentHealthReport $healthReport)
@@ -406,7 +407,7 @@ class PrincipalHealthController extends Controller
 
         $classes = \App\Models\Classes::where('school_id', $school->id)->get();
 
-        return view('principal.health.annual-records.index', compact('records', 'classes'));
+        return view('principal.health-reports.annual-records.index', compact('records', 'classes'));
     }
 
     public function studentAnnualRecords($studentId)
@@ -421,7 +422,7 @@ class PrincipalHealthController extends Controller
             ->orderBy('age', 'asc')
             ->get();
 
-        return view('principal.health.annual-records.student', compact('student', 'annualRecords'));
+        return view('principal.health-reports.annual-records.student', compact('student', 'annualRecords'));
     }
 
     public function createAnnualRecord()
@@ -433,7 +434,7 @@ class PrincipalHealthController extends Controller
             ->orderBy('roll_number')
             ->get();
 
-        return view('principal.health.annual-records.form', compact('students'));
+        return view('principal.health-reports.annual-records.form', compact('students'));
     }
 
     public function storeAnnualRecord(Request $request)
@@ -505,7 +506,7 @@ class PrincipalHealthController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        return view('principal.health.annual-records.form', compact('annualHealthRecord'));
+        return view('principal.health-reports.annual-records.form', compact('annualHealthRecord'));
     }
 
     public function updateAnnualRecord(Request $request, AnnualHealthRecord $annualHealthRecord)

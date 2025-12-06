@@ -27,7 +27,7 @@ class HealthReportController extends Controller
     public function showByStudent(User $user)
     {
         $student = Student::where('user_id', $user->id)->first();
-        
+
         if (!$student) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Student record not found for this user.');
@@ -38,7 +38,7 @@ class HealthReportController extends Controller
 
         // Get or create health report
         $healthReport = $this->ensureHealthReportExists($student);
-        
+
         // Get all active categories with fields
         $categories = HealthReportCategory::with(['activeFields'])
             ->active()
@@ -52,7 +52,7 @@ class HealthReportController extends Controller
     {
         try {
             $student = Student::where('user_id', $user->id)->first();
-            
+
             if (!$student) {
                 return response()->json([
                     'success' => false,
@@ -77,7 +77,7 @@ class HealthReportController extends Controller
             // Add validation rules for each field
             foreach ($fields as $field) {
                 $rule = $field->is_required ? 'required' : 'nullable';
-                
+
                 switch ($field->field_type) {
                     case 'number':
                         $rule .= '|numeric';
@@ -97,7 +97,7 @@ class HealthReportController extends Controller
                         $rule .= '|string';
                         break;
                 }
-                
+
                 $validationRules[$field->field_name] = $rule;
             }
 
@@ -118,12 +118,12 @@ class HealthReportController extends Controller
             // Save all field values
             foreach ($fields as $field) {
                 $value = $request->get($field->field_name);
-                
+
                 // Handle different field types
                 if ($field->field_type === 'checkbox') {
                     $value = $request->has($field->field_name) ? '1' : '0';
                 }
-                
+
                 // For required fields, ensure we have a value
                 if ($field->is_required && ($value === null || $value === '')) {
                     // Set default values for required fields based on type
@@ -142,7 +142,7 @@ class HealthReportController extends Controller
                             break;
                     }
                 }
-                
+
                 if ($value !== null && $value !== '') {
                     $healthReport->reportData()->updateOrCreate(
                         ['field_id' => $field->id],
@@ -170,9 +170,11 @@ class HealthReportController extends Controller
     // Field Management Methods
     public function manageFields()
     {
-        $categories = HealthReportCategory::with(['fields' => function($query) {
-            $query->ordered();
-        }])->ordered()->get();
+        $categories = HealthReportCategory::with([
+            'fields' => function ($query) {
+                $query->ordered();
+            }
+        ])->ordered()->get();
 
         return view('backend.health-reports.manage-fields', compact('categories'));
     }
@@ -194,8 +196,8 @@ class HealthReportController extends Controller
                     'placeholder' => $field->placeholder,
                     'options' => $field->options,
                     'sort_order' => $field->sort_order,
-                    'is_required' => (bool)$field->is_required,
-                    'is_active' => (bool)$field->is_active,
+                    'is_required' => (bool) $field->is_required,
+                    'is_active' => (bool) $field->is_active,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -209,7 +211,7 @@ class HealthReportController extends Controller
     public function createField(Request $request)
     {
         try {
-            
+
             $validator = \Validator::make($request->all(), [
                 'category_id' => 'required|exists:health_report_categories,id',
                 'label' => 'required|string|max:255',
@@ -221,7 +223,7 @@ class HealthReportController extends Controller
                 'is_active' => 'boolean',
                 'sort_order' => 'integer|min:0',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -229,20 +231,20 @@ class HealthReportController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-    
+
             // Parse options if provided
             $options = null;
             if ($request->filled('options') && $request->field_type === 'select') {
                 $optionsArray = array_filter(
                     array_map('trim', explode("\n", $request->options)),
-                    function($option) {
+                    function ($option) {
                         return !empty($option);
                     }
                 );
                 $options = $optionsArray;
             }
-    
-    
+
+
             $field = HealthReportField::create([
                 'category_id' => $request->category_id,
                 'label' => $request->label,
@@ -254,14 +256,14 @@ class HealthReportController extends Controller
                 'is_active' => $request->boolean('is_active', true),
                 'sort_order' => $request->sort_order ?? 0,
             ]);
-    
-    
+
+
             return response()->json([
                 'success' => true,
                 'message' => 'Field created successfully.',
                 'field' => $field
             ]);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -290,7 +292,7 @@ class HealthReportController extends Controller
             if ($request->filled('options') && $request->field_type === 'select') {
                 $optionsArray = array_filter(
                     array_map('trim', explode("\n", $request->options)),
-                    function($option) {
+                    function ($option) {
                         return !empty($option);
                     }
                 );
@@ -329,7 +331,7 @@ class HealthReportController extends Controller
         try {
             // Check if field is being used in any reports
             $usageCount = StudentHealthReportData::where('field_id', $field->id)->count();
-            
+
             if ($usageCount > 0) {
                 return response()->json([
                     'success' => false,
@@ -355,7 +357,7 @@ class HealthReportController extends Controller
     {
         $student = $healthReport->student;
         $user = $student->user;
-        
+
         // Get all active categories with fields
         $categories = HealthReportCategory::with(['activeFields'])
             ->active()
@@ -382,7 +384,7 @@ class HealthReportController extends Controller
             // Add validation rules for each field
             foreach ($fields as $field) {
                 $rule = $field->is_required ? 'required' : 'nullable';
-                
+
                 switch ($field->field_type) {
                     case 'number':
                         $rule .= '|numeric';
@@ -402,7 +404,7 @@ class HealthReportController extends Controller
                         $rule .= '|string';
                         break;
                 }
-                
+
                 $validationRules[$field->field_name] = $rule;
             }
 
@@ -418,12 +420,12 @@ class HealthReportController extends Controller
             // Save all field values
             foreach ($fields as $field) {
                 $value = $request->get($field->field_name);
-                
+
                 // Handle different field types
                 if ($field->field_type === 'checkbox') {
                     $value = $request->has($field->field_name) ? '1' : '0';
                 }
-                
+
                 // For required fields, ensure we have a value
                 if ($field->is_required && ($value === null || $value === '')) {
                     // Set default values for required fields based on type
@@ -442,7 +444,7 @@ class HealthReportController extends Controller
                             break;
                     }
                 }
-                
+
                 if ($value !== null && $value !== '') {
                     $healthReport->reportData()->updateOrCreate(
                         ['field_id' => $field->id],
@@ -489,12 +491,12 @@ class HealthReportController extends Controller
     private function ensureHealthCardExists(Student $student)
     {
         $healthCard = HealthCard::where('student_id', $student->id)->first();
-        
+
         if (!$healthCard) {
             // Generate card number
             $latestCard = HealthCard::orderBy('id', 'desc')->first();
             $cardNumber = 'HCB-' . str_pad(($latestCard ? $latestCard->id + 1 : 1), 4, '0', STR_PAD_LEFT);
-            
+
             // Create health card
             $healthCard = HealthCard::create([
                 'student_id' => $student->id,
@@ -507,7 +509,7 @@ class HealthReportController extends Controller
                 'emergency_instructions' => 'Contact parent/guardian',
             ]);
         }
-        
+
         return $healthCard;
     }
 
@@ -517,7 +519,7 @@ class HealthReportController extends Controller
     private function ensureHealthReportExists(Student $student)
     {
         $healthReport = StudentHealthReport::where('student_id', $student->id)->first();
-        
+
         if (!$healthReport) {
             // Create a basic health report with default values
             $healthReport = StudentHealthReport::create([
@@ -538,7 +540,7 @@ class HealthReportController extends Controller
                 ]);
             }
         }
-        
+
         return $healthReport;
     }
 
@@ -573,12 +575,15 @@ class HealthReportController extends Controller
         if (!$student->user->date_of_birth) {
             return '6-12'; // Default age group
         }
-        
+
         $age = $student->user->date_of_birth->age;
-        
-        if ($age <= 1) return '0-1';
-        if ($age <= 5) return '2-5';
-        if ($age <= 12) return '6-12';
+
+        if ($age <= 1)
+            return '0-1';
+        if ($age <= 5)
+            return '2-5';
+        if ($age <= 12)
+            return '6-12';
         return '13-18';
     }
 }

@@ -7,15 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     protected $fillable = [
-        'user_id', 'student_id','school_id', 'class_id', 'section_id', 'roll_number',
-        'parent_id', 'mother_name', 'father_name', 'birth_certificate', 'blood_group', 'allergies', 'medical_conditions',
-        'emergency_contact', 'admission_date', 'status'
+        'user_id',
+        'student_id',
+        'school_id',
+        'class_id',
+        'section_id',
+        'roll_number',
+        'parent_id',
+        'mother_name',
+        'father_name',
+        'birth_certificate',
+        'blood_group',
+        'allergies',
+        'medical_conditions',
+        'emergency_contact',
+        'admission_date',
+        'status'
     ];
 
     protected $casts = [
         'admission_date' => 'date',
     ];
-    
+
     // Relationships
     public function user()
     {
@@ -40,12 +53,12 @@ class Student extends Model
 
     public function healthCard()
     {
-        return $this->hasOne(HealthCard::class, 'student_id');
+        return $this->hasOne(HealthCard::class, 'user_id');
     }
 
     public function medicalRecords()
     {
-        return $this->hasMany(MedicalRecord::class, 'student_id');
+        return $this->hasMany(MedicalRecord::class, 'user_id');
     }
 
     public function vaccinationRecords()
@@ -83,7 +96,7 @@ class Student extends Model
     {
         return $this->belongsTo(School::class, 'school_id');
     }
-    
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');

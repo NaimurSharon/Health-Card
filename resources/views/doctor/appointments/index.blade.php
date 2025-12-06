@@ -1,209 +1,272 @@
-@extends('layouts.app')
-
-@section('title', 'Appointments Management')
-
+@extends('layouts.doctor')
+@section('title', 'My Consultations - Doctor')
 @section('content')
-<div class="space-y-6">
-    <!-- Page Header -->
-    <div class="content-card rounded-lg overflow-hidden">
-        <div class="table-header px-6 py-4 flex justify-between items-center">
-            <h3 class="text-2xl font-bold">Appointments Management</h3>
-            <div class="text-sm text-gray-600">
-                <span class="font-medium">{{ $appointmentStats['total'] }}</span> total appointments
-            </div>
+    <div class="max-w-md mx-auto lg:max-w-4xl">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Dr. {{ Auth::user()->name }}</h1>
+            <p class="text-gray-500">Your consultation dashboard</p>
         </div>
-    </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-blue-600">Scheduled</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $appointmentStats['scheduled'] }}</p>
-                </div>
-                <i class="fas fa-clock text-blue-400 text-xl"></i>
+        <!-- Stats Section -->
+        <div class="grid grid-cols-4 gap-4 mb-8 text-center">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-400 mb-1">Scheduled</p>
+                <p class="text-lg font-bold text-blue-600">{{ $consultationStats['scheduled'] }}</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-400 mb-1">Completed</p>
+                <p class="text-lg font-bold text-green-600">{{ $consultationStats['completed'] }}</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-400 mb-1">Ongoing</p>
+                <p class="text-lg font-bold text-orange-600">{{ $consultationStats['ongoing'] }}</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-400 mb-1">Total</p>
+                <p class="text-lg font-bold text-gray-800">{{ $consultationStats['total'] }}</p>
             </div>
         </div>
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-green-600">Completed</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $appointmentStats['completed'] }}</p>
-                </div>
-                <i class="fas fa-check-circle text-green-400 text-xl"></i>
-            </div>
-        </div>
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-red-600">Cancelled</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $appointmentStats['cancelled'] }}</p>
-                </div>
-                <i class="fas fa-times-circle text-red-400 text-xl"></i>
-            </div>
-        </div>
-        <div class="content-card rounded-lg p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $appointmentStats['total'] }}</p>
-                </div>
-                <i class="fas fa-calendar-alt text-gray-400 text-xl"></i>
-            </div>
-        </div>
-    </div>
 
-    <!-- Filters -->
-    <div class="content-card rounded-lg p-6 shadow-sm">
-        <form action="{{ route('doctor.appointments.index') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Status Filter -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="status" id="status" 
-                            class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                        <option value="all" {{ $status == 'all' ? 'selected' : '' }}>All Status</option>
-                        <option value="scheduled" {{ $status == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                        <option value="completed" {{ $status == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ $status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        <option value="no_show" {{ $status == 'no_show' ? 'selected' : '' }}>No Show</option>
-                    </select>
+        <!-- Quick Actions -->
+        <div class="mb-8">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{{ route('doctor.consultations.index', ['status' => 'scheduled']) }}" class="block group">
+                    <div
+                        class="bg-[#C4E7FF] p-6 rounded-3xl h-full transition-transform transform group-hover:scale-[1.02]">
+                        <p class="text-sm text-gray-600 mb-1">View All</p>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Scheduled Calls</h3>
+                        <div class="flex -space-x-2 overflow-hidden">
+                            <div
+                                class="w-8 h-8 rounded-full bg-blue-300 border-2 border-white flex items-center justify-center text-xs text-white">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-green-300 border-2 border-white flex items-center justify-center text-xs text-white">
+                                <i class="fas fa-video"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div class="bg-[#FFD8E4] p-6 rounded-3xl h-full">
+                    <p class="text-sm text-gray-600 mb-1">Medical</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Patient Records</h3>
+                    <div class="flex -space-x-2 overflow-hidden">
+                        <div
+                            class="w-8 h-8 rounded-full bg-orange-300 border-2 border-white flex items-center justify-center text-xs text-white">
+                            <i class="fas fa-file-medical"></i>
+                        </div>
+                        <div
+                            class="w-8 h-8 rounded-full bg-red-300 border-2 border-white flex items-center justify-center text-xs text-white">
+                            <i class="fas fa-user-injured"></i>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Date Filter -->
-                <div>
-                    <label for="date" class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input type="date" name="date" id="date" 
-                           value="{{ $date }}"
-                           class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+        <!-- Today's Schedule -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Today's Schedule</h2>
+                <div class="flex space-x-2">
+                    <span class="text-sm font-medium text-gray-600 self-center">{{ now()->format('F d, Y') }}</span>
                 </div>
+            </div>
 
-                <!-- Action Buttons -->
-                <div class="flex items-end space-x-2">
-                    <button type="submit" 
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
-                        <i class="fas fa-filter mr-2"></i>Filter
+            <!-- Filter Buttons -->
+            <div class="flex space-x-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+                <a href="{{ route('doctor.consultations.index', ['status' => 'all']) }}"
+                    class="px-4 py-2 rounded-full text-sm font-medium {{ $status === 'all' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                    All ({{ $consultationStats['total'] }})
+                </a>
+                <a href="{{ route('doctor.consultations.index', ['status' => 'scheduled']) }}"
+                    class="px-4 py-2 rounded-full text-sm font-medium {{ $status === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                    Scheduled ({{ $consultationStats['scheduled'] }})
+                </a>
+                <a href="{{ route('doctor.consultations.index', ['status' => 'ongoing']) }}"
+                    class="px-4 py-2 rounded-full text-sm font-medium {{ $status === 'ongoing' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                    Ongoing ({{ $consultationStats['ongoing'] }})
+                </a>
+                <a href="{{ route('doctor.consultations.index', ['status' => 'completed']) }}"
+                    class="px-4 py-2 rounded-full text-sm font-medium {{ $status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                    Completed ({{ $consultationStats['completed'] }})
+                </a>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="mb-6">
+                <form method="GET" action="{{ route('doctor.consultations.index') }}" class="flex items-center space-x-2">
+                    <input type="date" name="date" value="{{ $date }}"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Filter
                     </button>
-                    <a href="{{ route('doctor.appointments.index') }}" 
-                       class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center">
-                        <i class="fas fa-refresh mr-2"></i>Reset
-                    </a>
-                </div>
+                    @if($date)
+                        <a href="{{ route('doctor.consultations.index', ['status' => $status]) }}"
+                            class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                            Clear
+                        </a>
+                    @endif
+                </form>
             </div>
-        </form>
-    </div>
 
-    <!-- Appointments Table -->
-    <div class="content-card rounded-lg overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-gray-200/60">
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Student</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Date & Time</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Reason</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Symptoms</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-right text-xs font-medium text-gray-900 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200/60">
-                    @forelse($appointments as $appointment)
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-user text-blue-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $appointment->student->user->name }}</div>
-                                        <div class="text-sm text-gray-500">ID: {{ $appointment->student->student_id }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $appointment->appointment_date->format('M j, Y') }}</div>
-                                <div class="text-sm text-gray-500">{{ $appointment->appointment_time->format('g:i A') }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $appointment->reason }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 line-clamp-2">{{ $appointment->symptoms }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                    {{ $appointment->status == 'scheduled' ? 'bg-blue-100 text-blue-800' : 
-                                       ($appointment->status == 'completed' ? 'bg-green-100 text-green-800' : 
-                                       ($appointment->status == 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) }}">
-                                    {{ ucfirst($appointment->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
-                                    <a href="{{ route('doctor.appointments.show', $appointment) }}" 
-                                       class="text-blue-600 hover:text-blue-900 transition-colors" title="View">
-                                        <i class="fas fa-eye"></i>
+            <!-- Consultation Cards -->
+            <div class="space-y-4">
+                @forelse($consultations as $consultation)
+                    <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-xs font-medium px-3 py-1 rounded-full
+                                                        @if($consultation->status === 'scheduled') bg-blue-100 text-blue-800
+                                                        @elseif($consultation->status === 'ongoing') bg-orange-100 text-orange-800
+                                                        @elseif($consultation->status === 'completed') bg-green-100 text-green-800
+                                                        @else bg-gray-100 text-gray-800 @endif">
+                                {{ $consultation->scheduled_for->format('h:i A') }}
+                                @if($consultation->duration)
+                                    - {{ $consultation->scheduled_for->addMinutes($consultation->duration)->format('h:i A') }}
+                                @endif
+                            </div>
+                            <span class="text-sm font-medium capitalize 
+                                                        @if($consultation->status === 'scheduled') text-blue-600
+                                                        @elseif($consultation->status === 'ongoing') text-orange-600
+                                                        @elseif($consultation->status === 'completed') text-green-600
+                                                        @else text-gray-600 @endif">
+                                {{ $consultation->status }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">{{ $consultation->user->name ?? 'Unknown Patient' }}
+                                </h3>
+                                <p class="text-sm text-gray-600">{{ ucfirst($consultation->patient_type) }}</p>
+                            </div>
+                            <div
+                                class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold overflow-hidden">
+                                @if($consultation->user && $consultation->user->profile_photo_url)
+                                    <img src="{{ $consultation->user->profile_photo_url }}" alt="{{ $consultation->user->name }}"
+                                        class="w-full h-full object-cover">
+                                @else
+                                    {{ substr($consultation->user->name ?? 'P', 0, 1) }}
+                                @endif
+                            </div>
+                        </div>
+
+                        @if($consultation->symptoms)
+                            <p class="text-sm text-gray-600 mb-4">
+                                <span class="font-medium">Symptoms:</span> {{ Str::limit($consultation->symptoms, 100) }}
+                            </p>
+                        @endif
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500">Scheduled for</p>
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $consultation->scheduled_for->format('M d, Y') }}
+                                </p>
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <a href="{{ route('doctor.consultations.show', $consultation->id) }}"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
+                                    Details
+                                </a>
+
+                                @if($consultation->canStartCall())
+                                    <a href="{{ route('video-consultation.join', $consultation->id) }}"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                        <i class="fas fa-video text-xs"></i>
+                                        {{ $consultation->status === 'ongoing' ? 'Join' : 'Start' }}
                                     </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                <i class="fas fa-calendar-times text-4xl mb-4 text-gray-300"></i>
-                                <p class="text-lg">No appointments found</p>
-                                <p class="text-sm mt-2">No appointments match your current filters.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="bg-gray-50 p-8 rounded-3xl text-center border border-gray-100">
+                        <div
+                            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                            <i class="fas fa-calendar-times text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">No Consultations Found</h3>
+                        <p class="text-gray-500 mb-6">
+                            @if($status !== 'all')
+                                No {{ $status }} consultations found.
+                            @else
+                                You don't have any consultations scheduled.
+                            @endif
+                        </p>
+                        @if($date || $status !== 'all')
+                            <a href="{{ route('doctor.consultations.index') }}"
+                                class="inline-block bg-gray-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors">
+                                View All Consultations
+                            </a>
+                        @endif
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Pagination -->
+            @if($consultations->hasPages())
+                <div class="mt-6">
+                    {{ $consultations->withQueryString()->links() }}
+                </div>
+            @endif
         </div>
 
-        <!-- Pagination -->
-        @if($appointments->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200/60">
-                {{ $appointments->links() }}
+        <!-- Upcoming Consultations -->
+        @if($upcomingConsultations->count() > 0)
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-900">Upcoming This Week</h2>
+                    <a href="{{ route('doctor.consultations.index', ['status' => 'scheduled']) }}"
+                        class="text-sm text-blue-600 font-medium hover:underline">View All</a>
+                </div>
+
+                <div class="space-y-3">
+                    @foreach($upcomingConsultations as $consultation)
+                        <div
+                            class="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:shadow-sm transition-shadow">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900">{{ $consultation->user->name }}</h4>
+                                    <p class="text-xs text-gray-500">
+                                        {{ $consultation->scheduled_for->format('M d, h:i A') }} •
+                                        <span class="font-medium">{{ $consultation->patient_type }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                @if($consultation->canStartCall())
+                                    <a href="{{ route('video-consultation.join', $consultation->id) }}"
+                                        class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-200">
+                                        <i class="fas fa-play text-xs"></i>
+                                    </a>
+                                @endif
+                                <a href="{{ route('doctor.consultations.show', $consultation->id) }}"
+                                    class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         @endif
     </div>
-</div>
 
-<style>
-    .content-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
 
-    .table-header {
-        border-bottom: 1px solid rgba(229, 231, 235, 0.6);
-    }
-
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add smooth interactions
-        const inputs = document.querySelectorAll('input, select');
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('ring-2', 'ring-blue-200', 'rounded-lg');
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-lg');
-            });
-        });
-    });
-</script>
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 @endsection

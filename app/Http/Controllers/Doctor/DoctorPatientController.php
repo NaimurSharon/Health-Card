@@ -5,28 +5,33 @@ namespace App\Http\Controllers\Doctor;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\MedicalRecord;
+use App\Models\VideoConsultation;
 use App\Models\Appointment;
 use App\Models\VaccinationRecord;
 use Illuminate\Http\Request;
 
-class PatientController extends Controller
+class DoctorPatientController extends Controller
 {
     public function index(Request $request)
     {
         $doctorId = auth()->id();
         $search = $request->get('search');
 
-        $students = Student::with(['user', 'class', 'medicalRecords' => function($query) use ($doctorId) {
-            $query->recordedByDoctor($doctorId);
-        }])
-        ->whereHas('medicalRecords', function($query) use ($doctorId) {
-            $query->recordedByDoctor($doctorId);
-        });
+        $students = Student::with([
+            'user',
+            'class',
+            'medicalRecords' => function ($query) use ($doctorId) {
+                $query->recordedByDoctor($doctorId);
+            }
+        ])
+            ->whereHas('medicalRecords', function ($query) use ($doctorId) {
+                $query->recordedByDoctor($doctorId);
+            });
 
         if ($search) {
-            $students->where(function($query) use ($search) {
+            $students->where(function ($query) use ($search) {
                 $query->where('student_id', 'like', "%{$search}%")
-                    ->orWhereHas('user', function($query) use ($search) {
+                    ->orWhereHas('user', function ($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
                     });
@@ -47,41 +52,35 @@ class PatientController extends Controller
 
         // Medical records by this doctor
         $medicalRecords = MedicalRecord::with('recordedBy')
-            ->forStudent($student->id)
+            ->forUser($student->user->id)
             ->recordedByDoctor($doctorId)
             ->orderBy('record_date', 'desc')
             ->paginate(10);
 
-        // Vaccination records
-        $vaccinationRecords = VaccinationRecord::where('student_id', $student->id)
-            ->orderBy('vaccine_date', 'desc')
-            ->get();
-
-        // Upcoming appointments
-        $upcomingAppointments = Appointment::with('doctor')
+        $upcomingConsultations = VideoConsultation::with('doctor', 'user')
             ->forDoctor($doctorId)
-            ->where('student_id', $student->id)
+            ->forUser($student->user->id)
+            ->forStudents()
             ->scheduled()
-            ->where('appointment_date', '>=', today())
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+            ->where('scheduled_for', '>=', now())
+            ->orderBy('scheduled_for')
             ->get();
 
         // Statistics
         $stats = [
             'total_visits' => $medicalRecords->total(),
             'last_visit' => $medicalRecords->first()?->record_date,
-            'upcoming_appointments' => $upcomingAppointments->count(),
+            'upcoming_consultations' => $upcomingConsultations->count(),
         ];
 
         return view('doctor.patients.show', compact(
             'student',
             'medicalRecords',
-            'vaccinationRecords',
-            'upcomingAppointments',
+            'upcomingConsultations',
             'stats'
         ));
     }
+
 
     public function createMedicalRecord(Student $student, Request $request)
     {
@@ -100,7 +99,7 @@ class PatientController extends Controller
         ]);
 
         MedicalRecord::create([
-            'student_id' => $student->id,
+            'user_id' => $student->user->id,
             'record_date' => today(),
             'record_type' => $request->record_type,
             'symptoms' => $request->symptoms,

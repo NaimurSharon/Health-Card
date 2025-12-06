@@ -137,16 +137,22 @@ Route::prefix('principal')->name('principal.')->middleware(['auth', 'role:princi
         Route::post('/{id}/publish', [PrincipalNoticeController::class, 'publish'])->name('publish');
     });
 
-    // Health Records
-    Route::prefix('health')->name('health.')->group(function () {
-        Route::get('/reports', [PrincipalHealthController::class, 'index'])->name('reports.index');
-        Route::get('/reports/{studentId}', [PrincipalHealthController::class, 'studentRecords'])->name('reports.student');
-        Route::get('/annual-reports', [PrincipalHealthController::class, 'annualRecords'])->name('reports.annual-records');
-        Route::get('/annual-reports/create', [PrincipalHealthController::class, 'createAnnualRecord'])->name('reports.create-annual-record');
-        Route::post('/annual-reports/store', [PrincipalHealthController::class, 'storeAnnualRecord'])->name('reports.store-annual-record');
-        Route::get('/annual-reports/{id}/edit', [PrincipalHealthController::class, 'editAnnualRecord'])->name('reports.edit-annual-record');
-        Route::put('/annual-records/{id}/update', [PrincipalHealthController::class, 'updateAnnualRecord'])->name('update-annual-record');
-    });
+    // Health Reports
+    Route::get('health/reports', [PrincipalHealthController::class, 'index'])->name('health.reports.index');
+    Route::get('health/reports/student/{user}', [PrincipalHealthController::class, 'studentRecords'])->name('health.reports.student');
+    Route::post('health/reports/store-or-update/{user}', [PrincipalHealthController::class, 'storeOrUpdate'])->name('health.reports.store-or-update');
+    Route::get('health/reports/{healthReport}/edit', [PrincipalHealthController::class, 'edit'])->name('health.reports.edit');
+    Route::put('health/reports/{healthReport}', [PrincipalHealthController::class, 'update'])->name('health.reports.update');
+    Route::delete('health/reports/{healthReport}', [PrincipalHealthController::class, 'destroy'])->name('health.reports.destroy');
+
+    // Annual Health Records
+    Route::get('health/annual-records', [PrincipalHealthController::class, 'annualRecords'])->name('health.annual-records.index');
+    Route::get('health/annual-records/student/{student}', [PrincipalHealthController::class, 'studentAnnualRecords'])->name('health.annual-records.student');
+    Route::get('health/annual-records/create', [PrincipalHealthController::class, 'createAnnualRecord'])->name('health.annual-records.create');
+    Route::post('health/annual-records', [PrincipalHealthController::class, 'storeAnnualRecord'])->name('health.annual-records.store');
+    Route::get('health/annual-records/{annualHealthRecord}/edit', [PrincipalHealthController::class, 'editAnnualRecord'])->name('health.annual-records.edit');
+    Route::put('health/annual-records/{annualHealthRecord}', [PrincipalHealthController::class, 'updateAnnualRecord'])->name('health.annual-records.update');
+    Route::delete('health/annual-records/{annualHealthRecord}', [PrincipalHealthController::class, 'destroyAnnualRecord'])->name('health.annual-records.destroy');
 
     // ID Cards Management
     Route::prefix('id-cards')->name('id-cards.')->group(function () {

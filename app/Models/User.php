@@ -10,13 +10,26 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'hospital_id', 'password', 'phone', 'address', 'date_of_birth', 
-        'gender', 'profile_image', 'role', 'specialization', 'qualifications', 
-        'school_id', 'status', 'principal_id'
+        'name',
+        'email',
+        'hospital_id',
+        'password',
+        'phone',
+        'address',
+        'date_of_birth',
+        'gender',
+        'profile_image',
+        'role',
+        'specialization',
+        'qualifications',
+        'school_id',
+        'status',
+        'principal_id'
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
@@ -30,7 +43,7 @@ class User extends Authenticatable
     {
         return $this->belongsTo(School::class);
     }
-    
+
     // Assigned doctor relationship (schools where this doctor is assigned)
     public function assignedSchools()
     {
@@ -68,7 +81,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(DoctorDetail::class, 'user_id');
     }
-    
+
     public function doctorAvailabilities()
     {
         return $this->hasMany(DoctorAvailability::class, 'doctor_id');
@@ -91,7 +104,7 @@ class User extends Authenticatable
 
     public function scopeByRegion($query, $region)
     {
-        return $query->whereHas('hospital', function($q) use ($region) {
+        return $query->whereHas('hospital', function ($q) use ($region) {
             $q->where('address', 'like', '%' . $region . '%');
         });
     }
@@ -140,8 +153,9 @@ class User extends Authenticatable
     // Bangladeshi doctor specific methods
     public function getBangladeshiRegionAttribute()
     {
-        if (!$this->hospital) return 'Unknown';
-        
+        if (!$this->hospital)
+            return 'Unknown';
+
         $address = $this->hospital->address;
         if (str_contains($address, 'ঢাকা') || str_contains(strtolower($address), 'dhaka')) {
             return 'Dhaka';
@@ -156,7 +170,8 @@ class User extends Authenticatable
 
     public function getFormattedFeesAttribute()
     {
-        if (!$this->doctorDetail) return null;
+        if (!$this->doctorDetail)
+            return null;
 
         return [
             'consultation' => $this->doctorDetail->formatted_consultation_fee,
@@ -164,21 +179,21 @@ class User extends Authenticatable
             'emergency' => $this->doctorDetail->formatted_emergency_fee
         ];
     }
-    
+
     public function principal()
     {
         return $this->hasOne(Teacher::class, 'user_id')
-                    ->whereHas('user', function ($query) {
-                        $query->where('role', 'principal');
-                    });
+            ->whereHas('user', function ($query) {
+                $query->where('role', 'principal');
+            });
     }
-    
+
     public function teacher()
     {
         return $this->hasOne(Teacher::class, 'user_id');
     }
 
-    
+
     public function teacherSections()
     {
         return $this->hasMany(Section::class, 'teacher_id');
@@ -228,7 +243,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(ClassSubject::class, 'teacher_id');
     }
-    
+
     public function createdExams()
     {
         return $this->hasMany(OnlineExam::class, 'created_by');
@@ -247,8 +262,8 @@ class User extends Authenticatable
     public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'class_subjects', 'teacher_id', 'subject_id')
-                    ->withPivot('class_id', 'section_id')
-                    ->withTimestamps();
+            ->withPivot('class_id', 'section_id')
+            ->withTimestamps();
     }
 
     public function classes()
@@ -371,8 +386,8 @@ class User extends Authenticatable
 
     public function getStatusBadgeClassAttribute()
     {
-        return $this->status === 'active' 
-            ? 'bg-green-100 text-green-800' 
+        return $this->status === 'active'
+            ? 'bg-green-100 text-green-800'
             : 'bg-red-100 text-red-800';
     }
 
@@ -402,7 +417,7 @@ class User extends Authenticatable
             return 'No qualifications';
         }
 
-        return is_array($this->qualifications) 
+        return is_array($this->qualifications)
             ? implode(', ', $this->qualifications)
             : $this->qualifications;
     }
@@ -461,14 +476,14 @@ class User extends Authenticatable
     public function scopeSearch($query, $search)
     {
         return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+            ->orWhere('email', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
     }
 
     public function scopeAvailablePrincipals($query)
     {
         return $query->where('role', 'principal')
-                    ->whereDoesntHave('managedSchool');
+            ->whereDoesntHave('managedSchool');
     }
 
     // Statistics methods
@@ -531,19 +546,19 @@ class User extends Authenticatable
         }
 
         if ($this->isTeacher()) {
-            return $this->teacherSections()->count() === 0 && 
-                   $this->teacherSubjects()->count() === 0 &&
-                   $this->createdExams()->count() === 0;
+            return $this->teacherSections()->count() === 0 &&
+                $this->teacherSubjects()->count() === 0 &&
+                $this->createdExams()->count() === 0;
         }
 
         if ($this->isStudent()) {
             return $this->studentMedicalRecords()->count() === 0 &&
-                   $this->studentExamAttempts()->count() === 0;
+                $this->studentExamAttempts()->count() === 0;
         }
 
         if ($this->isDoctor()) {
             return $this->recordedMedicalRecords()->count() === 0 &&
-                   $this->appointments()->count() === 0;
+                $this->appointments()->count() === 0;
         }
 
         return true;
@@ -570,10 +585,10 @@ class User extends Authenticatable
         }
 
         return $this->studentExamAttempts()
-                    ->with('exam')
-                    ->latest()
-                    ->limit($limit)
-                    ->get();
+            ->with('exam')
+            ->latest()
+            ->limit($limit)
+            ->get();
     }
 
     public function getRecentMedicalRecords($limit = 5)
@@ -583,9 +598,9 @@ class User extends Authenticatable
         }
 
         return $this->studentMedicalRecords()
-                    ->latest('record_date')
-                    ->limit($limit)
-                    ->get();
+            ->latest('record_date')
+            ->limit($limit)
+            ->get();
     }
 
     public function getPrincipalViewData()
