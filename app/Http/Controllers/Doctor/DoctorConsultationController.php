@@ -19,11 +19,11 @@ class DoctorConsultationController extends Controller
     {
         $this->streamService = $streamService;
     }
-    
+
     public function index(Request $request)
     {
         $doctor = Auth::user();
-        
+
         // Get all consultations for pagination
         $consultations = VideoConsultation::where('doctor_id', $doctor->id)
             ->with(['student.user', 'appointment'])
@@ -69,7 +69,7 @@ class DoctorConsultationController extends Controller
     public function show($id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->with(['student.user', 'payment'])
@@ -82,7 +82,7 @@ class DoctorConsultationController extends Controller
     public function videoCall($id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->with(['student.user', 'user'])
@@ -106,7 +106,7 @@ class DoctorConsultationController extends Controller
         // Let the waiting room system handle status changes when both participants are ready
 
         $streamConfig = $this->streamService->getFrontendConfig(
-            $doctor->id, 
+            $doctor->id,
             'Dr. ' . $doctor->name,
             $doctor->profile_photo_url ?? null
         );
@@ -120,14 +120,14 @@ class DoctorConsultationController extends Controller
     public function getCallConfig($id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->with(['student.user'])
             ->firstOrFail();
 
         $streamConfig = $this->streamService->getFrontendConfig(
-            $doctor->id, 
+            $doctor->id,
             'Dr. ' . $doctor->name,
             $doctor->profile_photo_url ?? null
         );
@@ -144,7 +144,7 @@ class DoctorConsultationController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
@@ -166,7 +166,7 @@ class DoctorConsultationController extends Controller
     public function saveNotes(Request $request, $id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
@@ -185,7 +185,7 @@ class DoctorConsultationController extends Controller
     public function endCall(Request $request, $id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
@@ -224,8 +224,10 @@ class DoctorConsultationController extends Controller
 
         // Update consultation
         $meta = $consultation->call_metadata ?? [];
-        if ($request->medication) $meta['medication'] = $request->medication;
-        if ($request->follow_up_date) $meta['follow_up_date'] = $request->follow_up_date;
+        if ($request->medication)
+            $meta['medication'] = $request->medication;
+        if ($request->follow_up_date)
+            $meta['follow_up_date'] = $request->follow_up_date;
 
         $consultation->update([
             'prescription' => $request->prescription,
@@ -421,15 +423,15 @@ class DoctorConsultationController extends Controller
         $sessionId = $data['participant']['sessionId'];
 
         $meta = $consultation->call_metadata ?? [];
-        
+
         // Update doctor heartbeat
         $meta['doctor_last_heartbeat'] = now()->toISOString();
-        
+
         // If call is active and doctor was marked as disconnected, clear it
         if ($consultation->status === 'ongoing' && isset($meta['doctor_disconnect_at'])) {
             unset($meta['doctor_disconnect_at']);
         }
-        
+
         // Track participants for session management
         if (!isset($meta['participants']) || !is_array($meta['participants'])) {
             $meta['participants'] = [];
@@ -474,12 +476,12 @@ class DoctorConsultationController extends Controller
         $doctor = Auth::user();
         $consultation = VideoConsultation::where('id', $id)->where('doctor_id', $doctor->id)->firstOrFail();
         $meta = $consultation->call_metadata ?? [];
-        
+
         $now = \Carbon\Carbon::now();
         $patientReady = false;
         $doctorReady = false;
         $callActive = $consultation->status === 'ongoing';
-        
+
         // Check patient presence (heartbeat within last 10 seconds)
         if (isset($meta['patient_ready']) && $meta['patient_ready']) {
             if (isset($meta['patient_last_heartbeat'])) {
@@ -490,7 +492,7 @@ class DoctorConsultationController extends Controller
                 $patientReady = $now->diffInSeconds($readyAt) <= 10;
             }
         }
-        
+
         // Check doctor presence (heartbeat within last 10 seconds)
         if (isset($meta['doctor_ready']) && $meta['doctor_ready']) {
             if (isset($meta['doctor_last_heartbeat'])) {
@@ -501,7 +503,7 @@ class DoctorConsultationController extends Controller
                 $doctorReady = $now->diffInSeconds($readyAt) <= 10;
             }
         }
-        
+
         // Check if someone disconnected during active call
         $disconnectInfo = null;
         if ($callActive && isset($meta['call_started_at'])) {
@@ -541,9 +543,9 @@ class DoctorConsultationController extends Controller
                 }
             }
         }
-        
+
         $bothReady = $patientReady && $doctorReady;
-        
+
         return response()->json([
             'success' => true,
             'patient_present' => $patientReady,
@@ -564,23 +566,23 @@ class DoctorConsultationController extends Controller
         $doctor = Auth::user();
         $consultation = VideoConsultation::where('id', $id)->where('doctor_id', $doctor->id)->firstOrFail();
         $meta = $consultation->call_metadata ?? [];
-        
+
         // Mark doctor as ready
         $meta['doctor_ready'] = true;
         $meta['doctor_ready_at'] = now()->toISOString();
         $meta['doctor_last_heartbeat'] = now()->toISOString();
-        
+
         // Clear disconnect timestamp if reconnecting
         if (isset($meta['doctor_disconnect_at'])) {
             unset($meta['doctor_disconnect_at']);
         }
-        
+
         $consultation->call_metadata = $meta;
         $consultation->save();
-        
+
         $patientReady = $meta['patient_ready'] ?? false;
         $bothReady = $patientReady && $meta['doctor_ready'];
-        
+
         // Only start call if both are ready AND call hasn't started yet
         if ($bothReady && $consultation->status === 'scheduled') {
             $meta['call_started_at'] = now()->toISOString();
@@ -590,7 +592,7 @@ class DoctorConsultationController extends Controller
                 'started_at' => now()
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
             'patient_ready' => $patientReady,
@@ -607,7 +609,7 @@ class DoctorConsultationController extends Controller
     public function checkCallStatus($id)
     {
         $doctor = Auth::user();
-        
+
         $consultation = VideoConsultation::where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->firstOrFail();
@@ -622,7 +624,7 @@ class DoctorConsultationController extends Controller
             'end_type' => $endType,
             'should_redirect' => in_array($consultation->status, ['cancelled', 'completed']) && $endedBy !== 'doctor',
             'redirect_url' => route('doctor.video-consultation.show', $id),
-            'message' => $consultation->status === 'completed' && $endedBy === 'student' 
+            'message' => $consultation->status === 'completed' && $endedBy === 'student'
                 ? 'Call ended by patient'
                 : null
         ]);
